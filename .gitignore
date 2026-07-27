@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Playwright output
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Your saved login session — NEVER commit this
+auth.json
