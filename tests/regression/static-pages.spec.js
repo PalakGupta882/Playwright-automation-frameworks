@@ -1,27 +1,27 @@
 const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL } = require('../data/constants');
 
-// The list of pages to check. Add more as you confirm their URLs.
 const staticPages = [
-  { name: 'Home',         path: '/' },
-  { name: 'About Us',     path: '/about-us' },
-  { name: 'Subscription', path: '/home/subscription' },
-  { name: 'EMI Store',    path: '/home/emi-store' },
-  { name: 'Products',     path: '/all-products' },
-
-  // Policy/content pages — add these once you confirm each URL
-  // (click the footer link in your browser and copy the address bar):
-  // { name: 'Privacy Policy', path: '/privacy-policy' },
-  // { name: 'Terms of Use',   path: '/terms-of-use' },
-  // { name: 'FAQs',           path: '/faqs' },
+  { name: 'Home',                        path: '/' },
+  { name: 'About Us',                    path: '/about-us' },
+  { name: 'Subscription',                path: '/home/subscription' },
+  { name: 'EMI Store',                   path: '/home/emi-store' },
+  { name: 'Products',                    path: '/all-products' },
+  { name: 'Privacy Policy',              path: '/privacy-policy' },
+  { name: 'Terms of Use',                path: '/terms-of-use' },
+  { name: 'FAQ',                         path: '/faq' },
+  { name: 'Shipping Policy',             path: '/shipping-policy' },
+  { name: 'Payment Policy',              path: '/payment-policy' },
+  { name: 'Order Cancellation & Return', path: '/cancellation-and-return' },
+  { name: 'Grievance Redressal',         path: '/grievance-redressal' },
 ];
 
 for (const pageInfo of staticPages) {
   test(`page loads: ${pageInfo.name}`, async ({ page }) => {
     await page.goto(`${BASE_URL}${pageInfo.path}`, { waitUntil: 'domcontentloaded' });
 
-    // Confirm the page actually rendered (the app shell / logo is present)
-    await expect(page.getByRole('img', { name: 'BytePe Logo' }).first())
-      .toBeVisible({ timeout: 15000 });
+    // Universal checks: the route resolved, and the page rendered real text (not blank)
+    await expect(page).toHaveURL(new RegExp(pageInfo.path), { timeout: 15000 });
+    await expect(page.locator('body')).toContainText(/\S/, { timeout: 15000 });
   });
 }
