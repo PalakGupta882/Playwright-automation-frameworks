@@ -62,8 +62,9 @@ class HomePage extends BasePage {
   }
 
   async login(mobileNumber) {
-    await this.page.keyboard.press('Escape').catch(() => {});
-    await this.loginLink.click({ force: true });
+    await this.goto();                                                  // ensure the homepage is loaded
+    await this.loginLink.waitFor({ state: 'visible', timeout: 20000 }); // wait for the Login button to render
+    await this.loginLink.click();
     await this.page.waitForTimeout(1000);
     const mobileInput = this.page.getByRole('textbox', { name: 'Mobile Number*' });
     await mobileInput.fill(mobileNumber);
