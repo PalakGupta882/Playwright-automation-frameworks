@@ -27,7 +27,7 @@ jobs:
         run: echo '{"cookies":[],"origins":[]}' > auth.json
 
       - name: Run public tests
-        run: npx playwright test regression/static-pages.spec.js regression/data-driven-products.spec.js --project=chromium
+        run: npx playwright test regression/static-pages.spec.js regression/data-driven-products.spec.js regression/product-search.spec.js regression/product-pricing.spec.js --project=chromium
 
       - name: Upload HTML report
         if: always()
