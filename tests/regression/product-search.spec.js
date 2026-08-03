@@ -24,10 +24,17 @@ test.describe('product search', () => {
     test.setTimeout(60000);
 
     await productsListPage.goto();
-    await productsListPage.searchFor('zzzqqqnotaproduct');
 
-    // The autocomplete dropdown stays empty and we stay on the listing page
-    await expect(page.getByRole('listitem').filter({ hasText: /\S/ })).toHaveCount(0);
+    // First prove the dropdown renders at all. Without this, the zero-count
+    // assertion below can pass vacuously against a not-yet-rendered page
+    // rather than because the search genuinely returned nothing.
+    const suggestions = page.getByRole('listitem').filter({ hasText: /\S/ });
+    await productsListPage.searchFor('iphone');
+    await expect(suggestions.first()).toBeVisible({ timeout: 15000 });
+
+    // Now a term nothing matches — the suggestions must clear
+    await productsListPage.searchFor('zzzqqqnotaproduct');
+    await expect(suggestions).toHaveCount(0);
     await expect(page).toHaveURL(new RegExp(URLS.products));
     console.log('No results for gibberish search, still on:', page.url());
   });
