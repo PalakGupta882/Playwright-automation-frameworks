@@ -1,5 +1,9 @@
 const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL } = require('../data/constants');
+const { assertFreshSession } = require('../utils/session');
+
+// The profile page only exists for a logged-in user
+test.beforeAll(() => assertFreshSession());
 
 test('My Profile page loads for a logged-in user', async ({ page }) => {
   test.setTimeout(60000);

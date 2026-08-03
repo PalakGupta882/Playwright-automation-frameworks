@@ -14,7 +14,14 @@ test('one-time login and save session', async ({ page }) => {
   if (isAlreadyLoggedIn) {
     console.log('Already logged in — session still valid, saving as-is.');
   } else {
-    const myMobileNumber = 'YOUR_NUMBER_HERE';
+    // Kept out of the repo on purpose — this file is tracked and public
+    const myMobileNumber = process.env.BYTEPE_MOBILE;
+    if (!myMobileNumber) {
+      throw new Error(
+        'BYTEPE_MOBILE is not set, so there is no number to log in with.\n' +
+        'Set it once:  setx BYTEPE_MOBILE "<your number>"   (then open a new terminal)'
+      );
+    }
     await home.login(myMobileNumber);
   }
 

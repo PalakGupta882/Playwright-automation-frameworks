@@ -1,4 +1,8 @@
 const { test, expect } = require('../fixtures/pageFixtures');
+const { assertFreshSession } = require('../utils/session');
+
+// Buy Now drops into the OTP prompt without a live session
+test.beforeAll(() => assertFreshSession());
 
 test('EMI Store: select product through to checkout (stops before payment)', async ({ page, emiStorePage }) => {
   test.setTimeout(180000);
