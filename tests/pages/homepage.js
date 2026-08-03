@@ -1,4 +1,5 @@
 const { BasePage } = require('./basePage');
+const { TIMEOUTS } = require('../data/constants');
 
 class HomePage extends BasePage {
   constructor(page) {
@@ -69,9 +70,13 @@ class HomePage extends BasePage {
     const mobileInput = this.page.getByRole('textbox', { name: 'Mobile Number*' });
     await mobileInput.fill(mobileNumber);
     await this.page.getByRole('button', { name: 'Continue' }).click();
-    console.log('OTP sent. Enter it manually in the browser, then click Resume.');
-    await this.page.pause();
-    console.log('Resumed after login. Current URL:', this.page.url());
+
+    // Wait for the login to actually take rather than pausing for the Inspector:
+    // the header "Login" control disappearing is the signal, so a plain --headed
+    // run is enough — type the OTP in the browser and this continues on its own
+    console.log(`OTP sent. Type it in the browser — waiting up to ${TIMEOUTS.otp / 1000}s.`);
+    await this.loginLink.waitFor({ state: 'hidden', timeout: TIMEOUTS.otp });
+    console.log('Logged in. Current URL:', this.page.url());
   }
 }
 

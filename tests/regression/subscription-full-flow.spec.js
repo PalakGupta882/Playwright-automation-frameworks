@@ -1,5 +1,9 @@
 const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL, URLS } = require('../data/constants');
+const { assertFreshSession } = require('../utils/session');
+
+// Subscribe only goes straight to Review Order while logged in
+test.beforeAll(() => assertFreshSession());
 
 test('subscribe to iPhone 17 Pro Max through to review order', async ({ page, productPage, reviewOrderPage }) => {
   test.setTimeout(60000);
