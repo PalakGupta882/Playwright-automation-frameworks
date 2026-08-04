@@ -22,7 +22,13 @@ test('one-time login and save session', async ({ page }) => {
         'Set it once:  setx BYTEPE_MOBILE "<your number>"   (then open a new terminal)'
       );
     }
-    await home.login(myMobileNumber);
+
+    // Test accounts have a fixed OTP. Set BYTEPE_OTP and this runs unattended;
+    // leave it unset and the run waits for you to type the code in the browser.
+    const otp = process.env.BYTEPE_OTP;
+    console.log(otp ? 'Using BYTEPE_OTP — no manual entry needed.' : 'No BYTEPE_OTP set — manual OTP entry.');
+
+    await home.login(myMobileNumber, otp);
   }
 
   await page.context().storageState({ path: 'auth.json' });
