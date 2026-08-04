@@ -1,0 +1,19 @@
+{
+  "scannedProducts": 173,
+  "productsWithVideo": 0,
+  "unreachable": [
+    {
+      "name": "Tufton 80 Watt Wireless Bluetooth Portable Speaker",
+      "slug": "tufton-bluetooth-portable-speaker",
+      "bpid": "MARAUAUDHIAF7F",
+      "status": 404
+    },
+    {
+      "name": "Mode USB-C wired earphones",
+      "slug": "usb-c-wired-earphones",
+      "bpid": "MARACMOB5G7UDI",
+      "status": 404
+    }
+  ],
+  "products": []
+}
