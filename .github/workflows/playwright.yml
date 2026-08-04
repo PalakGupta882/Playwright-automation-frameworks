@@ -26,8 +26,18 @@ jobs:
       - name: Create empty session (public tests run logged-out)
         run: echo '{"cookies":[],"origins":[]}' > auth.json
 
+      # Only specs that pass logged out belong here — CI writes an empty
+      # session above, so anything login-gated would fail on a real problem
+      # it cannot see.
       - name: Run public tests
-        run: npx playwright test regression/static-pages.spec.js regression/data-driven-products.spec.js regression/product-search.spec.js regression/product-pricing.spec.js --project=chromium
+        run: |
+          npx playwright test \
+            regression/static-pages.spec.js \
+            regression/data-driven-products.spec.js \
+            regression/product-search.spec.js \
+            regression/product-pricing.spec.js \
+            regression/cardless-emi.spec.js \
+            --project=chromium
 
       - name: Upload HTML report
         if: always()
