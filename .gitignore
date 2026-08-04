@@ -9,3 +9,6 @@ node_modules/
 
 # Your saved login session — NEVER commit this
 auth.json
+
+# Personal Claude Code instructions
+CLAUDE.local.md
