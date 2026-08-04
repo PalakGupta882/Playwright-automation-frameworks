@@ -62,21 +62,69 @@ class HomePage extends BasePage {
     return this.page.title();
   }
 
-  async login(mobileNumber) {
+  // Pass an otp to log in unattended; omit it to type the code in the browser.
+  async login(mobileNumber, otp) {
     await this.goto();                                                  // ensure the homepage is loaded
     await this.loginLink.waitFor({ state: 'visible', timeout: 20000 }); // wait for the Login button to render
-    await this.loginLink.click();
+
+    // A first click can land while an overlay is still closing, which resolves
+    // the button but never delivers the click. Retry once before giving up.
+    await this.loginLink.click({ timeout: 15000 }).catch(async () => {
+      await this.page.keyboard.press('Escape').catch(() => {});
+      await this.loginLink.click({ force: true, timeout: 15000 });
+    });
+
     await this.page.waitForTimeout(1000);
     const mobileInput = this.page.getByRole('textbox', { name: 'Mobile Number*' });
     await mobileInput.fill(mobileNumber);
     await this.page.getByRole('button', { name: 'Continue' }).click();
 
-    // Wait for the login to actually take rather than pausing for the Inspector:
-    // the header "Login" control disappearing is the signal, so a plain --headed
-    // run is enough — type the OTP in the browser and this continues on its own
-    console.log(`OTP sent. Type it in the browser — waiting up to ${TIMEOUTS.otp / 1000}s.`);
+    if (otp) {
+      await this.enterOtp(otp);
+    } else {
+      // The header "Login" control disappearing is the signal that login took,
+      // so a plain --headed run is enough — no Inspector pause needed.
+      console.log(`OTP sent. Type it in the browser — waiting up to ${TIMEOUTS.otp / 1000}s.`);
+    }
+
     await this.loginLink.waitFor({ state: 'hidden', timeout: TIMEOUTS.otp });
     console.log('Logged in. Current URL:', this.page.url());
+  }
+
+  // OTP screens are either one field or one box per digit. Focusing the first
+  // field and typing covers both, since per-digit UIs auto-advance.
+  async enterOtp(otp) {
+    const candidates = [
+      ['role=textbox[name=/otp/i]', this.page.getByRole('textbox', { name: /otp/i })],
+      ['placeholder=/otp/i', this.page.getByPlaceholder(/otp/i)],
+      ['one-time-code', this.page.locator('input[autocomplete="one-time-code"]')],
+      ['input[type=tel]', this.page.locator('input[type="tel"]')],
+    ];
+
+    for (const [label, locator] of candidates) {
+      const field = locator.first();
+      // waitFor, not isVisible — isVisible() returns immediately and does not
+      // wait, so it would miss an OTP field that renders a moment later.
+      const visible = await field
+        .waitFor({ state: 'visible', timeout: 8000 })
+        .then(() => true)
+        .catch(() => false);
+      if (!visible) continue;
+
+      console.log(`Entering OTP via ${label}`);
+      await field.click();
+      await this.page.keyboard.type(otp, { delay: 120 });
+
+      const submit = this.page
+        .getByRole('button', { name: /verify|submit|confirm|continue/i })
+        .first();
+      if (await submit.isVisible().catch(() => false)) {
+        await submit.click().catch(() => {});
+      }
+      return;
+    }
+
+    console.log('No OTP field matched — type the code in the browser instead.');
   }
 }
 
