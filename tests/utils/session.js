@@ -8,7 +8,7 @@ const SITE_DOMAIN = 'www.bytepe.com';
 function sessionError(reason) {
   return (
     `Saved login session is unusable — ${reason}.\n` +
-    'Refresh it with:  npx playwright test tests/auth-setup.spec.js --headed'
+    'Refresh it with:  npm run auth   (headed; needs BYTEPE_MOBILE set and a human to type the OTP)'
   );
 }
 
