@@ -9,7 +9,8 @@
     "regression": "playwright test regression/ --project=chromium",
     "discover": "playwright test scripts/discover-products.spec.js --project=chromium",
     "auth": "playwright test auth-setup.spec.js --project=chromium --headed",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,8 @@
   "type": "commonjs",
   "devDependencies": {
     "@playwright/test": "^1.61.1",
-    "@types/node": "^26.1.1"
+    "@types/node": "^26.1.1",
+    "eslint": "^10.8.0",
+    "eslint-plugin-playwright": "^2.11.0"
   }
 }
