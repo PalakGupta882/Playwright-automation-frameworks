@@ -1,6 +1,24 @@
 const { test } = require('@playwright/test');
 const { HomePage } = require('./pages/homepage');
 
+const SITE = 'https://www.bytepe.com';
+
+// The app renders its logged-in header off refresh_token, which outlives
+// access_token by days. So "the page says I am logged in" does NOT mean an
+// access_token cookie exists yet — and access_token is the one every gated spec
+// checks via assertFreshSession(). Saving in that window writes an auth.json
+// that looks fine and fails every login-gated spec with "no access_token
+// cookie". Poll for it instead of assuming.
+async function waitForAccessToken(context, timeoutMs = 20000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const cookies = await context.cookies(SITE);
+    if (cookies.some(c => c.name === 'access_token')) return true;
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  return false;
+}
+
 test('one-time login and save session', async ({ page }) => {
   test.setTimeout(180000);
 
@@ -31,7 +49,22 @@ test('one-time login and save session', async ({ page }) => {
     .then(() => true)
     .catch(() => false);
 
-  if (isAlreadyLoggedIn) {
+  // Reloading prods the app into exchanging refresh_token for a new
+  // access_token. If it still has not appeared, the fast path is not usable and
+  // we fall through to a real login rather than saving a session the guard
+  // will reject.
+  let useSavedSession = isAlreadyLoggedIn;
+  if (useSavedSession) {
+    if (!(await waitForAccessToken(page.context(), 5000))) {
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      useSavedSession = await waitForAccessToken(page.context(), 20000);
+      if (!useSavedSession) {
+        console.log('Logged-in UI but no access_token cookie — falling back to a full login.');
+      }
+    }
+  }
+
+  if (useSavedSession) {
     console.log('Already logged in — session still valid, saving as-is.');
   } else {
     // Kept out of the repo on purpose — this file is tracked and public
@@ -49,6 +82,17 @@ test('one-time login and save session', async ({ page }) => {
     console.log(otp ? 'Using BYTEPE_OTP — no manual entry needed.' : 'No BYTEPE_OTP set — manual OTP entry.');
 
     await home.login(myMobileNumber, otp);
+  }
+
+  // Last line of defence: never write an auth.json that assertFreshSession()
+  // would reject. Failing here is far cheaper than every gated spec failing
+  // later with what looks like a broken selector.
+  if (!(await waitForAccessToken(page.context(), 20000))) {
+    throw new Error(
+      'Refusing to save: the browser has no access_token cookie for www.bytepe.com,\n' +
+      'so every login-gated spec would fail with "no access_token cookie".\n' +
+      'Re-run npm run auth and complete the OTP login.'
+    );
   }
 
   await page.context().storageState({ path: 'auth.json' });
