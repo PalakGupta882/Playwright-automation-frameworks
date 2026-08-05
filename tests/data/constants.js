@@ -7,6 +7,10 @@ module.exports = {
     products: '/all-products',
     aboutUs: '/about-us',
     cart: '/cart',
+    // Review Order — the last page before an order is minted. Both the
+    // subscription (Subscribe) and the upfront (Buy Now) purchase paths land
+    // here; the order id is created by Continue on this page, not by arriving.
+    review: '/review',
     // Where the subscription flow lands after Continue on Review Order. This is
     // the last page before the payment gateway — the E2E flow stops here.
     orderSummary: '/payment-summary',
