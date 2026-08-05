@@ -24,6 +24,7 @@
 
 const { test, expect } = require('../fixtures/pageFixtures');
 const { pdpApiPath, variantPricingPath, cardlessEmiFrom } = require('../data/emiApi');
+const { getWithRetry } = require('../utils/apiRetry');
 const baseline = require('../data/cardless-emi.json');
 
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -37,12 +38,12 @@ test.describe('Subscription cardless EMI pricing', () => {
 
     const sample = EXPECTED[0];
     const pdp = await (
-      await request.get(pdpApiPath(sample.slug, sample.bpid), {
+      await getWithRetry(request, pdpApiPath(sample.slug, sample.bpid), {
         headers: { accept: 'application/json' },
       })
     ).json();
 
-    const res = await request.get(variantPricingPath(sample.slug, pdp.data.variant.id), {
+    const res = await getWithRetry(request, variantPricingPath(sample.slug, pdp.data.variant.id), {
       headers: { accept: 'application/json' },
     });
     expect(res.status()).toBe(200);
@@ -60,7 +61,7 @@ test.describe('Subscription cardless EMI pricing', () => {
     test(`${product.name} still shows a pre-priced cardless EMI plan`, async ({ request }) => {
       test.setTimeout(60000);
 
-      const pdpRes = await request.get(pdpApiPath(product.slug, product.bpid), {
+      const pdpRes = await getWithRetry(request, pdpApiPath(product.slug, product.bpid), {
         headers: { accept: 'application/json' },
         failOnStatusCode: false,
       });
@@ -75,7 +76,8 @@ test.describe('Subscription cardless EMI pricing', () => {
         `${product.name} is no longer sold on subscription, so cardless EMI is no longer offered`
       ).toBe('BOTH');
 
-      const priceRes = await request.get(
+      const priceRes = await getWithRetry(
+        request,
         variantPricingPath(product.slug, pdp.data.variant.id),
         { headers: { accept: 'application/json' }, failOnStatusCode: false }
       );

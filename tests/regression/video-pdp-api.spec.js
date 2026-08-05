@@ -13,6 +13,7 @@ const {
   videosFromPdpPayload,
   GCS_BUCKET,
 } = require('../data/videoFeature');
+const { getWithRetry } = require('../utils/apiRetry');
 const discovered = require('../data/video-products.json');
 
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -31,7 +32,7 @@ test.describe('PDP video surface (public API)', () => {
   test('PDP payload exposes a videos array on the product', async ({ request }) => {
     test.setTimeout(60000);
 
-    const res = await request.get(pdpApiPath(CONTRACT_PRODUCT.slug, CONTRACT_PRODUCT.bpid), {
+    const res = await getWithRetry(request, pdpApiPath(CONTRACT_PRODUCT.slug, CONTRACT_PRODUCT.bpid), {
       headers: { accept: 'application/json' },
     });
     expect(res.status()).toBe(200);
@@ -49,7 +50,7 @@ test.describe('PDP video surface (public API)', () => {
     test.skip(!videoProduct, NO_VIDEO_REASON);
     test.setTimeout(60000);
 
-    const res = await request.get(pdpApiPath(videoProduct.slug, videoProduct.bpid), {
+    const res = await getWithRetry(request, pdpApiPath(videoProduct.slug, videoProduct.bpid), {
       headers: { accept: 'application/json' },
     });
     expect(res.status()).toBe(200);
@@ -70,7 +71,7 @@ test.describe('PDP video surface (public API)', () => {
     test.skip(!videoProduct, NO_VIDEO_REASON);
     test.setTimeout(60000);
 
-    const res = await request.get(pdpApiPath(videoProduct.slug, videoProduct.bpid), {
+    const res = await getWithRetry(request, pdpApiPath(videoProduct.slug, videoProduct.bpid), {
       headers: { accept: 'application/json' },
     });
     const videos = videosFromPdpPayload(await res.json());
@@ -89,7 +90,7 @@ test.describe('PDP video surface (public API)', () => {
     test.skip(!videoProduct, NO_VIDEO_REASON);
     test.setTimeout(60000);
 
-    const res = await request.get(pdpApiPath(videoProduct.slug, videoProduct.bpid), {
+    const res = await getWithRetry(request, pdpApiPath(videoProduct.slug, videoProduct.bpid), {
       headers: { accept: 'application/json' },
     });
     const [video] = videosFromPdpPayload(await res.json());
@@ -105,7 +106,7 @@ test.describe('PDP video surface (public API)', () => {
     }
 
     // The manifest must actually be fetchable, or the player has nothing to load.
-    const manifest = await request.get(video.videoUrl, { failOnStatusCode: false });
+    const manifest = await getWithRetry(request, video.videoUrl, { failOnStatusCode: false });
     expect(manifest.status(), `manifest not retrievable at ${video.videoUrl}`).toBe(200);
   });
 });
