@@ -1,6 +1,23 @@
-﻿class ProductPage {
+﻿const { TIMEOUTS } = require('../data/constants');
+
+class ProductPage {
   constructor(page) {
     this.page = page;
+
+    // The PDP renders 14 nodes matching /^₹[\d,]+$/ — the struck-through MRP,
+    // EMI instalments, total discount, assured buyback and exchange values are
+    // all in there. The one a shopper reads as "the price" is the first in DOM
+    // order: 20px, weight 600, no line-through. Verified against the API — it
+    // equals data.upfront.price from /api/apps/variant-pricing for the same
+    // variant, while the next match is the strike-through MRP.
+    //
+    // .first() is DOM-order dependent, which is not ideal, but the PDP offers
+    // no heading, test id or stable class to anchor to (the plan boxes are MUI
+    // with hashed class names). If the layout reorders, this is where it breaks
+    // — and getPrice() throws with the text it actually found, rather than
+    // returning a wrong number quietly.
+    this.priceText = page.getByText(/^₹[\d,]+$/).first();
+
     this.subscribeButton = page.getByRole('button', { name: 'Subscribe' });
     this.mobileNumberInput = page.getByRole('textbox', { name: 'Mobile Number*' });
     this.pincodeInput = page.getByRole('textbox', { name: 'Enter Pincode' }).first();
@@ -24,6 +41,23 @@
     console.log('OTP sent. Enter it manually in the browser, then click Resume.');
     await this.page.pause();
     console.log('Resumed. Current URL:', this.page.url());
+  }
+
+  // Reads the displayed price as a number: "₹32,299" -> 32299.
+  //
+  // Throws rather than returning NaN or 0 on a page that never rendered a
+  // price. A helper that quietly returns 0 would make a comparison like
+  // `expect(a).toBe(b)` pass with 0 === 0 on two broken pages.
+  async getPrice() {
+    await this.priceText.waitFor({ state: 'visible', timeout: TIMEOUTS.nav });
+
+    const raw = (await this.priceText.innerText()).trim();
+    const value = Number(raw.replace(/[₹,\s]/g, ''));
+
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new Error(`expected a price like "₹32,299" but read ${JSON.stringify(raw)}`);
+    }
+    return value;
   }
 
   // Reusable: enter ANY pincode and click Check — recall it anywhere
