@@ -1,34 +1,11 @@
 {
   "rule": "Offered = the pre-priced subscription cardless plan: prodPaymentMode===\"BOTH\" AND nbfc.emi_amount>0. NOT a measure of cardless EMI availability — see CLAUDE.md.",
   "generatedFrom": "by-slug prodPaymentMode + variant-pricing data.nbfc",
-  "scannedProducts": 185,
+  "scannedProducts": 186,
   "unreachable": [],
-  "offeredCount": 28,
+  "offeredCount": 29,
   "notOfferedCount": 157,
   "anomalies": [
-    {
-      "name": "Galaxy Watch9 (44mm, Bluetooth)",
-      "slug": "galaxy-watch9-44mm-bluetooth",
-      "bpid": "SAMSMSMA1Q44DG",
-      "isMaster": true,
-      "brand": "Samsung",
-      "category": "Smartwatch",
-      "mop": 40999,
-      "prodPaymentMode": "UPFRONT",
-      "cardlessEmi": {
-        "monthly": 1925,
-        "tenureMonths": 24,
-        "downpayment": 1925,
-        "interest": 10464,
-        "total": 37661
-      },
-      "creditCardEmi": {
-        "monthly": 1844,
-        "total": 37661
-      },
-      "cardEmiTenures": 6,
-      "cardEmiTypes": "NCEMI/LCEMI"
-    },
     {
       "name": "Galaxy Watch9 (40mm, Bluetooth)",
       "slug": "galaxy-watch9-40mm-bluetooth",
@@ -48,6 +25,29 @@
       "creditCardEmi": {
         "monthly": 1709,
         "total": 34905
+      },
+      "cardEmiTenures": 6,
+      "cardEmiTypes": "NCEMI/LCEMI"
+    },
+    {
+      "name": "Galaxy Watch9 (44mm, LTE)",
+      "slug": "galaxy-watch9-44mm-lte",
+      "bpid": "SAMSMSMAHOR1IY",
+      "isMaster": true,
+      "brand": "Samsung",
+      "category": "Smartwatch",
+      "mop": 44999,
+      "prodPaymentMode": "UPFRONT",
+      "cardlessEmi": {
+        "monthly": 2113,
+        "tenureMonths": 24,
+        "downpayment": 2113,
+        "interest": 11494,
+        "total": 41331
+      },
+      "creditCardEmi": {
+        "monthly": 2024,
+        "total": 41331
       },
       "cardEmiTenures": 6,
       "cardEmiTypes": "NCEMI/LCEMI"
@@ -76,24 +76,24 @@
       "cardEmiTypes": "NCEMI/LCEMI"
     },
     {
-      "name": "Galaxy Watch9 (44mm, LTE)",
-      "slug": "galaxy-watch9-44mm-lte",
-      "bpid": "SAMSMSMAHOR1IY",
+      "name": "Galaxy Watch9 (44mm, Bluetooth)",
+      "slug": "galaxy-watch9-44mm-bluetooth",
+      "bpid": "SAMSMSMA1Q44DG",
       "isMaster": true,
       "brand": "Samsung",
       "category": "Smartwatch",
-      "mop": 44999,
+      "mop": 40999,
       "prodPaymentMode": "UPFRONT",
       "cardlessEmi": {
-        "monthly": 2113,
+        "monthly": 1925,
         "tenureMonths": 24,
-        "downpayment": 2113,
-        "interest": 11494,
-        "total": 41331
+        "downpayment": 1925,
+        "interest": 10464,
+        "total": 37661
       },
       "creditCardEmi": {
-        "monthly": 2024,
-        "total": 41331
+        "monthly": 1844,
+        "total": 37661
       },
       "cardEmiTenures": 6,
       "cardEmiTypes": "NCEMI/LCEMI"
@@ -196,7 +196,7 @@
       {
         "name": "Galaxy Z Fold8 5G",
         "slug": "galaxy-z-fold8-5g",
-        "bpid": "SAMSAMOBJFEPAB",
+        "bpid": "SAMSAMOBQAAFGN",
         "isMaster": true,
         "brand": "Samsung",
         "category": "SAMOB",
@@ -580,6 +580,29 @@
         "creditCardEmi": {
           "monthly": 2801,
           "total": 57199
+        },
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/LCEMI"
+      },
+      {
+        "name": "iPhone 15",
+        "slug": "iphone-15",
+        "bpid": "APPSMMOBGQ4731",
+        "isMaster": true,
+        "brand": "Apple",
+        "category": "Smartphone",
+        "mop": 59900,
+        "prodPaymentMode": "BOTH",
+        "cardlessEmi": {
+          "monthly": 2933,
+          "tenureMonths": 24,
+          "downpayment": 2933,
+          "interest": 15942,
+          "total": 57383
+        },
+        "creditCardEmi": {
+          "monthly": 2933,
+          "total": 59900
         },
         "cardEmiTenures": 6,
         "cardEmiTypes": "NCEMI/LCEMI"
@@ -1464,20 +1487,6 @@
         "cardEmiTypes": "NCEMI/LCEMI"
       },
       {
-        "name": "Airstrait 2-in-1 Hair Styler (No Heat Damage Technology)",
-        "slug": "dyson-airstrait-2-in-1-hair-styler-no-heat-damage-technology",
-        "bpid": "DYSPEPERRG9PGZ",
-        "isMaster": true,
-        "brand": "Dyson",
-        "category": "Personal care",
-        "mop": 34900,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
         "name": "Airstrait 2-in-1 Hair Styler",
         "slug": "dyson-airstrait-2-in-1-hair-styler",
         "bpid": "DYSPEPERBB4RDT",
@@ -1492,9 +1501,23 @@
         "cardEmiTypes": "NCEMI/LCEMI"
       },
       {
-        "name": "Tufton 80 Watt Wireless Bluetooth Portable Speaker",
-        "slug": "tufton-80-watt-wireless-bluetooth-portable-speaker",
-        "bpid": "MARAUAUDHIAF7F",
+        "name": "Airstrait 2-in-1 Hair Styler (No Heat Damage Technology)",
+        "slug": "dyson-airstrait-2-in-1-hair-styler-no-heat-damage-technology",
+        "bpid": "DYSPEPERRG9PGZ",
+        "isMaster": true,
+        "brand": "Dyson",
+        "category": "Personal care",
+        "mop": 34900,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/LCEMI"
+      },
+      {
+        "name": "Stanmore III 80W Bluetooth Speaker",
+        "slug": "stanmore-iii-80w-bluetooth-speaker",
+        "bpid": "MARAUAUD959C58",
         "isMaster": true,
         "brand": "Marshall",
         "category": "Audio",
@@ -1506,9 +1529,9 @@
         "cardEmiTypes": "NCEMI/LCEMI"
       },
       {
-        "name": "Stanmore III 80W Bluetooth Speaker",
-        "slug": "stanmore-iii-80w-bluetooth-speaker",
-        "bpid": "MARAUAUD959C58",
+        "name": "Tufton 80 Watt Wireless Bluetooth Portable Speaker",
+        "slug": "tufton-80-watt-wireless-bluetooth-portable-speaker",
+        "bpid": "MARAUAUDHIAF7F",
         "isMaster": true,
         "brand": "Marshall",
         "category": "Audio",
@@ -2066,9 +2089,9 @@
         "cardEmiTypes": "NCEMI/LCEMI"
       },
       {
-        "name": "Apple Pencil Pro",
-        "slug": "apple-pencil-pro",
-        "bpid": "APPACACCMPT84E",
+        "name": "Apple Pencil (2nd Generation)",
+        "slug": "apple-pencil-2nd-generation",
+        "bpid": "APPACACCD9Y3WA",
         "isMaster": true,
         "brand": "Apple",
         "category": "Accessory",
@@ -2080,9 +2103,9 @@
         "cardEmiTypes": "NCEMI/LCEMI"
       },
       {
-        "name": "Apple Pencil (2nd Generation)",
-        "slug": "apple-pencil-2nd-generation",
-        "bpid": "APPACACCD9Y3WA",
+        "name": "Apple Pencil Pro",
+        "slug": "apple-pencil-pro",
+        "bpid": "APPACACCMPT84E",
         "isMaster": true,
         "brand": "Apple",
         "category": "Accessory",
@@ -2304,9 +2327,9 @@
         "cardEmiTypes": "NCEMI/LCEMI"
       },
       {
-        "name": "Transit Cabin Overnighter Luggage Trolley Bag - 45cm(44L)",
-        "slug": "transit-cabin-overnighter-luggage-trolley-bag-45cm44l",
-        "bpid": "MOKLULUGB04D0G",
+        "name": "Transit Check-in Luggage Trolley Bag - 64cm (65L)",
+        "slug": "transit-check-in-luggage-trolley-bag-64cm-65l",
+        "bpid": "MOKLULUG7LF9MH",
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
@@ -2318,9 +2341,9 @@
         "cardEmiTypes": "NCEMI/LCEMI"
       },
       {
-        "name": "Transit Check-in Luggage Trolley Bag - 64cm (65L)",
-        "slug": "transit-check-in-luggage-trolley-bag-64cm-65l",
-        "bpid": "MOKLULUG7LF9MH",
+        "name": "Transit Cabin Overnighter Luggage Trolley Bag - 45cm(44L)",
+        "slug": "transit-cabin-overnighter-luggage-trolley-bag-45cm44l",
+        "bpid": "MOKLULUGB04D0G",
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
@@ -2696,12 +2719,12 @@
         "cardEmiTypes": "NCEMI/LCEMI"
       },
       {
-        "name": "CMF by Nothing 65 W GaN 3 A Multi-pin Wall Charger for Mobile",
-        "slug": "cmf-by-nothing-65-w-gan-3-a-multi-pin-wall-charger-for-mobile",
-        "bpid": "NOTACACCGNYSGZ",
+        "name": "CMF BY NOTHING Buds Pro",
+        "slug": "cmf-by-nothing-buds-pro",
+        "bpid": "NOTWIWIRN4D7OB",
         "isMaster": true,
         "brand": "Nothing",
-        "category": "Accessory",
+        "category": "Wireless audio",
         "mop": 2899,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
@@ -2710,12 +2733,12 @@
         "cardEmiTypes": "NCEMI/LCEMI"
       },
       {
-        "name": "CMF BY NOTHING Buds Pro",
-        "slug": "cmf-by-nothing-buds-pro",
-        "bpid": "NOTWIWIRN4D7OB",
+        "name": "CMF by Nothing 65 W GaN 3 A Multi-pin Wall Charger for Mobile",
+        "slug": "cmf-by-nothing-65-w-gan-3-a-multi-pin-wall-charger-for-mobile",
+        "bpid": "NOTACACCGNYSGZ",
         "isMaster": true,
         "brand": "Nothing",
-        "category": "Wireless audio",
+        "category": "Accessory",
         "mop": 2899,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
