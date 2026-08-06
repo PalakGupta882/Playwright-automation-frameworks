@@ -1,5 +1,5 @@
 const { BasePage } = require('./basePage');
-const { TIMEOUTS } = require('../data/constants');
+const { BASE_URL, TIMEOUTS } = require('../data/constants');
 
 class HomePage extends BasePage {
   constructor(page) {
@@ -94,6 +94,36 @@ class HomePage extends BasePage {
     // supplied and did not work, that is a fault to report in seconds.
     await this.waitForLoggedIn({ timeout: otp ? TIMEOUTS.otpAuto : TIMEOUTS.otp });
     console.log('Logged in. Current URL:', this.page.url());
+  }
+
+  // Signs out, so the login form becomes reachable again.
+  //
+  // Needed because the app keeps rendering a logged-in header off refresh_token
+  // after access_token has gone. In that state clicking Login navigates to
+  // /my-profile instead of opening the dialog, and the whole login path dies
+  // waiting for a mobile-number field that will never render.
+  async logout() {
+    await this.page.goto(`${BASE_URL}/my-profile`, { waitUntil: 'domcontentloaded' });
+
+    const logout = this.page.getByText(/^logout$/i).filter({ visible: true }).first();
+    const found = await logout
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.nav })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!found) return false;
+
+    await logout.click({ timeout: TIMEOUTS.action });
+    await this.page.waitForTimeout(2000);
+
+    // Confirm from the homepage rather than wherever logout happened to land —
+    // the post-logout page is not necessarily one that renders the header's
+    // Login control.
+    await this.goto();
+    return this.loginLink
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.login })
+      .then(() => true)
+      .catch(() => false);
   }
 
   async openLoginDialog() {
