@@ -18,6 +18,24 @@ module.exports = {
   MESSAGES: {
     invalidCoupon: 'Invalid or inactive coupon',
   },
+  // Address used by regression/address-management.spec.js.
+  //
+  // Obviously synthetic on purpose. The saved-addresses UI has no delete
+  // control, so anything created here stays on the account permanently — it
+  // needs to be recognisable as test data by a human looking at the account,
+  // and matchable by the spec so it is only ever created once.
+  //
+  // AREA_STREET is the match key. Do not reuse it for anything else.
+  TEST_ADDRESS: {
+    fullName: 'QA Automation',
+    flatNo: 'Apt 4B',
+    areaStreet: '123 Test Street',
+    landmark: 'Automation Landmark',
+    pincode: '110001',
+    city: 'New Delhi',
+    state: 'Delhi',
+    addressType: 'Other',
+  },
   TIMEOUTS: {
     nav: 15000,
     // A human reading an SMS and typing it. Only used when BYTEPE_OTP is unset.
