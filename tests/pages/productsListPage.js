@@ -44,13 +44,23 @@ class ProductsListPage {
   //
   // fill('') first: the box keeps the previous term otherwise, and the results
   // would be for the concatenation of the two.
-  async search(term) {
-    await this.searchBox.click();
-    await this.searchBox.fill('');
-    await this.searchBox.fill(term);
-    // The dropdown is debounced; there is no request to wait on from here.
-    await this.page.waitForTimeout(2500);
-    return this.suggestions.count();
+  async search(term, { retries = 2 } = {}) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      await this.searchBox.click();
+      await this.searchBox.fill('');
+      await this.searchBox.fill(term);
+      // The dropdown is debounced; there is no request to wait on from here.
+      await this.page.waitForTimeout(2500);
+
+      const count = await this.suggestions.count();
+      // A term that should match can come back empty when the search endpoint
+      // is rate-limited by the rest of the suite. Retrying distinguishes "no
+      // matches" from "the request was refused"; a genuinely unmatched term
+      // still returns 0 after every attempt, just a little slower.
+      if (count > 0 || attempt === retries) return count;
+      await this.page.waitForTimeout(2000 * (attempt + 1));
+    }
+    return 0;
   }
 
   async selectAutocompleteSuggestion(suggestionText) {
