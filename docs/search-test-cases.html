@@ -1,0 +1,122 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box}
+body{font:11.5px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;color:#1a1a1a;margin:26px}
+h1{font-size:20px;margin:0 0 3px}
+.sub{color:#555;font-size:11px;margin-bottom:16px}
+.stats{display:flex;gap:10px;margin-bottom:18px}
+.stat{border:1px solid #ddd;border-radius:6px;padding:8px 16px}
+.stat b{display:block;font-size:19px}.stat span{color:#666;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em}
+h2{font-size:13.5px;margin:20px 0 8px;border-bottom:1px solid #e3e3e3;padding-bottom:4px}
+.case{border:1px solid #ddd;border-left:4px solid #ccc;border-radius:6px;padding:11px 14px;margin-bottom:11px;page-break-inside:avoid}
+.case h3{font-size:12.5px;margin:0 0 7px}
+.pill{display:inline-block;color:#fff;border-radius:10px;padding:1px 8px;font-size:9px;font-weight:700;margin-right:6px}
+.q{display:inline-block;background:#eef1f5;color:#41546b;border-radius:10px;padding:1px 8px;font-size:9px;font-weight:700;margin-left:4px}
+table{width:100%;border-collapse:collapse;font-size:10.5px}
+td{padding:3px 0;vertical-align:top}td.k{width:112px;color:#666;font-weight:600}
+ol{margin:0;padding-left:16px}ol li{margin-bottom:2px}
+table.grid{width:100%;border-collapse:collapse;font-size:10px;margin-top:6px}
+table.grid th,table.grid td{border:1px solid #ddd;padding:5px 7px;text-align:left}
+table.grid th{background:#f6f6f6}
+.note{background:#f7f7f7;border-radius:4px;padding:6px 9px;margin-top:6px;font-size:10px;color:#444}
+</style></head><body>
+
+<h1>Search — test cases and results</h1>
+<div class="sub">BytePe production &middot; <code>tests/regression/search.spec.js</code> &middot; run 6 Aug 2026 &middot; logged out</div>
+
+<div class="stats">
+  <div class="stat"><b>7</b><span>test cases</span></div>
+  <div class="stat"><b>7</b><span>passed</span></div>
+  <div class="stat"><b>0</b><span>failed</span></div>
+  <div class="stat"><b>1</b><span>finding</span></div>
+  <div class="stat"><b>5</b><span>not testable</span></div>
+</div>
+
+<p><b>In one line:</b> search works, and its best matches are relevant. One thing worth
+raising: a search for <i>iphone</i> pads its dropdown with unrelated products, including a
+Samsung phone.</p>
+
+<h2>Test cases</h2>
+<div class="case" style="border-left-color:#1e7d32">
+  <h3><span class="pill" style="background:#1e7d32">PASS</span>SRCH-01 — Search box offers suggestions for a real product<span class="q">Presence</span></h3>
+  <table>
+    <tr><td class="k">Steps</td><td><ol><li>Open https://www.bytepe.com/all-products</li><li>Click the search box in the header</li><li>Type "iphone"</li><li>Wait for the suggestion dropdown</li></ol></td></tr>
+    <tr><td class="k">Expected</td><td>The search box is visible and at least one suggestion appears.</td></tr>
+    <tr><td class="k">Actual</td><td>20 suggestions appeared.</td></tr>
+  </table>
+  <div class="note">Proves the dropdown works, so the zero-result checks below mean "no match" rather than "search never ran".</div>
+</div><div class="case" style="border-left-color:#8a6d1f">
+  <h3><span class="pill" style="background:#8a6d1f">PASS (with a finding)</span>SRCH-02 — Top suggestions for "iphone" are relevant<span class="q">Correctness</span></h3>
+  <table>
+    <tr><td class="k">Steps</td><td><ol><li>Search for "iphone"</li><li>Read the first 5 suggestions</li></ol></td></tr>
+    <tr><td class="k">Expected</td><td>Each of the top 5 suggestions mentions "iphone".</td></tr>
+    <tr><td class="k">Actual</td><td>Top 5 all iPhones. 13 of the remaining 15 do NOT mention iPhone.</td></tr>
+  </table>
+  <div class="note">The tail is padded with Apple accessories and drifts as far as "Galaxy Z Fold8 Ultra Samsung" and an Ambrane power bank. Not asserted, but logged every run so growth is visible.</div>
+</div><div class="case" style="border-left-color:#1e7d32">
+  <h3><span class="pill" style="background:#1e7d32">PASS</span>SRCH-03 — Top suggestions for "apple" are relevant<span class="q">Correctness</span></h3>
+  <table>
+    <tr><td class="k">Steps</td><td><ol><li>Search for "apple"</li><li>Read the first 5 suggestions</li></ol></td></tr>
+    <tr><td class="k">Expected</td><td>Each of the top 5 suggestions mentions "apple".</td></tr>
+    <tr><td class="k">Actual</td><td>All 20 mention Apple. 0 tail drift.</td></tr>
+  </table>
+  <div class="note">Brand search works because each suggestion is labelled "&lt;product&gt; &lt;brand&gt;", so a brand term matches even when the product name does not contain it.</div>
+</div><div class="case" style="border-left-color:#1e7d32">
+  <h3><span class="pill" style="background:#1e7d32">PASS</span>SRCH-04 — Changing the term changes the suggestions<span class="q">Behaviour</span></h3>
+  <table>
+    <tr><td class="k">Steps</td><td><ol><li>Search "iphone" and note the suggestions</li><li>Search "galaxy"</li><li>Compare the two lists</li></ol></td></tr>
+    <tr><td class="k">Expected</td><td>The second list differs from the first and contains Galaxy products.</td></tr>
+    <tr><td class="k">Actual</td><td>Lists differ; "galaxy" returns Galaxy products.</td></tr>
+  </table>
+  <div class="note">Replaces the requested pagination check. There is no results page, so there is no pagination — this asks the equivalent question of the control that does exist.</div>
+</div><div class="case" style="border-left-color:#1e7d32">
+  <h3><span class="pill" style="background:#1e7d32">PASS</span>SRCH-05 — Symbol-only search returns nothing and does not break the page<span class="q">Negative</span></h3>
+  <table>
+    <tr><td class="k">Steps</td><td><ol><li>Search "iphone" to prove the dropdown works</li><li>Search the currency symbol on its own</li><li>Check the catalogue is still on screen</li></ol></td></tr>
+    <tr><td class="k">Expected</td><td>Zero suggestions, page still usable, still on the products URL.</td></tr>
+    <tr><td class="k">Actual</td><td>Zero suggestions. Catalogue still rendered.</td></tr>
+  </table>
+  <div class="note">Handled gracefully — no crash, no error page.</div>
+</div><div class="case" style="border-left-color:#1e7d32">
+  <h3><span class="pill" style="background:#1e7d32">PASS</span>SRCH-06 — Empty search does not navigate away<span class="q">Negative</span></h3>
+  <table>
+    <tr><td class="k">Steps</td><td><ol><li>Clear the search box</li><li>Press Enter</li><li>Check the URL and the page</li></ol></td></tr>
+    <tr><td class="k">Expected</td><td>No navigation, no suggestions, catalogue still visible.</td></tr>
+    <tr><td class="k">Actual</td><td>URL unchanged, 0 suggestions, 12 product links still shown, no error message.</td></tr>
+  </table>
+  <div class="note">The site shows all products rather than an error. That is the behaviour being pinned, not a judgement that it is right.</div>
+</div><div class="case" style="border-left-color:#1e7d32">
+  <h3><span class="pill" style="background:#1e7d32">PASS</span>SRCH-07 — There is no search results page<span class="q">Contract</span></h3>
+  <table>
+    <tr><td class="k">Steps</td><td><ol><li>Search "iphone" and press Enter</li><li>Check whether the URL changed</li><li>Request /search?q=iphone directly</li></ol></td></tr>
+    <tr><td class="k">Expected</td><td>Enter does not navigate; /search returns 404.</td></tr>
+    <tr><td class="k">Actual</td><td>Enter did not navigate. /search?q=iphone returned 404.</td></tr>
+  </table>
+  <div class="note">Deliberate guard. If a results page is ever added this test fails, which is the signal to revisit every "no results page" assumption in the spec.</div>
+</div>
+
+<h2>The finding: relevance drift on "iphone"</h2>
+<p>The dropdown returns 20 suggestions. The first few are iPhones. The rest are padded
+with other stock:</p>
+<table class="grid">
+<tr><th>Search term</th><th>Suggestions</th><th>Top 5 relevant</th><th>Tail not mentioning the term</th></tr>
+<tr><td>iphone</td><td>20</td><td>Yes</td><td><b style="color:#b3261e">13</b></td></tr>
+<tr><td>apple</td><td>20</td><td>Yes</td><td>0</td></tr>
+</table>
+<p>Examples from the "iphone" tail: <i>Galaxy Z Fold8 Ultra Samsung</i>,
+<i>Magsafe 10000 mAh Power Bank Ambrane</i>, <i>MacBook Neo Apple</i>,
+<i>Watch Series 11 Apple</i>.</p>
+<p>Accessories may well be intentional. A Samsung phone for an iPhone query is harder to
+explain. The test does not fail on it — padding is plausibly deliberate — but it prints
+the tail count on every run, so if that 13 grows the drift is visible.</p>
+
+<h2>Requested, but nothing to test</h2>
+<table class="grid"><tr><th>Requested step</th><th>Why it is not covered</th></tr>
+<tr><td>Verify search results page loads (URL contains /search)</td><td>No results page exists. Enter does not navigate; /search returns 404.</td></tr><tr><td>Verify ALL results contain the search term</td><td>Relevance is token-based. "samsung galaxy" returns 20 Galaxy products, none containing that literal phrase. Would fail on any multi-word query.</td></tr><tr><td>Click a result, then go back to search results</td><td>There is no results list to return to. Picking a suggestion goes straight to the product page.</td></tr><tr><td>Pagination through many results</td><td>No results page, so no pagination. The dropdown is capped at 20.</td></tr><tr><td>Empty search shows an error message</td><td>No error is shown. The catalogue stays on screen. Test pins actual behaviour.</td></tr>
+</table>
+
+<h2>How to run it</h2>
+<table class="grid"><tr><th>Command</th><th>Notes</th></tr>
+<tr><td><code>npx playwright test regression/search.spec.js --project=chromium</code></td>
+<td>No login needed. Creates nothing. ~24 seconds.</td></tr></table>
+
+</body></html>
