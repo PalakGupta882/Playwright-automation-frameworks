@@ -215,8 +215,15 @@ class HomePage extends BasePage {
       await field.first().fill(otp);
     }
 
-    // Some OTP screens submit themselves once the last digit lands; only click
-    // if a control is actually there.
+    // This screen submits itself the moment the last digit lands — measured:
+    // after the sixth box is filled the inputs are removed from the DOM before
+    // anything can click a button. So this is normally a no-op, kept only for
+    // the case where the screen ever stops auto-submitting.
+    //
+    // Entry itself is faithful, also measured: filling each box, typing into
+    // the first, and pressSequentially all place one digit per box in order.
+    // If the site rejects the code, it is rejecting the code — not mis-reading
+    // how it was entered.
     const submit = this.page
       .getByRole('button', { name: /^(verify|submit|confirm|continue)$/i })
       .first();
