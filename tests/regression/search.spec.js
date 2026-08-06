@@ -172,7 +172,17 @@ test.describe('Search', () => {
 
     expect(page.url(), 'pressing Enter navigated — search may now have a results page').toBe(before);
 
-    const res = await page.goto(`${BASE_URL}/search?q=iphone`, { waitUntil: 'domcontentloaded' });
-    expect(res.status(), '/search now resolves — search may now have a results page').toBe(404);
+    // Retry past a 429. Under a full-suite run this returned 429 rather than
+    // 404, and the test read that as "a results page now exists" — a rate limit
+    // is not an answer about whether the route exists.
+    let status;
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      const res = await page.goto(`${BASE_URL}/search?q=iphone`, { waitUntil: 'domcontentloaded' });
+      status = res.status();
+      if (status !== 429) break;
+      await page.waitForTimeout(2000 * attempt);
+    }
+
+    expect(status, '/search now resolves — search may now have a results page').toBe(404);
   });
 });

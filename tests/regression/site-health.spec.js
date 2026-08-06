@@ -27,6 +27,7 @@
 
 const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL } = require('../data/constants');
+const { getWithRetry } = require('../utils/apiRetry');
 const catalogue = require('../data/products.json');
 
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -41,14 +42,22 @@ const CORE_PAGES = ['/', '/home/subscription', '/home/emi-store', '/all-products
 // Fetch with a small worker pool: 186 sequential round trips is slow enough to
 // push this past a sane timeout, and unbounded parallelism rate-limits the
 // origin (see tests/utils/apiRetry.js).
-async function fetchAll(request, urls, concurrency = 6) {
+async function fetchAll(request, urls, concurrency = 4) {
   const results = [];
   let next = 0;
   await Promise.all(
     Array.from({ length: concurrency }, async () => {
       while (next < urls.length) {
         const index = next++;
-        const res = await request.get(urls[index], { failOnStatusCode: false, timeout: 30000 });
+        // getWithRetry, not request.get. Sweeping the whole catalogue while the
+        // rest of the suite is also hitting production earns a 429, and a 429 is
+        // not a dead page — a full run once reported 122 products as dead when
+        // every one of them was simply throttled. Concurrency dropped from 6 to
+        // 4 for the same reason.
+        const res = await getWithRetry(request, urls[index], {
+          failOnStatusCode: false,
+          timeout: 30000,
+        });
         const status = res.status();
         results[index] = {
           url: urls[index],
