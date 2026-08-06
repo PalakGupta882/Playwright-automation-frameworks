@@ -31,6 +31,28 @@ class ProductsListPage {
     await this.page.waitForTimeout(1000);
   }
 
+  // The autocomplete dropdown. Suggestions render as list items reading
+  // "<product name> <brand>", which is why a brand term such as "Apple"
+  // matches even when the product name does not contain it.
+  get suggestions() {
+    return this.page.getByRole('listitem').filter({ hasText: /\S/ });
+  }
+
+  // Types a term and waits for the dropdown to settle. Returns how many
+  // suggestions came back, so a caller can assert on the count without
+  // re-querying and racing the next keystroke.
+  //
+  // fill('') first: the box keeps the previous term otherwise, and the results
+  // would be for the concatenation of the two.
+  async search(term) {
+    await this.searchBox.click();
+    await this.searchBox.fill('');
+    await this.searchBox.fill(term);
+    // The dropdown is debounced; there is no request to wait on from here.
+    await this.page.waitForTimeout(2500);
+    return this.suggestions.count();
+  }
+
   async selectAutocompleteSuggestion(suggestionText) {
     await this.page.getByRole('button', { name: new RegExp(suggestionText, 'i') }).first().click();
   }
