@@ -20,12 +20,32 @@ class ProductPage {
 
     this.subscribeButton = page.getByRole('button', { name: 'Subscribe' });
     this.mobileNumberInput = page.getByRole('textbox', { name: 'Mobile Number*' });
-    this.pincodeInput = page.getByRole('textbox', { name: 'Enter Pincode' }).first();
-    this.checkPincodeButton = page.getByRole('button', { name: 'Check' }).first();
+    // Filtered to visible, for the same reason as the header search box: this
+    // page renders desktop and mobile variants of the pincode widget, and
+    // .first() could resolve to a hidden one. Clicking that never succeeds —
+    // with the config's former actionTimeout of 0 it hung for the whole test
+    // budget, and with a timeout it fails at 30s on a control that looks
+    // perfectly fine in the screenshot.
+    this.pincodeInput = page
+      .getByRole('textbox', { name: 'Enter Pincode' })
+      .filter({ visible: true })
+      .first();
+    this.checkPincodeButton = page
+      .getByRole('button', { name: 'Check' })
+      .filter({ visible: true })
+      .first();
   }
 
+  // Filtered to visible: listing tiles are rendered twice, for the desktop and
+  // mobile layouts, and .first() could resolve to the hidden copy. Clicking
+  // that never completes — it surfaced as a 30s timeout on a tile that is
+  // plainly there in the screenshot.
   async selectProductByImageName(productName) {
-    await this.page.getByRole('img', { name: productName }).first().click();
+    await this.page
+      .getByRole('img', { name: productName })
+      .filter({ visible: true })
+      .first()
+      .click();
   }
 
   async clickSubscribe() {

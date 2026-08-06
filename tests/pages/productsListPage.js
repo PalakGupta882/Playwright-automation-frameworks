@@ -1,7 +1,22 @@
 class ProductsListPage {
   constructor(page) {
     this.page = page;
-    this.searchBox = page.getByRole('textbox', { name: 'search' }).first();
+    // The header renders FOUR inputs with the accessible name "search" —
+    // desktop and mobile variants, two of them hidden. Measured:
+    //
+    //   [0] placeholder="Search for Products..."         HIDDEN
+    //   [1] placeholder="Search for Products, brands..."
+    //   [2] placeholder="Search for Products..."         HIDDEN
+    //   [3] placeholder="Search for Products, brands..."
+    //
+    // .first() therefore resolved to a hidden input, which is what the
+    // `force: true` on the click below was compensating for. Typing into a
+    // hidden box does nothing useful, and the click intermittently timed out
+    // waiting on an element that was never going to become stable.
+    this.searchBox = page
+      .getByRole('textbox', { name: 'search' })
+      .filter({ visible: true })
+      .first();
   }
 
   async goto() {
@@ -9,7 +24,9 @@ class ProductsListPage {
   }
 
   async searchFor(productName) {
-    await this.searchBox.click({ force: true });
+    // No force: the locator above now resolves to a genuinely visible box, so
+    // a real click is both possible and a meaningful check that it is usable.
+    await this.searchBox.click();
     await this.searchBox.fill(productName);
     await this.page.waitForTimeout(1000);
   }
