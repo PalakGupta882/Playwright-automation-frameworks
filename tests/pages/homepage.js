@@ -113,7 +113,14 @@ class HomePage extends BasePage {
 
     if (!found) return false;
 
-    await logout.click({ timeout: TIMEOUTS.action });
+    // Same Escape-then-force retry the nav methods use. Logout is a <p> inside
+    // a clickable row and never settles as "visible, enabled and stable" while
+    // one of this site's overlays is up, so a plain click times out on an
+    // element that is plainly on screen.
+    await logout.click({ timeout: TIMEOUTS.action }).catch(async () => {
+      await this.page.keyboard.press('Escape').catch(() => {});
+      await logout.click({ force: true, timeout: TIMEOUTS.action });
+    });
     await this.page.waitForTimeout(2000);
 
     // Confirm from the homepage rather than wherever logout happened to land —
