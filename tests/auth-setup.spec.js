@@ -9,11 +9,16 @@ const SITE = 'https://www.bytepe.com';
 // checks via assertFreshSession(). Saving in that window writes an auth.json
 // that looks fine and fails every login-gated spec with "no access_token
 // cookie". Poll for it instead of assuming.
+// Presence is not enough: an expired access_token is still a cookie, so
+// checking only the name lets this report success while saving a session that
+// assertFreshSession() will reject. Require it to be unexpired too — the same
+// test session.js applies.
 async function waitForAccessToken(context, timeoutMs = 20000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const cookies = await context.cookies(SITE);
-    if (cookies.some(c => c.name === 'access_token')) return true;
+    const token = (await context.cookies(SITE)).find(c => c.name === 'access_token');
+    // expires <= 0 means a session cookie, which carries no expiry to check.
+    if (token && (token.expires <= 0 || token.expires > Date.now() / 1000)) return true;
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
   return false;
