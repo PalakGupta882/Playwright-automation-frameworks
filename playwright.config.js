@@ -20,7 +20,13 @@ export default defineConfig({
   // Capped on purpose. These specs hit live production, and an uncapped local
   // run (6 workers on this machine) rate-limits the origin: a full regression
   // pass returned 429s and timed out UI flows that pass fine on their own.
-  workers: process.env.CI ? 1 : 3,
+  //
+  // Lowered 3 -> 2 after measuring. At 3 workers every full run lost 2-5 tests
+  // to timeouts and 429s — never the same ones, which is contention rather than
+  // defects. The same specs passed 103/103 with retries off in a smaller set.
+  // Retries were absorbing the difference, which meant a real regression would
+  // have looked like the usual noise.
+  workers: process.env.CI ? 1 : 2,
   reporter: 'html',
   // Matches what nearly every spec already sets for itself. Existing
   // test.setTimeout() calls stay and simply become no-ops at the same value;
