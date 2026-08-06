@@ -54,25 +54,38 @@ test('one-time login and save session', async ({ page }) => {
     .then(() => true)
     .catch(() => false);
 
-  // Reloading prods the app into exchanging refresh_token for a new
-  // access_token. If it still has not appeared, the fast path is not usable and
-  // we fall through to a real login rather than saving a session the guard
-  // will reject.
-  let useSavedSession = isAlreadyLoggedIn;
-  if (useSavedSession) {
-    if (!(await waitForAccessToken(page.context(), 5000))) {
-      await page.reload({ waitUntil: 'domcontentloaded' });
-      useSavedSession = await waitForAccessToken(page.context(), 20000);
-      if (!useSavedSession) {
-        console.log('Logged-in UI but no access_token cookie — falling back to a full login.');
-        // Sign out first. The app keeps rendering a logged-in header off
-        // refresh_token, and in that state clicking Login navigates to
-        // /my-profile rather than opening the dialog — the full login then dies
-        // waiting 30s for a mobile-number field that never renders.
-        const signedOut = await home.logout();
-        console.log(signedOut ? 'Signed out so the login form is reachable.' : 'No Logout control found.');
-      }
-    }
+  // The access_token lasts 15 minutes, but the refresh_token lasts 7 days, and
+  // the app will exchange one for the other by itself:
+  //
+  //   POST 200 https://www.bytepe.com/api/auth/refresh-tokens
+  //
+  // Measured: that call fires when an AUTHENTICATED route is loaded. Loading
+  // only the homepage — which is what this used to do — often did not trigger
+  // it, so the run concluded the session was unusable and demanded an OTP that
+  // was never actually needed. Visiting /my-profile gives the app the chance,
+  // and turns a week's worth of logins into one.
+  async function letTheAppRefresh() {
+    if (await waitForAccessToken(page.context(), 3000)) return true;
+    await page.goto(`${SITE}/my-profile`, { waitUntil: 'domcontentloaded' });
+    return waitForAccessToken(page.context(), 25000);
+  }
+
+  let useSavedSession = await letTheAppRefresh();
+
+  if (!useSavedSession) {
+    // No usable token even after giving the app a chance to refresh. Clear the
+    // session outright before logging in.
+    //
+    // Cookies, not the Logout button. While any stale session lingers, clicking
+    // Login navigates to /my-profile instead of opening the dialog, and the
+    // login then dies waiting for a mobile-number field that never renders. The
+    // UI Logout control was the first fix for that and proved unreliable — it
+    // times out when the shell is half-authenticated, which is exactly the
+    // state we are in here. clearCookies always works and needs no control to
+    // be present.
+    console.log('No access_token after a refresh attempt — clearing the session and logging in.');
+    await page.context().clearCookies();
+    await home.goto();
   }
 
   if (useSavedSession) {
