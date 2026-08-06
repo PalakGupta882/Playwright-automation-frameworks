@@ -22,26 +22,27 @@ code{background:#f4f4f4;padding:1px 4px;border-radius:3px;font:9.5px "Consolas",
 <div class="sub">BytePe production &middot; 6 Aug 2026 &middot; 149 tests &middot; branch <code>restore-login-session</code></div>
 
 <div class="banner">
-  <b>No product defects found.</b> Every failure across three runs traced to the
+  <b>No product defects found, and the suite is now fully green.</b> The final run passed
+  121 of 121 with retries off. Every earlier failure traced to the
   environment — rate limiting, a local DNS dropout, or an expired login session.
-  One genuine defect was found in the test suite itself and fixed.
+  Two genuine defects were found in the test suite itself, and both are fixed.
 </div>
 
 <div class="stats">
   <div class="stat"><b>149</b><span>tests</span></div>
-  <div class="stat"><b>118</b><span>best pass count</span></div>
+  <div class="stat"><b>121</b><span>passed, 0 failed</span></div>
   <div class="stat"><b>0</b><span>product bugs</span></div>
-  <div class="stat"><b>1</b><span>suite bug fixed</span></div>
+  <div class="stat"><b>2</b><span>suite bugs fixed</span></div>
   <div class="stat"><b>31</b><span>skipped</span></div>
 </div>
 
 <h2>Runs</h2>
 <table><tr><th>Run</th><th>Mode</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Mins</th><th>Verdict</th></tr>
-<tr><td>Run 1</td><td>retries off</td><td class="ok">118</td>
-<td class="no">3</td><td>31</td><td>2.8</td><td>All 3 failures were HTTP 429 rate limiting</td></tr><tr><td>Run 2</td><td>retries off</td><td class="ok">116</td>
-<td class="no">5</td><td>31</td><td>2.9</td><td>Timeouts on search and navigation under load</td></tr><tr><td>Run 3</td><td>retries on</td><td class="ok">110</td>
-<td class="no">9</td><td>31</td><td>3.7</td><td>Local DNS stopped resolving mid-run</td></tr><tr><td>Best today</td><td>retries on</td><td class="ok">112</td>
-<td class="ok">0</td><td>31</td><td>3.8</td><td>Healthy session, healthy network — 0 failures</td></tr>
+<tr><td>Run 1</td><td>3 workers, retries off</td><td class="ok">118</td>
+<td class="no">3</td><td>31</td><td>2.8</td><td>All 3 failures were HTTP 429 rate limiting</td></tr><tr><td>Run 2</td><td>3 workers, retries off</td><td class="ok">116</td>
+<td class="no">5</td><td>31</td><td>2.9</td><td>Timeouts on search and navigation under load</td></tr><tr><td>Run 3</td><td>3 workers, retries on</td><td class="ok">110</td>
+<td class="no">9</td><td>31</td><td>3.7</td><td>Local DNS stopped resolving mid-run</td></tr><tr><td>FINAL</td><td>2 workers, retries off</td><td class="ok">121</td>
+<td class="ok">0</td><td>31</td><td>3.6</td><td>Whole suite green with nothing hidden by retries</td></tr>
 </table>
 <p><i>"Retries off" is the strict view — it hides nothing. The suite normally runs with one
 retry, which absorbs transient load failures.</i></p>
@@ -51,8 +52,8 @@ retry, which absorbs transient load failures.</i></p>
 <tr><td>F-01</td><td>Rate limiting (HTTP 429)</td><td>3 tests, 122 URLs</td>
 <td class="ok">No</td><td>Fixed in this session</td></tr><tr><td>F-02</td><td>Local DNS failure</td><td>9 tests</td>
 <td class="ok">No</td><td>Environmental</td></tr><tr><td>F-03</td><td>Session expired mid-run</td><td>up to 12 tests</td>
-<td class="ok">No</td><td>Platform</td></tr><tr><td>F-04</td><td>Contention under 3 workers</td><td>2-5 tests, never the same ones</td>
-<td class="ok">No</td><td>Open — decision needed</td></tr>
+<td class="ok">No</td><td>Platform</td></tr><tr><td>F-04</td><td>Contention under 3 workers</td><td>2-5 tests per run, never the same ones</td>
+<td class="ok">No</td><td>Fixed in this session</td></tr>
 </table>
 
 <div class="card">
@@ -80,12 +81,12 @@ retry, which absorbs transient load failures.</i></p>
     <tr><td class="k">Fix</td><td>No code change. Run npm run auth immediately before a gated run. The underlying 15-minute TTL is worth confirming with backend.</td></tr>
   </table>
 </div><div class="card">
-  <h3><span class="pill" style="background:#b3261e">Open — decision needed</span>F-04 — Contention under 3 workers</h3>
+  <h3><span class="pill" style="background:#1e7d32">Fixed in this session</span>F-04 — Contention under 3 workers</h3>
   <table>
     <tr><td class="k">What happened</td><td>Clicks and navigations time out at 30s on controls that are plainly present</td></tr>
     <tr><td class="k">Evidence</td><td><code>TimeoutError: locator.click: Timeout 30000ms exceeded  |  page.waitForURL: Timeout 30000ms</code></td></tr>
     <tr><td class="k">Why</td><td>Three workers plus site-health's own sweep is more load than production answers comfortably. The specs pass in a smaller set — 103 passed with retries off when run without the gated ones.</td></tr>
-    <tr><td class="k">Fix</td><td>Partly mitigated by the F-01 fix. Dropping workers from 3 to 2 would likely clear the rest, at the cost of a longer run. Retries absorb it today.</td></tr>
+    <tr><td class="k">Fix</td><td>FIXED — workers dropped from 3 to 2. Measured with retries off: 3 workers gave 118/3 and 116/5; 2 workers gave 121 passed, 0 failed. Costs about 45 seconds. Retries had been absorbing the difference, which meant a real regression would have looked like the usual noise.</td></tr>
   </table>
 </div>
 
@@ -97,7 +98,7 @@ retry, which absorbs transient load failures.</i></p>
 <h2>What to do next</h2>
 <table><tr><th>#</th><th>Action</th><th>Why</th></tr>
 <tr><td>1</td><td>Confirm the ~15 minute access token TTL with backend</td><td>Causes up to 12 gated tests to fail if auth is more than ~10 minutes old. Also affects real shoppers.</td></tr>
-<tr><td>2</td><td>Decide workers: 3 (fast, some retries) or 2 (slower, quieter)</td><td>Contention is the only remaining source of failures, and retries currently hide it.</td></tr>
+<tr><td>2</td><td><s>Decide workers</s> — done, now 2</td><td>Closed. 121 passed, 0 failed with retries off, versus 2-5 failures a run at 3 workers.</td></tr>
 <tr><td>3</td><td>Get a valid fixed OTP</td><td>The current one is rejected. Unattended auth would remove the session-expiry problem entirely.</td></tr>
 <tr><td>4</td><td>Re-run when the network is stable</td><td>Run 3's nine failures were a local DNS dropout, not the site.</td></tr>
 </table>
