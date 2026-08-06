@@ -103,8 +103,15 @@ class EmiStorePage {
   // promo modal can be sitting over the tile.
   async openCategory(category) {
     const tile = this.categoryTile(category);
+    const onListing = () => /all-products\?category=/.test(this.page.url());
 
     for (let attempt = 0; attempt < 3; attempt++) {
+      // Check before clicking. Under parallel load the navigation from a
+      // previous attempt can land after that attempt's wait expired, and
+      // clicking again from the listing page — where the tile no longer exists
+      // — turned a successful navigation into a failure.
+      if (onListing()) return;
+
       await this.page.keyboard.press('Escape').catch(() => {});
       const clicked = await tile
         .click({ timeout: TIMEOUTS.nav })
@@ -112,12 +119,16 @@ class EmiStorePage {
         .catch(() => false);
       if (!clicked) continue;
 
+      // Was 8s, which is under the observed navigation time when three workers
+      // are hitting production at once.
       const navigated = await this.page
-        .waitForURL(/all-products\?category=/, { timeout: 8000 })
+        .waitForURL(/all-products\?category=/, { timeout: TIMEOUTS.nav })
         .then(() => true)
         .catch(() => false);
       if (navigated) return;
     }
+
+    if (onListing()) return;
 
     throw new Error(
       await this.whyStuck(`the "${category}" tile never opened a category listing`)
