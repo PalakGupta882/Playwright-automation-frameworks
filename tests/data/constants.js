@@ -18,5 +18,16 @@ module.exports = {
   MESSAGES: {
     invalidCoupon: 'Invalid or inactive coupon',
   },
-  TIMEOUTS: { nav: 15000, otp: 120000 },
+  TIMEOUTS: {
+    nav: 15000,
+    // A human reading an SMS and typing it. Only used when BYTEPE_OTP is unset.
+    otp: 120000,
+    // Unattended login, where nobody is waiting on a message: the OTP screen to
+    // render, then submit-to-logged-in. Kept short on purpose — a broken
+    // selector should report in seconds, not sit on the human budget.
+    otpScreen: 10000,
+    otpAuto: 20000,
+    login: 20000,
+    action: 15000,
+  },
 };
