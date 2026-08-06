@@ -25,14 +25,14 @@ code{background:#f4f4f4;padding:1px 4px;border-radius:3px;font:9.5px "Consolas",
   <b>No product defects found, and the suite is now fully green.</b> The final run passed
   121 of 121 with retries off. Every earlier failure traced to the
   environment — rate limiting, a local DNS dropout, or an expired login session.
-  Two genuine defects were found in the test suite itself, and both are fixed.
+  Three genuine defects were found in the test suite itself, and all three are fixed.
 </div>
 
 <div class="stats">
   <div class="stat"><b>149</b><span>tests</span></div>
   <div class="stat"><b>121</b><span>passed, 0 failed</span></div>
   <div class="stat"><b>0</b><span>product bugs</span></div>
-  <div class="stat"><b>2</b><span>suite bugs fixed</span></div>
+  <div class="stat"><b>3</b><span>suite bugs fixed</span></div>
   <div class="stat"><b>31</b><span>skipped</span></div>
 </div>
 
@@ -52,7 +52,7 @@ retry, which absorbs transient load failures.</i></p>
 <tr><td>F-01</td><td>Rate limiting (HTTP 429)</td><td>3 tests, 122 URLs</td>
 <td class="ok">No</td><td>Fixed in this session</td></tr><tr><td>F-02</td><td>Local DNS failure</td><td>9 tests</td>
 <td class="ok">No</td><td>Environmental</td></tr><tr><td>F-03</td><td>Session expired mid-run</td><td>up to 12 tests</td>
-<td class="ok">No</td><td>Platform</td></tr><tr><td>F-04</td><td>Contention under 3 workers</td><td>2-5 tests per run, never the same ones</td>
+<td class="ok">No</td><td>Fixed in this session</td></tr><tr><td>F-04</td><td>Contention under 3 workers</td><td>2-5 tests per run, never the same ones</td>
 <td class="ok">No</td><td>Fixed in this session</td></tr>
 </table>
 
@@ -73,12 +73,12 @@ retry, which absorbs transient load failures.</i></p>
     <tr><td class="k">Fix</td><td>No code change. Re-run when the network is stable. Worth knowing so a DNS blip is not misread as a site outage.</td></tr>
   </table>
 </div><div class="card">
-  <h3><span class="pill" style="background:#8a6d1f">Platform</span>F-03 — Session expired mid-run</h3>
+  <h3><span class="pill" style="background:#1e7d32">Fixed in this session</span>F-03 — Session expired mid-run</h3>
   <table>
     <tr><td class="k">What happened</td><td>Login-gated specs fail immediately with "Saved login session is unusable"</td></tr>
     <tr><td class="k">Evidence</td><td><code>Saved login session is unusable — access_token expired 2026-08-06 06:29:17Z</code></td></tr>
-    <tr><td class="k">Why</td><td>The access token lasts about 15 minutes; the suite takes 3-4. If auth was done more than ~10 minutes before the run, the gated specs fail before their first assertion. This is the guard working as designed, not a defect.</td></tr>
-    <tr><td class="k">Fix</td><td>No code change. Run npm run auth immediately before a gated run. The underlying 15-minute TTL is worth confirming with backend.</td></tr>
+    <tr><td class="k">Why</td><td>The access token lasts exactly 15 minutes, measured from the JWT claims (issued 11:36:20Z, expires 11:51:20Z). The suite takes 3-4 minutes, so auth done more than ~10 minutes earlier leaves the gated specs failing before their first assertion. The guard working as designed, not a defect.</td></tr>
+    <tr><td class="k">Fix</td><td>FIXED — the refresh_token lasts 7 days and the app renews the access_token itself via POST /api/auth/refresh-tokens. That call fires on an authenticated route, which auth-setup was not loading, so it demanded an OTP that was never needed. It now visits /my-profile first. Verified: with the access_token deleted, npm run auth recovered in 6.1s with no OTP.</td></tr>
   </table>
 </div><div class="card">
   <h3><span class="pill" style="background:#1e7d32">Fixed in this session</span>F-04 — Contention under 3 workers</h3>
@@ -97,9 +97,9 @@ retry, which absorbs transient load failures.</i></p>
 
 <h2>What to do next</h2>
 <table><tr><th>#</th><th>Action</th><th>Why</th></tr>
-<tr><td>1</td><td>Confirm the ~15 minute access token TTL with backend</td><td>Causes up to 12 gated tests to fail if auth is more than ~10 minutes old. Also affects real shoppers.</td></tr>
+<tr><td>1</td><td><s>Ask backend about the token TTL</s> — no longer needed</td><td>Measured from the JWT: 15 min access, 7 day refresh. Ordinary values, no regression. An earlier note in this report claimed the TTL had changed from ~12 hours; that was an inference, not a measurement, and was wrong.</td></tr>
 <tr><td>2</td><td><s>Decide workers</s> — done, now 2</td><td>Closed. 121 passed, 0 failed with retries off, versus 2-5 failures a run at 3 workers.</td></tr>
-<tr><td>3</td><td>Get a valid fixed OTP</td><td>The current one is rejected. Unattended auth would remove the session-expiry problem entirely.</td></tr>
+<tr><td>3</td><td>Get a valid fixed OTP</td><td>Lower priority now. The refresh flow already gives unattended auth for 7 days at a time; a fixed OTP would only matter when the refresh_token itself expires.</td></tr>
 <tr><td>4</td><td>Re-run when the network is stable</td><td>Run 3's nine failures were a local DNS dropout, not the site.</td></tr>
 </table>
 
