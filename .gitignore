@@ -9,3 +9,10 @@ node_modules/
 
 # Your saved login session — NEVER commit this
 auth.json
+
+# Personal Claude Code instructions
+CLAUDE.local.md
+# Local-only bug analysis — not published to this public repo
+docs/BUG-*.csv
+docs/BUG-*.html
+docs/BUG-*.pdf

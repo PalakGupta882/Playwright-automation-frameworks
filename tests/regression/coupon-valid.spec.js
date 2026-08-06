@@ -1,5 +1,9 @@
 const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL, URLS } = require('../data/constants');
+const { assertFreshSession } = require('../utils/session');
+
+// Reaching Review Order to apply a coupon requires a live session
+test.beforeAll(() => assertFreshSession());
 
 test('valid coupon BYTE500 is accepted (no error shown)', async ({ page, productPage, reviewOrderPage }) => {
   test.setTimeout(60000);

@@ -10,12 +10,17 @@ test.describe('Core pages - smoke checks', () => {
     await expect(page.locator('a[href*="/pd/"]').first()).toBeVisible({ timeout: TIMEOUTS.nav });
   });
 
-  // PDP — one product page opens with a Buy Now option
-  test('PDP: a product detail page loads with Buy Now', async ({ page }) => {
+  // PDP — one product page opens with a way to buy.
+  // Upfront products show "Buy Now", subscription products show "Subscribe",
+  // so match either: which one appears depends on how products.json happens to
+  // be ordered after the last catalogue scrape, not on the page being healthy.
+  test('PDP: a product detail page loads with a purchase option', async ({ page }) => {
     const product = data.products[0]; // first product from your catalog
     const url = product.url.startsWith('http') ? product.url : `${BASE_URL}${product.url}`;
     await page.goto(url, { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(/buy now/i).first()).toBeVisible({ timeout: TIMEOUTS.nav });
+    await expect(
+      page.getByRole('button', { name: /^(buy now|subscribe)$/i }).first()
+    ).toBeVisible({ timeout: TIMEOUTS.nav });
   });
 
   // Cart — cart page opens

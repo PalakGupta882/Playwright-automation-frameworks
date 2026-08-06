@@ -1,3 +1,5 @@
+const { MESSAGES, TIMEOUTS } = require('../data/constants');
+
 class ReviewOrderPage {
   constructor(page) {
     this.page = page;
@@ -20,10 +22,18 @@ class ReviewOrderPage {
     await this.page.waitForTimeout(2000);
   }
 
+  // waitFor, not isVisible. isVisible() answers from the DOM as it stands at
+  // that instant and ignores the timeout it is handed — it does not wait. The
+  // coupon error arrives from a server round trip, so on a slower run it had
+  // not rendered yet and this returned false, failing the test intermittently
+  // with "expect(hasError).toBe(true)". Same trap as tests/auth-setup.spec.js.
   async getCouponErrorMessage() {
-    const errorText = this.page.getByText('Invalid or inactive coupon');
-    const isVisible = await errorText.isVisible({ timeout: 5000 }).catch(() => false);
-    return isVisible;
+    return this.page
+      .getByText(MESSAGES.invalidCoupon)
+      .first()
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.nav })
+      .then(() => true)
+      .catch(() => false);
   }
 
   async clickContinue() {
