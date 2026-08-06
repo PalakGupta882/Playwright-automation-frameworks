@@ -4,13 +4,21 @@ const { TIMEOUTS } = require('../data/constants');
 class HomePage extends BasePage {
   constructor(page) {
     super(page);
-    this.homeLink = page.getByRole('link', { name: 'Home' }).first();
-    this.subscriptionLink = page.getByRole('link', { name: 'Subscription' }).first();
-    this.emiStoreLink = page.getByRole('link', { name: 'EMI Store' }).first();
-    this.productsLink = page.getByRole('link', { name: 'Products' }).first();
-    this.aboutUsLink = page.getByRole('link', { name: 'About Us' }).first();
-    this.cartLink = page.getByRole('link', { name: 'Cart', exact: true }).first();
-    this.loginLink = page.getByText('Login').first();
+    // All filtered to visible. The header is rendered twice — desktop and
+    // mobile — so .first() alone could resolve to the hidden copy, and clicking
+    // that never completes. The `force: true` on every nav method below was
+    // compensating for exactly this; force skips the actionability checks that
+    // would otherwise have made the problem obvious years ago.
+    const visibleLink = (name, opts = {}) =>
+      page.getByRole('link', { name, ...opts }).filter({ visible: true }).first();
+
+    this.homeLink = visibleLink('Home');
+    this.subscriptionLink = visibleLink('Subscription');
+    this.emiStoreLink = visibleLink('EMI Store');
+    this.productsLink = visibleLink('Products');
+    this.aboutUsLink = visibleLink('About Us');
+    this.cartLink = visibleLink('Cart', { exact: true });
+    this.loginLink = page.getByText('Login').filter({ visible: true }).first();
     // The positive logged-in signal. auth-setup.spec.js established this is the
     // only reliable one: the header paints its logged-out state first and swaps
     // once the app resolves the session, so "Login is gone" is not equivalent.
