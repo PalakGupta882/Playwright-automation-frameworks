@@ -48,6 +48,49 @@ class AccountPage {
     await this.page.keyboard.press('Escape').catch(() => {});
   }
 
+  // --- My Orders ---------------------------------------------------------
+  //
+  // Order cards are <button>s, not links: a[href*="order"] matches 0 on the
+  // list. Each card's text is "<product> <variant> ₹<price> <status>", so the
+  // price is what identifies a card and ties it to its detail page.
+  get orderCards() {
+    return this.page.getByRole('button').filter({ hasText: /₹\s?[\d,]+/ });
+  }
+
+  // Opens My Orders from the profile page and returns how many orders are
+  // listed. Returning the count lets a test skip meaningfully on an account
+  // with no history rather than asserting against nothing.
+  async navigateToMyOrders() {
+    await this.gotoProfile();
+    await this.page.getByText('My Orders', { exact: true }).first().click({ timeout: TIMEOUTS.action });
+    await this.page.waitForURL(/\/orders\/my-orders/, { timeout: 30000 });
+    await this.page
+      .getByRole('heading', { name: /my orders/i })
+      .first()
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.nav });
+    return this.orderCards.count();
+  }
+
+  async clickOrderDetail(orderIndex = 0) {
+    const card = this.orderCards.nth(orderIndex);
+    const summary = (await card.innerText()).replace(/\s+/g, ' ').trim();
+
+    await card.click({ timeout: TIMEOUTS.action }).catch(async () => {
+      await this.page.keyboard.press('Escape').catch(() => {});
+      await card.click({ force: true, timeout: TIMEOUTS.action });
+    });
+
+    // The detail route carries the order's own id, so waiting for it is proof
+    // a specific order opened rather than the list having re-rendered.
+    await this.page.waitForURL(/\/orders\/my-orders\/[0-9a-f-]{8,}/i, { timeout: 30000 });
+    await this.page
+      .getByText(/order\s*id/i)
+      .first()
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.nav });
+
+    return summary; // the list text, for comparing against the detail page
+  }
+
   async gotoAddresses() {
     await this.page.goto(`${BASE_URL}/my-profile/address`, { waitUntil: 'domcontentloaded' });
     await this.page.keyboard.press('Escape').catch(() => {});
