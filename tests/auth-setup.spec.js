@@ -65,6 +65,12 @@ test('one-time login and save session', async ({ page }) => {
       useSavedSession = await waitForAccessToken(page.context(), 20000);
       if (!useSavedSession) {
         console.log('Logged-in UI but no access_token cookie — falling back to a full login.');
+        // Sign out first. The app keeps rendering a logged-in header off
+        // refresh_token, and in that state clicking Login navigates to
+        // /my-profile rather than opening the dialog — the full login then dies
+        // waiting 30s for a mobile-number field that never renders.
+        const signedOut = await home.logout();
+        console.log(signedOut ? 'Signed out so the login form is reachable.' : 'No Logout control found.');
       }
     }
   }
