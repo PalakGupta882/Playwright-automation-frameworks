@@ -8,6 +8,8 @@ Playwright end-to-end tests for the live BytePe storefront.
 
 Every spec hits `https://www.bytepe.com` — the real site, with a real logged-in session. Cart, coupon, EMI, and subscription specs create real state on a real account. **Ask before running any spec**, including smoke tests.
 
+**Order-minting specs are opt-in.** `subscription-e2e` and `subscription-full-flow` press Continue on Review Order, which mints a real order id before any payment step. Both now skip unless `BYTEPE_ALLOW_WRITES=1` is set — the gate lives in `tests/utils/writes.js` and is the same flag the video and API suites use. A routine `npm test` can no longer create an order. Reaching Review Order is safe; only that last click is not.
+
 ## Commands
 
 ```
@@ -32,7 +34,7 @@ Refresh it with `npm run auth`, which needs `BYTEPE_MOBILE` set in the environme
 
 Specs behind a login must call `assertFreshSession()` from `tests/utils/session.js` in `test.beforeAll` — it fails fast with the real reason instead of timing out on a button that only renders for a logged-in user. Keep it inert-safe: it deliberately returns early when `auth.json` is missing or has zero cookies, because CI writes an empty session.
 
-CI (`.github/workflows/playwright.yml`) writes an empty `auth.json` and runs only the five public specs: `static-pages`, `data-driven-products`, `product-search`, `product-pricing`, `cardless-emi`. Adding a login-gated spec to that list will break the pipeline.
+CI (`.github/workflows/playwright.yml`) writes an empty `auth.json` and runs only the six public specs: `static-pages`, `data-driven-products`, `product-search`, `product-pricing`, `cardless-emi`, `best-price-banner`. Adding a login-gated spec to that list will break the pipeline.
 
 A spec belongs there only if it passes logged out. `cardless-emi` and `emi-plan-config` qualify because they set `test.use({ storageState: { cookies: [], origins: [] } })` and assert product configuration, which is the same for everyone. Anything asserting per-shopper state does not qualify, whatever its storageState.
 

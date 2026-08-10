@@ -1,6 +1,10 @@
 // tests/data/constants.js
 module.exports = {
   BASE_URL: 'https://www.bytepe.com',
+  // The HTTP API behind the storefront. Same origin — there is no
+  // api.bytepe.com. Overridable so the api/ suite can be pointed at a staging
+  // host without editing a spec; see tests/data/apiEndpoints.js for the routes.
+  BASE_API_URL: process.env.BYTEPE_API_BASE || 'https://www.bytepe.com/api',
   URLS: {
     subscription: '/home/subscription',
     emiStore: '/home/emi-store',

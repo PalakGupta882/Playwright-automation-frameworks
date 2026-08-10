@@ -56,6 +56,26 @@ function toRupees(text) {
 // Parsed out of the page text rather than per-element: the label and the amount
 // are separate nodes, so getByText(/Price \(N Items\)/) resolves to the label
 // alone and yields no number at all.
+//
+// THE SUMMARY IS NOT JUST PRICE, DISCOUNT AND TOTAL. Measured 10 Aug 2026:
+//
+//     Price (18 Items)     ₹9,30,391
+//     Discount            -₹1,89,404
+//     Device Protection          ₹1     <- add-on line, easy to miss
+//     Total Amount         ₹7,40,988
+//
+// This spec previously asserted `total === price - discount` and failed by
+// exactly ₹1. That was read as a rounding defect; it was not. The cart API
+// carries the same figure as `total_vas_amount`, and
+// `total_MOP (740987) + total_vas_amount (1) === total_amount (740988)` exactly.
+// The site's arithmetic was right and the assertion's model was incomplete.
+//
+// So rather than name the add-on, everything charged between the Discount line
+// and Total Amount is summed. The site currently offers one value-added service
+// ("12 mo Device Protection", ₹1, mandatory on some items), but a second one —
+// a fee, a warranty, a delivery charge — must not silently reintroduce the same
+// false failure. Summing the region generalises; matching /Device Protection/
+// would not.
 function readOrderSummary(bodyText) {
   const flat = bodyText.replace(/\s+/g, ' ');
   const grab = (pattern, label) => {
@@ -64,11 +84,30 @@ function readOrderSummary(bodyText) {
     return toRupees(found[0]);
   };
 
-  const price = grab(/Price\s*\(\d+\s*Items?\)\s*₹\s?[\d,]+/i, 'the price line');
+  const priceMatch = flat.match(/Price\s*\(\d+\s*Items?\)\s*₹\s?[\d,]+/i);
+  if (!priceMatch) throw new Error('could not find the price line in the order summary');
+
+  const price = toRupees(priceMatch[0]);
   const total = grab(/Total Amount\s*₹\s?[\d,]+/i, 'the total amount');
   const discountMatch = flat.match(/Discount\s*-\s*₹\s?[\d,]+/i);
+  const discount = discountMatch ? toRupees(discountMatch[0]) : 0;
 
-  return { price, total, discount: discountMatch ? toRupees(discountMatch[0]) : 0 };
+  // Everything between the last of (price line, discount line) and Total Amount.
+  // Anchored on indices rather than a lookahead regex so the region is also
+  // reportable in the failure message below — a mismatch is far easier to
+  // diagnose when you can see the lines that were actually charged.
+  const lastKnown = discountMatch
+    ? flat.indexOf(discountMatch[0]) + discountMatch[0].length
+    : priceMatch.index + priceMatch[0].length;
+  const totalAt = flat.search(/Total Amount\s*₹/i);
+
+  const extrasRegion = totalAt > lastKnown ? flat.slice(lastKnown, totalAt) : '';
+  const extras = (extrasRegion.match(/₹\s?[\d,]+/g) || []).reduce(
+    (sum, amount) => sum + toRupees(amount),
+    0
+  );
+
+  return { price, total, discount, extras, extrasRegion: extrasRegion.trim() };
 }
 
 // KNOWN PRODUCTION BUG — see the dedicated test at the bottom of this file.
@@ -170,16 +209,28 @@ test.describe('Checkout flow (stops before payment)', () => {
     });
 
     // CORRECTNESS — the arithmetic the shopper is asked to trust.
-    await test.step('5. total amount equals price minus discount', async () => {
-      const { price, discount, total } = readOrderSummary(await page.locator('body').innerText());
+    await test.step('5. total amount equals price minus discount plus add-ons', async () => {
+      const { price, discount, extras, extrasRegion, total } = readOrderSummary(
+        await page.locator('body').innerText()
+      );
 
-      console.log(`price ₹${price} - discount ₹${discount} = total ₹${total}`);
+      console.log(
+        `price ₹${price} - discount ₹${discount} + add-ons ₹${extras} = total ₹${total}` +
+          (extras ? `   [add-on lines: ${extrasRegion}]` : '')
+      );
 
       expect(
         total,
-        'the order total is not price minus discount — the shopper is being shown ' +
-          'a figure that does not follow from the line items'
-      ).toBe(price - discount);
+        'the order total does not follow from the line items — the shopper is being shown ' +
+          'a figure that price, discount and the charged add-ons do not add up to.\n' +
+          `  price     ₹${price}\n` +
+          `  discount -₹${discount}\n` +
+          `  add-ons  +₹${extras}  ${extrasRegion ? `(${extrasRegion})` : '(none on the page)'}\n` +
+          `  expected  ₹${price - discount + extras}\n` +
+          `  shown     ₹${total}\n` +
+          'If the difference matches an add-on line that is not listed above, the summary ' +
+          'grew a charge this parser does not read yet.'
+      ).toBe(price - discount + extras);
     });
 
     // BEHAVIOUR + the stop line. Continue is what mints the order: it must be

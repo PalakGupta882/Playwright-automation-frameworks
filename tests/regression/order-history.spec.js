@@ -14,10 +14,18 @@
 //           Cards are <button>s, not links: a[href*="order"] matches 0.
 //
 //   detail  /orders/my-orders/<uuid>?orderStatus=...
-//           status, product, "Order Id:<id>", Track Order, Shipping To,
+//           status, product, "Order Id:<id>", Shipping To,
 //           Payment Information (Payment Plan, Payment Type, Total Amount),
 //           Device Information, and an Order History timeline of
 //           "<status> <date>" rows.
+//
+//           Track Order was listed here originally. Re-measured 10 Aug 2026 on a
+//           PENDING order, it is absent — the controls are "Contact Support" and
+//           "Continue", and /tracking/i matches 0. That is consistent with an
+//           unpaid order having nothing to track, so it is recorded rather than
+//           asserted: a Pending order is the only kind this account can offer
+//           today, and pinning either presence or absence would encode a state
+//           that is not the same for every order.
 //
 // Consequences for what is asserted:
 //
@@ -135,10 +143,20 @@ test.describe('Order history', () => {
 
   // NEGATIVE — an order id that does not exist must not render an order.
   //
-  // Chosen over "what if the user has no orders": this account has ten, and
-  // there is no way to empty it that is not destructive. A fabricated id asks
-  // the same question — does the page invent content when there is none — and
-  // touches nothing.
+  // Chosen over "what if the user has no orders": emptying the account is not
+  // possible without being destructive. A fabricated id asks the same question
+  // — does the page invent content when there is none — and touches nothing.
+  //
+  // The count this account carries is not stable and nothing here should assume
+  // one. It read ten when these assertions were written; on 10 Aug 2026 it read
+  // ONE (Order Id C140726634CF1, Pending, dated 14 Jul 2026). Every test above
+  // derives the count at run time and skips meaningfully at zero, which is why
+  // the drop changed nothing — but do not reintroduce a hardcoded expectation.
+  //
+  // Unexplained, and worth raising rather than encoding: the run of 10 Aug 2026
+  // minted master_order_id CM1008266A1D25 and CM1008268BF164, and neither
+  // appears in this list, while the older Pending order does. So "pending is
+  // hidden" is not the explanation.
   test('an unknown order id does not render order details', async ({ page }) => {
     test.setTimeout(120000);
 

@@ -7,6 +7,7 @@
     "test": "playwright test smoke/ regression/ --project=chromium",
     "smoke": "playwright test smoke/ --project=chromium",
     "regression": "playwright test regression/ --project=chromium",
+    "api": "playwright test api/ --project=chromium",
     "discover": "playwright test scripts/discover-products.spec.js --project=chromium",
     "auth": "playwright test auth-setup.spec.js --project=chromium --headed",
     "report": "playwright show-report",

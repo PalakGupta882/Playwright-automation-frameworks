@@ -13,6 +13,11 @@ export default defineConfig({
     '**/data/**',
     '**/fixtures/**',
     '**/utils/**',
+    // tests/api/ holds specs, so it is not ignored wholesale — but its one
+    // shared helper sits alongside them and would otherwise be collected as a
+    // spec. Any further helper added under tests/api/ needs its own entry here,
+    // or it belongs in data/ or utils/ instead.
+    '**/api/apiHelper.js',
   ],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

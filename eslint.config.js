@@ -60,6 +60,15 @@ module.exports = [
     rules: { 'playwright/no-skipped-test': 'off' },
   },
 
+  // Same reasoning for the API suite. Its logged-in cases gate on a usable
+  // auth.json and its writes gate on BYTEPE_ALLOW_WRITES=1, because a cart write
+  // mutates a real production account. Skipping is the safety mechanism, not an
+  // oversight — a run that could not skip would be a run that always writes.
+  {
+    files: ['tests/api/**/*.js'],
+    rules: { 'playwright/no-skipped-test': 'off' },
+  },
+
   // page.pause() in the OTP helper is deliberate — it's how a human types the
   // code before resuming.
   {
