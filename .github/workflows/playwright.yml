@@ -38,6 +38,8 @@ jobs:
             regression/product-pricing.spec.js \
             regression/cardless-emi.spec.js \
             regression/best-price-banner.spec.js \
+            api/products-api.spec.js \
+            api/pricing-api.spec.js \
             --project=chromium
 
       - name: Upload HTML report
