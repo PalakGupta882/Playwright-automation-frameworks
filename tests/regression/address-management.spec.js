@@ -113,7 +113,7 @@ test.describe('Address management', () => {
   // data entered, and it coexists with the addresses already there.
   test('TC-ADDR-003 an added address is saved with the data entered', async ({ page }) => {
     test.setTimeout(180000);
-    test.skip(!writesAllowed(), writeSkipReason('Creates a permanent saved address'));
+    test.skip(!writesAllowed(), writeSkipReason('Creates the shared saved address, which is kept on the account'));
     test.skip(!MOBILE, 'Neither TEST_PHONE nor BYTEPE_MOBILE is set — the form requires a mobile number.');
 
     const account = new AccountPage(page);
@@ -352,7 +352,7 @@ test.describe('Address management', () => {
   // EDGE — the suite's own address is created at most once.
   test('TC-ADDR-012 adding the same address twice does not duplicate it', async ({ page }) => {
     test.setTimeout(180000);
-    test.skip(!writesAllowed(), writeSkipReason('May create a permanent saved address'));
+    test.skip(!writesAllowed(), writeSkipReason('May create the shared saved address, which is kept on the account'));
     test.skip(!MOBILE, 'Neither TEST_PHONE nor BYTEPE_MOBILE is set — the form requires a mobile number.');
 
     const account = new AccountPage(page);

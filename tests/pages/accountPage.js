@@ -330,8 +330,12 @@ class AccountPage {
 
   // Creates the address only when it is not already there.
   //
-  // The UI offers no way to delete an address, so a spec that created one on
-  // every run would pile up junk on a real account with no way to clear it.
+  // This is for the SHARED address (TEST_ADDRESS), which is deliberately kept on
+  // the account run to run: several cases read it, and re-creating it every time
+  // would pile up near-identical rows a human then has to sort out. A throwaway
+  // address wants the opposite — see createAddress(), which always creates, and
+  // deleteAddressReportingConfirmation(), which removes it again.
+  //
   // Returns 'created' or 'already-present' so a test can assert on either.
   async addAddressIfMissing(data, { mobile, marker }) {
     await this.gotoAddresses();
