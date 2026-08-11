@@ -94,9 +94,26 @@ const ENDPOINTS = {
   customerCoupons: '/coupons/customer',
 
   // ---- Addresses (auth required) ---------------------------------------
-  // Note the storefront has no delete-address UI; see TEST_ADDRESS in
-  // constants.js for why anything created here is permanent.
-  customerAddresses: '/customer-address/',
+  //
+  // CORRECTED 11 Aug 2026. This block previously read:
+  //
+  //     customerAddresses: '/customer-address/',
+  //
+  // which returns 404 {"status":false,"code":404,"message":"Route not found"}.
+  // It was one of the few entries here never confirmed by a probe, and it was
+  // wrong. What the saved-addresses page actually calls, captured from its own
+  // network traffic, is the per-user form below.
+  //
+  // The old comment on this block also claimed "the storefront has no
+  // delete-address UI". It does — each address card carries unlabelled MUI
+  // icon buttons (data-testid EditIcon / DeleteIcon) that no name-based
+  // locator can see. See tests/pages/accountPage.js.
+  //
+  // Confirmed 200 with the saved session.
+  customerAddressesByUser: (userId) => `/customer-address/user/${userId}`,
+
+  // NOT confirmed. No probe exercised a single-address read, and given the
+  // list route was wrong, treat this as a guess until something 200s on it.
   customerAddress: (id) => `/customer-address/${id}`,
 };
 

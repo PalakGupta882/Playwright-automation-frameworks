@@ -50,6 +50,37 @@ function readSavedAccessToken() {
   return cookie.value;
 }
 
+// The account's own user id, read out of the bp_user_v2 cookie.
+//
+// The address routes are keyed by user id (/customer-address/user/:userId), and
+// the id is not in the URL or the page anywhere convenient. bp_user_v2 is a
+// URL-encoded JSON blob the app sets alongside the tokens; data.id is the UUID.
+//
+// Returns null rather than throwing, for the same reason readSavedAccessToken
+// does: CI writes an empty session and callers decide whether that is a skip.
+// Never log the rest of this cookie — it carries the account's name, email and
+// phone.
+function readSavedUserId() {
+  let state;
+  try {
+    state = JSON.parse(fs.readFileSync(AUTH_PATH, 'utf8'));
+  } catch {
+    return null;
+  }
+
+  const cookie = (state.cookies || []).find(
+    c => c.name === 'bp_user_v2' && c.domain === SITE_DOMAIN
+  );
+  if (!cookie) return null;
+
+  try {
+    const parsed = JSON.parse(decodeURIComponent(cookie.value));
+    return (parsed && parsed.data && parsed.data.id) || null;
+  } catch {
+    return null;
+  }
+}
+
 // True when auth.json holds a token that has not visibly expired. The API specs
 // gate their logged-in cases on this so an unauthenticated checkout of the repo
 // produces skips with a reason, not a wall of 401s.
@@ -213,6 +244,7 @@ module.exports = {
   loginAndGetToken,
   hasSavedSession,
   readSavedAccessToken,
+  readSavedUserId,
   writesAllowed,
   safeJson,
   BASE_API_URL,
