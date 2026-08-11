@@ -324,9 +324,109 @@ known bug (compare VID-44 in `docs/video-feature-coverage.md`).
 Worth raising with the team: a mis-tap on the address list destroys a saved
 address with no undo and no warning.
 
+## Future improvements — when delete confirmation ships
+
+Dev have accepted TC-ADDR-022 and scheduled a fix. This section is the
+readiness plan: what to do the day it lands, and what deliberately is **not**
+being written before then.
+
+### Do NOT pre-write the dialog selectors
+
+The obvious move is to write the confirm-dialog tests now so they are ready.
+Do not. This repo has already paid for that once — `productVideoPage.js` was
+written against the feature spec and "standard HTML5 media markup" before any
+player existed, and `docs/video-feature-coverage.md` still carries the warning
+that every one of those selectors is unverified. Selectors written against an
+imagined UI describe the UI you imagined.
+
+What *is* safe to write now is the plan below. Selectors get added after one
+probe of the real dialog — the same 10-minute loop used on 11 Aug: open the
+page, dump the markup, then write locators against what is actually there.
+
+### What TC-ADDR-022 does when the fix lands
+
+It starts passing on its own. `deleteAddressReportingConfirmation()` already
+detects a `role="dialog"` **or** "are you sure"-style text, clicks the confirm
+button, and reports `confirmationSeen: true`. No code change needed — that is
+why the helper was built to return facts instead of asserting.
+
+If it does **not** flip to green on the first run after the fix, the likely
+cause is the confirm control not matching
+`/^(yes|confirm|delete|ok|remove)\b/i` or the dialog not using `role="dialog"`
+— check those two before assuming the fix did not ship.
+
+### New cases, blocked until then
+
+All **Blocked — awaiting the fix**. Gate: `writes`. Each uses a throwaway
+address it creates and removes itself, exactly like TC-ADDR-021.
+
+#### TC-ADDR-023 — The dialog says which address is being deleted
+- **Priority:** High · **Type:** UI
+- **Steps:** Create a throwaway address; click its DeleteIcon; read the dialog.
+- **Expected:** The dialog text identifies the target — street, or name plus
+  pincode. A bare "Are you sure?" on a page of six near-identical cards does not
+  tell you what you are about to destroy, and would leave the underlying
+  mis-tap risk in place.
+
+#### TC-ADDR-024 — Cancel keeps the address
+- **Priority:** High · **Type:** Negative
+- **Steps:** Create a throwaway; click delete; press **Cancel**; re-read the list.
+- **Expected:** The address is still listed and the count is unchanged. **This
+  is the case that actually fixes the bug** — a dialog whose Cancel still
+  deletes is worse than no dialog. Clean up with a real delete afterwards.
+
+#### TC-ADDR-025 — Dismissing without choosing keeps the address
+- **Priority:** Medium · **Type:** Edge
+- **Steps:** Create a throwaway; click delete; dismiss via Escape, then repeat
+  and dismiss by clicking the backdrop.
+- **Expected:** Address intact both times. Covers the two ways a user exits a
+  dialog without meaning to confirm.
+
+#### TC-ADDR-026 — Confirm deletes exactly one address
+- **Priority:** High · **Type:** Positive
+- **Steps:** Create a throwaway; delete it through the dialog; check the list.
+- **Expected:** Count drops by exactly one, the Default marker survives, and the
+  shared QA Automation address survives. Overlaps TC-ADDR-021 by design — 021
+  proves deletion works, 026 proves it still works *through the new dialog*.
+
+#### TC-ADDR-027 — Destructive action is not the default focus
+- **Priority:** Medium · **Type:** UI
+- **Steps:** Open the dialog; read `document.activeElement`; press Enter.
+- **Expected:** Focus is not on the delete/confirm button, so a stray Enter does
+  not destroy an address. If Enter does confirm, that is the original bug in a
+  new costume and should be raised as such.
+
+### Related improvement, worth asking for in the same change
+
+#### TC-ADDR-028 — The edit and delete controls have accessible names
+- **Priority:** Medium · **Type:** UI · **Blocked** — needs an app change
+- **Steps:** Assert `getByRole('button', { name: /delete address/i })` resolves
+  one control per card.
+- **Expected:** Passes. Today it resolves **zero** — the icons carry no text, no
+  `aria-label` and no `title`, which is exactly why the earlier probe concluded
+  the controls did not exist at all.
+- **Why it is worth raising now:** two separate wins for one small change.
+  Screen-reader users currently get an unlabelled button that deletes an
+  address. And the whole suite's dependency on `data-testid="EditIcon"` — a MUI
+  internal that would break if the team ever swaps icon libraries — disappears,
+  because the locators can move to `getByRole`, which is what this repo prefers
+  everywhere else.
+
+### Checklist for the day the fix lands
+
+1. Re-run the file with `BYTEPE_ALLOW_WRITES=1`. Expect TC-ADDR-022 to pass with
+   no code change.
+2. Probe the real dialog once — markup, roles, button names, dismiss behaviour.
+3. Write TC-ADDR-023 to 027 against that probe output, not against this plan.
+4. If TC-ADDR-028 also shipped, move the locators in `accountPage.js` from
+   `data-testid` to `getByRole` and delete the risk note in its header.
+5. Update this file's status table and the Phase 3 results section.
+
 ## Automation status summary
 
 | TC | Status |
 |---|---|
 | 001–021 | Automated, passing |
-| 022 | Automated, **failing — open product bug** |
+| 022 | Automated, **failing — open product bug, fix accepted by dev** |
+| 023–027 | Blocked — awaiting the confirmation dialog. Do not pre-write selectors |
+| 028 | Blocked — needs accessible names on the icon buttons |

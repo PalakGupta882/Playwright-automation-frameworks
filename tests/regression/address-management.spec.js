@@ -610,6 +610,19 @@ test.describe('Address management', () => {
   // Whether the UI confirms was unknown when this was written: the probe would
   // not click delete on a real address to find out. If deletion turns out to be
   // immediate and unconfirmed, this fails, and that failure is the finding.
+  //
+  // IT DOES FAIL, and the failure is expected and accepted. Measured 11 Aug
+  // 2026: clicking delete removes the address immediately — no role="dialog",
+  // no "are you sure" text within the 5s the helper waits. Failed on the first
+  // attempt and on retry #1, so it is not flaky. Dev have accepted it and
+  // scheduled a fix.
+  //
+  // Left red on purpose rather than rewritten to expect the bug, the same way
+  // VID-44 is in the video suite. When the fix ships this should go green with
+  // NO code change here — the helper already detects a dialog and confirms
+  // through it. Follow-up cases to add at that point (TC-ADDR-023 to 028) are
+  // planned in test-cases/address-management.md under "Future improvements";
+  // their selectors are deliberately not pre-written.
   test('TC-ADDR-022 deleting an address asks for confirmation first', async ({ page }) => {
     test.setTimeout(300000);
     test.skip(!writesAllowed(), writeSkipReason('Creates and then deletes a saved address'));
