@@ -302,9 +302,21 @@ function parseOrderSummary(bodyText) {
 // Order matters: the first match wins, so the specific "Device Protection" is
 // tested before anything that could also catch a generic charge.
 const COMPONENT_PATTERNS = [
-  ['deviceProtection', /(?:^|\s)(device protection|protection plan|bytepe secure)$/i],
-  ['total', /(?:^|\s)(total amount|amount payable|payable amount|to pay|grand total|net payable)$/i],
+  ['deviceProtection', /(?:^|\s)(device protection|protection plan|bytepe secure|care plan)$/i],
+  // "Order Total" is Payment Summary's payable figure and must win over the
+  // "Total amount ₹1,496/mo" heading that sits above it — that one is an
+  // instalment, and is discarded by the /mo rule in moneyRows anyway.
+  ['total', /(?:^|\s)(order total|total amount|amount payable|payable amount|to pay|grand total|net payable)$/i],
+  // Bank interest is charged on top of the order and is NOT part of it. Kept
+  // separate so it can be reported rather than silently swelling otherCharges.
+  ['interest', /(?:^|\s)(interest charged by bank|interest|bank interest)$/i],
+  // The cost of the whole EMI plan including interest. Not the payable total.
+  ['totalCost', /(?:^|\s)(total cost)$/i],
   ['productAmount', /(?:^|\s)(price|sub ?total|item total|order value|mrp total)$/i],
+  // "Low Cost EMI discount" ends with "discount" and is caught here. It is a
+  // payment-stage adjustment rather than the product discount, which is why
+  // callers reconcile totals through `adjustments` instead of demanding that
+  // two pages show the same number.
   ['discount', /(?:^|\s)(discount|coupon discount|instant discount|savings?)$/i],
   ['shipping', /(?:^|\s)(shipping|delivery|shipping charges?|delivery charges?|shipping fee)$/i],
 ];
@@ -325,7 +337,14 @@ function moneyRows(regionText) {
 
   while ((match = AMOUNT.exec(regionText)) !== null) {
     const before = regionText.slice(cursor, match.index);
+    const after = regionText.slice(match.index + match[0].length, match.index + match[0].length + 14);
     cursor = match.index + match[0].length;
+
+    // INSTALMENTS ARE NOT COMPONENTS. Payment Summary heads its panel with
+    // "Total amount ₹1,496/mo" and closes it with "EMI ₹1,496 × 24 mo"; both are
+    // the monthly figure, not money owed now. Left in, the first would be read
+    // as the order total and report ₹1,496 as the amount payable.
+    if (/^\s*(\/\s*mo|per month|×\s*\d+\s*mo|x\s*\d+\s*mo)/i.test(after)) continue;
 
     // "Price (7 Items)" carries the count in the label; lift it out, then take
     // the trailing words as the label proper.
@@ -350,16 +369,31 @@ function moneyRows(regionText) {
 function parsePricingBreakdown(bodyText, { label = 'page' } = {}) {
   const flat = flatten(bodyText);
 
-  // The summary block. Anchored on whichever heading this page uses; Payment
-  // Summary has never been measured (reaching it mints a real order), so its
-  // heading is matched permissively and the raw region is returned for a human
-  // to read when classification comes up short.
-  const startAt = flat.search(
-    /Order Summary|Payment Summary|Price\s*\(\s*\d+\s*Items?\s*\)|Amount Payable/i
-  );
+  // THE PRICE LINE IS THE ANCHOR, NOT THE HEADING.
+  //
+  // This used to start at /Order Summary|Payment Summary/ and stop at the first
+  // PCIDSS. On Payment Summary that is catastrophically wrong and cost a real
+  // order to discover: "Order Summary" is the page's back-link in the top-left,
+  // while the pricing panel is the third column — and the PCI/SSL badges sit in
+  // the card form in the MIDDLE column, which comes first in DOM order. So the
+  // region ran from the page title to the middle of the card form and stopped
+  // before reaching a single pricing row. Device Protection parsed as absent on
+  // a page that plainly displays "Device Protection ₹1".
+  //
+  // "Price (N item)" is inside the panel on every surface that has one — cart,
+  // review and payment summary alike — so anchoring there starts the region in
+  // the right column by construction. The headings remain as a fallback for a
+  // page that renders a summary without a price line.
+  const priceLineAt = flat.search(/Price\s*\(\s*\d+\s*Items?\s*\)/i);
+  const startAt =
+    priceLineAt >= 0 ? priceLineAt : flat.search(/Order Summary|Payment Summary|Amount Payable/i);
   if (startAt < 0) return null;
 
-  const endAt = flat.slice(startAt).search(/PCIDSS|Your payment is 100% safe|Continue|Proceed|Pay Now/i);
+  // Terminators are searched for AFTER the start, and only ones that genuinely
+  // close a pricing panel.
+  const endAt = flat
+    .slice(startAt)
+    .search(/You saved|PCIDSS|Your payment is 100% safe|Continue Shopping|Proceed|Pay Now/i);
   const region = endAt > 0 ? flat.slice(startAt, startAt + endAt) : flat.slice(startAt);
 
   const rows = moneyRows(region);
@@ -371,6 +405,10 @@ function parsePricingBreakdown(bodyText, { label = 'page' } = {}) {
     discount: null,
     deviceProtection: null,
     shipping: null,
+    // Charged on top of the order rather than being part of it. Reported, never
+    // folded into the payable total.
+    interest: null,
+    totalCost: null,
     otherCharges: 0,
     total: null,
     itemCount: null,
@@ -394,6 +432,14 @@ function parsePricingBreakdown(bodyText, { label = 'page' } = {}) {
     // Discount is displayed as a negative; carry it as a positive magnitude so
     // callers can write `product - discount + ...` and read like the page.
     const value = key === 'discount' ? Math.abs(row.amount) : row.amount;
+
+    // interest and totalCost are recorded but excluded from the payable
+    // arithmetic — Total Cost is Price + interest over the whole plan, so
+    // adding either to the expected total would double-count.
+    if (key === 'interest' || key === 'totalCost') {
+      if (out[key] === null) out[key] = value;
+      continue;
+    }
 
     // A repeated label (the cart prints Subtotal as well as Total Amount) must
     // not silently overwrite the first reading.

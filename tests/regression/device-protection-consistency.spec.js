@@ -41,6 +41,12 @@ const {
   expectedTotalOf,
   formatBreakdown,
 } = require('../utils/priceText');
+const {
+  identitiesFromCart,
+  identitiesFromCreateOrder,
+  compareIdentities,
+  formatIdentities,
+} = require('../utils/surfaceIdentity');
 
 test.beforeAll(() => assertFreshSession());
 
@@ -278,6 +284,84 @@ test.describe('Device Protection pricing consistency through checkout', () => {
     expect(page.url()).not.toMatch(/payment-summary|razorpay|payment_id/i);
   });
 
+  // ---- The subscription review page, before any order ------------------
+  //
+  // The reported defect starts here: "Device Protection is shown as ₹1
+  // initially". This captures that starting state and proves the page can be
+  // read at all, so the write-gated test below is not the first thing to
+  // discover a parsing problem — at that point a re-run costs another order.
+  //
+  // Clicking Subscribe places the line in the subscription basket, which is a
+  // cart write. It is NOT an order: the order id is minted by Continue on this
+  // page, and Continue is not pressed here.
+  test('subscription Review Order shows Device Protection and its own total adds up', async ({
+    page,
+  }, testInfo) => {
+    test.setTimeout(FLOW_TIMEOUT);
+
+    const target = { slug: 'phone-4b', bpid: 'NOTSMMOBK25WT5' };
+
+    await page.goto(`${BASE_URL}/pd/${target.slug}/${target.bpid}`, {
+      waitUntil: 'domcontentloaded',
+    });
+    await page.keyboard.press('Escape').catch(() => {});
+    await page
+      .getByText(/^₹[\d,]+$/)
+      .first()
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.nav });
+
+    const subscribe = page.getByRole('button', { name: /^subscribe$/i }).filter({ visible: true });
+    expect(
+      await subscribe.count(),
+      `${target.slug}: expected exactly one visible Subscribe control`
+    ).toBe(1);
+
+    await subscribe.first().click({ timeout: TIMEOUTS.action });
+    await page.waitForURL(/\/review\//, { timeout: 60000 });
+    await dismissExchangeDialog(page);
+
+    const review = await readPricing(page, 'review order (subscription)');
+    console.log('SUBSCRIPTION REVIEW ORDER\n' + formatBreakdown(review));
+    await captureEvidence(page, testInfo, 'subscription-review-order');
+    assertAddsUp(review, testInfo);
+
+    // The same basket as the server holds it. A page that agrees with the API
+    // here makes any later divergence squarely a Payment Summary problem.
+    const addressId = (page.url().match(/address_id=([^&]+)/) || [])[1];
+    test.skip(!addressId, 'the review URL carried no address_id to query the cart API with');
+
+    const res = await page.request.get(
+      `${BASE_URL}/api/cart?payment_type=SUBSCRIPTION&address_id=${addressId}&is_review=true`,
+      { headers: { accept: 'application/json' } }
+    );
+    expect(res.ok(), `review cart API returned ${res.status()}`).toBe(true);
+
+    const data = (await res.json()).data || {};
+    const summedVas = (data.items || []).reduce((s, i) => s + (Number(i.vas_amount) || 0), 0);
+
+    console.log(
+      `review API: ${(data.items || []).length} item(s) · total_vas_amount ₹${data.total_vas_amount} ` +
+        `· sum of line vas ₹${summedVas} · total ₹${data.total_amount}`
+    );
+
+    expect(
+      review.deviceProtection,
+      'THE SUBSCRIPTION REVIEW PAGE AND ITS OWN API DISAGREE ABOUT DEVICE PROTECTION\n\n' +
+        `  review page:            ₹${review.deviceProtection}\n` +
+        `  API total_vas_amount:   ₹${data.total_vas_amount}\n` +
+        `  API sum of line vas:    ₹${summedVas}\n\n` +
+        formatBreakdown(review)
+    ).toBe(data.total_vas_amount);
+
+    expect(
+      review.total,
+      `review page total ₹${review.total} vs API total_amount ₹${data.total_amount}`
+    ).toBe(data.total_amount);
+
+    // Stopped before the order is minted.
+    expect(page.url()).not.toMatch(/payment-summary|razorpay|payment_id/i);
+  });
+
   // ---- Steps 5-7 and the cross-page assertions -------------------------
   //
   // ONE TEST, not four. Each arrival at Payment Summary mints a real order, so
@@ -469,6 +553,268 @@ test.describe('Device Protection pricing consistency through checkout', () => {
           'review -> payment -> refresh -> back -> forward. ' +
           `Order reference: ${orderRef}`
       );
+    });
+
+    // ---- The reported state: the SUBSCRIPTION flow ---------------------
+    //
+    // Reported as ₹1 on Review Order becoming ₹2,001 on Payment Summary for a
+    // SINGLE line — not a cart that accumulated several protected items. That
+    // rules out the sum-of-many theory and points at the subscription path,
+    // where Device Protection is attached by default
+    // (vas_items[].is_default_subscription = true).
+    //
+    // This drives that path directly: Subscribe on the PDP goes straight to
+    // /review/subscribe, which is a different review page from the upfront one
+    // the test above uses (payment_type=subscribe, pay_via=SUBSCRIPTION_CC).
+    //
+    // Cheaper to run, too. The subscription basket holds exactly ONE item —
+    // subscribing to a product replaces whatever was there — so the order this
+    // mints covers a single product rather than the whole shopping cart.
+    //
+    // NOTE: this test and the one above EACH mint their own order. Run one at a
+    // time with -g rather than letting the file run whole.
+    test('subscription flow: Device Protection holds from Review Order to Payment Summary', async ({
+      page,
+    }, testInfo) => {
+      test.setTimeout(FLOW_TIMEOUT);
+      const apiCalls = makeRecorder(page);
+
+      // Overridable, because which product is used decides whether the defect
+      // can appear at all and re-running costs a real order:
+      //
+      //   BYTEPE_DP_PRODUCT=galaxy-z-fold8-ultra/SAMSAMOB10ZXEG
+      //
+      // Default is the cheapest known product carrying Device Protection, so an
+      // unconfigured run mints the smallest order it can. Measured on it
+      // (order CM14082644F25B): Device Protection held at ₹1 from Review Order
+      // through to Payment Summary — the defect did NOT reproduce there. Its
+      // protection is priced at ₹1 on both sides, so it has little room to move;
+      // a product whose PDP quotes a larger figure is the better probe.
+      const configured = process.env.BYTEPE_DP_PRODUCT;
+      const target = configured
+        ? { slug: configured.split('/')[0], bpid: configured.split('/')[1] }
+        : { slug: 'phone-4b', bpid: 'NOTSMMOBK25WT5' };
+
+      expect(
+        target.slug && target.bpid,
+        'BYTEPE_DP_PRODUCT must be "<slug>/<bpid>"'
+      ).toBeTruthy();
+      console.log(`subscribing to ${target.slug}/${target.bpid}`);
+
+      await page.goto(`${BASE_URL}/pd/${target.slug}/${target.bpid}`, {
+        waitUntil: 'domcontentloaded',
+      });
+      await page.keyboard.press('Escape').catch(() => {});
+      await page
+        .getByText(/^₹[\d,]+$/)
+        .first()
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.nav });
+
+      // Scoped and unambiguous. Subscribe is the control that both places the
+      // line in the subscription basket and navigates to its review page.
+      const subscribe = page.getByRole('button', { name: /^subscribe$/i }).filter({ visible: true });
+      const subscribeCount = await subscribe.count();
+      expect(
+        subscribeCount,
+        `${target.slug}: expected exactly one visible Subscribe control, found ${subscribeCount}`
+      ).toBe(1);
+
+      await subscribe.first().click({ timeout: TIMEOUTS.action });
+      await page.waitForURL(/\/review\//, { timeout: 60000 });
+      await dismissExchangeDialog(page);
+
+      const review = await readPricing(page, 'review order (subscription)');
+      console.log('REVIEW ORDER (subscription)\n' + formatBreakdown(review));
+      await captureEvidence(page, testInfo, '01-review-subscription');
+      assertAddsUp(review, testInfo);
+
+      // The server's own view of the same basket, read with the exact query the
+      // review page uses — payment_type + address_id + is_review. Without all
+      // three the endpoint returns an empty cart, which is why a bare
+      // is_review=true looks like it does nothing.
+      const addressId = (page.url().match(/address_id=([^&]+)/) || [])[1];
+      let apiVas = null;
+      let reviewIdentities = [];
+      if (addressId) {
+        const res = await page.request.get(
+          `${BASE_URL}/api/cart?payment_type=SUBSCRIPTION&address_id=${addressId}&is_review=true`,
+          { headers: { accept: 'application/json' } }
+        );
+        if (res.ok()) {
+          const d = (await res.json()).data || {};
+          apiVas = d.total_vas_amount;
+          // WHAT is being reviewed, not just what it costs.
+          reviewIdentities = identitiesFromCart(d);
+          console.log(
+            `review API: ${(d.items || []).length} item(s), total_vas_amount ₹${apiVas}, ` +
+              `total ₹${d.total_amount}\n` + formatIdentities(reviewIdentities, 'review basket')
+          );
+        }
+      }
+
+      // The product the shopper actually asked for must be the one under review.
+      // The subscription basket holds a single line and subscribing REPLACES it,
+      // so reviewing one product while the basket holds another is a real
+      // reachable state — and it is invisible to every amount-based check.
+      if (reviewIdentities.length) {
+        const reviewed = reviewIdentities.map((i) => i.bpid).filter(Boolean);
+        expect(
+          reviewed,
+          'REVIEW ORDER IS SHOWING A DIFFERENT PRODUCT THAN THE ONE SUBSCRIBED TO\n\n' +
+            `  subscribed to: ${target.slug}/${target.bpid}\n` +
+            formatIdentities(reviewIdentities, 'review basket') +
+            '\n\nThe subscription basket holds one line and subscribing replaces it, so the ' +
+            'page can be reviewing an item the shopper did not choose.'
+        ).toContain(target.bpid);
+      }
+
+      const reviewEnv = await environmentOf(page);
+
+      // Step 5 — the irreversible click.
+      const proceed = await checkoutContinueButton(page);
+      console.log(
+        `review shows Device Protection ₹${review.deviceProtection}, total ₹${review.total} — ` +
+          'pressing Continue now MINTS A REAL ORDER'
+      );
+      await proceed.click({ timeout: TIMEOUTS.action });
+
+      await page.waitForURL(new RegExp(URLS.orderSummary), { timeout: 90000 });
+      const payment = await readPricing(page, 'payment summary (subscription)');
+      console.log('PAYMENT SUMMARY (subscription)\n' + formatBreakdown(payment));
+      await captureEvidence(page, testInfo, '02-payment-summary-subscription');
+
+      const paymentEnv = await environmentOf(page);
+      const orderRef =
+        (page.url().match(/(?:order[_-]?id|orderId)=([^&]+)/i) || [])[1] ||
+        apiCalls
+          .map((c) => (c.body.match(/"order_?(?:id|number)"\s*:\s*"([^"]+)"/i) || [])[1])
+          .find(Boolean) ||
+        '(not found)';
+
+      const dossier =
+        `product: ${target.slug}/${target.bpid}\n` +
+        `order reference: ${orderRef}\n` +
+        `review:  ${reviewEnv.url}\n  at ${reviewEnv.timestamp}\n` +
+        `payment: ${paymentEnv.url}\n  at ${paymentEnv.timestamp}\n` +
+        `viewport: ${paymentEnv.viewport}\nuser agent: ${paymentEnv.userAgent}\n` +
+        `cart API total_vas_amount at review: ₹${apiVas}\n\n` +
+        'REVIEW ORDER\n' + formatBreakdown(review) + '\n\n' +
+        'PAYMENT SUMMARY\n' + formatBreakdown(payment) + '\n\n' +
+        'API\n' + JSON.stringify(apiCalls, null, 1);
+      await testInfo.attach('subscription-checkout-dossier', {
+        body: dossier,
+        contentType: 'text/plain',
+      });
+
+      // ---- IDENTITY BEFORE ARITHMETIC ---------------------------------
+      //
+      // What did create-order actually create? This is the one authoritative
+      // record in the flow — everything before it is a rendering. If the order
+      // is for a different item than the one reviewed, every price difference
+      // downstream is explained by that, and reporting a "Device Protection
+      // mismatch" would name the wrong culprit entirely.
+      //
+      // This is the check whose absence let a ₹1 -> ₹2,001 jump be investigated
+      // as an arithmetic fault for far too long: the real answer was that the
+      // cart was not showing the same product.
+      const createOrderCall = apiCalls.find((c) => /create-order/i.test(c.url));
+      let orderedIdentities = [];
+      if (createOrderCall) {
+        try {
+          orderedIdentities = identitiesFromCreateOrder(JSON.parse(createOrderCall.body));
+        } catch {
+          orderedIdentities = [];
+        }
+      }
+
+      if (orderedIdentities.length) {
+        console.log(formatIdentities(orderedIdentities, 'order created'));
+
+        const orderedBpids = orderedIdentities.map((i) => i.bpid).filter(Boolean);
+        expect(
+          orderedBpids,
+          'THE ORDER WAS CREATED FOR A DIFFERENT PRODUCT THAN THE ONE REVIEWED\n\n' +
+            `  subscribed to: ${target.slug}/${target.bpid}\n` +
+            formatIdentities(orderedIdentities, 'order created') +
+            '\n' +
+            formatIdentities(reviewIdentities, 'review basket') +
+            '\n\nEvery pricing difference between Review Order and Payment Summary follows from ' +
+            'this, and none of it is an arithmetic fault. Check identity before blaming a ' +
+            'charge.\n\n' +
+            dossier
+        ).toContain(target.bpid);
+
+        if (reviewIdentities.length) {
+          const drift = compareIdentities(reviewIdentities, orderedIdentities, {
+            beforeLabel: 'review basket',
+            afterLabel: 'order created',
+          });
+          expect(
+            drift,
+            'THE BASKET CHANGED BETWEEN REVIEW ORDER AND ORDER CREATION\n\n' +
+              formatIdentities(reviewIdentities, 'review basket') +
+              '\n' +
+              formatIdentities(orderedIdentities, 'order created') +
+              '\n\n' +
+              dossier
+          ).toEqual([]);
+        }
+      }
+
+      // THE ASSERTION THIS WHOLE FILE EXISTS FOR.
+      expect(
+        payment.deviceProtection,
+        'DEVICE PROTECTION PRICING MISMATCH (subscription flow)\n\n' +
+          `  Product: ${target.slug}/${target.bpid}\n` +
+          `  Review Order Device Protection:    ₹${review.deviceProtection}\n` +
+          `  Payment Summary Device Protection: ₹${payment.deviceProtection}\n` +
+          `  Difference:                        ₹${(payment.deviceProtection ?? 0) - (review.deviceProtection ?? 0)}\n\n` +
+          `  Review Order Total:    ₹${review.total}\n` +
+          `  Payment Summary Total: ₹${payment.total}\n` +
+          `  cart API total_vas_amount at review: ₹${apiVas}\n\n` +
+          'Expected:\n  Device Protection should remain unchanged between Review Order and ' +
+          'Payment Summary.\nActual:\n  Device Protection changed from ' +
+          `₹${review.deviceProtection} to ₹${payment.deviceProtection}.\n\n` +
+          dossier
+      ).toBe(review.deviceProtection);
+
+      assertAddsUp(payment, testInfo);
+
+      // THE TWO PAGES QUOTE DIFFERENT BASES, so a bare total comparison would
+      // fail on correct behaviour. Measured on order CM14082644F25B:
+      //
+      //   Review Order    product ₹54,999 - discount ₹23,000 + DP ₹1 = ₹32,000
+      //   Payment Summary product ₹31,999 - EMI disc ₹1,442 + DP ₹1 = ₹30,558
+      //
+      // Review states MRP and the product discount; Payment Summary states the
+      // already-discounted price and then applies the chosen plan's own
+      // discount. Both are internally right. So the cross-page check is that
+      // each figure follows from the other, and that the change is fully
+      // explained by a NAMED payment-stage line — never assumed valid.
+      const netAtReview = (review.productAmount ?? 0) - (review.discount ?? 0);
+      expect(
+        payment.productAmount,
+        'THE PRODUCT AMOUNT CHANGED BETWEEN REVIEW ORDER AND PAYMENT SUMMARY\n\n' +
+          `  review: ₹${review.productAmount} - ₹${review.discount} = ₹${netAtReview}\n` +
+          `  payment summary price line: ₹${payment.productAmount}\n\n` +
+          dossier
+      ).toBe(netAtReview);
+
+      const paymentStageDiscount = payment.discount ?? 0;
+      expect(
+        payment.total,
+        'THE TOTAL PAYABLE CHANGED BY MORE THAN THE NAMED CHECKOUT LINES EXPLAIN\n\n' +
+          `  Review Order Total:        ₹${review.total}\n` +
+          `  payment-stage discount:   -₹${paymentStageDiscount}` +
+          `${payment.discount ? ' (a named line on Payment Summary)' : ' (none named)'}\n` +
+          `  expected Payment Total:    ₹${review.total - paymentStageDiscount}\n` +
+          `  actual Payment Total:      ₹${payment.total}\n` +
+          `  unexplained difference:    ₹${(payment.total ?? 0) - (review.total - paymentStageDiscount)}\n\n` +
+          `  bank interest (charged on top, not part of the order): ₹${payment.interest}\n` +
+          `  total cost of the plan: ₹${payment.totalCost}\n\n` +
+          `  components that moved: ${JSON.stringify(diffComponents(review, payment), null, 1)}\n\n` +
+          dossier
+      ).toBe(review.total - paymentStageDiscount);
     });
   });
 });

@@ -34,6 +34,7 @@ const { assertFreshSession } = require('../utils/session');
 const { writesAllowed, writeSkipReason } = require('../utils/writes');
 const { openCart, dismissExchangeDialog } = require('../utils/cartNav');
 const { parsePdpHeader, parseOrderSummary, toRupees } = require('../utils/priceText');
+const { identitiesFromCart, formatIdentities } = require('../utils/surfaceIdentity');
 
 test.beforeAll(() => assertFreshSession());
 
@@ -441,6 +442,33 @@ test.describe('Pricing consistency through checkout', () => {
         `Total Amount by ₹${chargedDelta} (₹${summaryBefore.total} -> ₹${summaryAfter.total}). ` +
         'The shopper agreed to one figure and the cart charged another.'
     ).toBe(header.price);
+
+    // IDENTITY: the variant that landed is the variant that was priced.
+    //
+    // A PDP URL names one configuration, not a product — Macbook Pro M5 alone
+    // has 47 variants from ₹2,84,900 to ₹6,26,900 (CLAUDE.md). So "a line
+    // appeared and the total moved by the right amount" is not proof the right
+    // thing was added; only the bpid is. This check exists because a Device
+    // Protection investigation on 14 Aug 2026 turned out to be a
+    // wrong-product-on-the-page problem that no amount comparison could see.
+    const basketRes = await page.request.get(`${BASE_URL}/api/cart?payment_type=UPFRONT`, {
+      headers: { accept: 'application/json' },
+    });
+    if (basketRes.ok()) {
+      const identities = identitiesFromCart((await basketRes.json()).data || {});
+      const bpids = identities.map((i) => i.bpid).filter(Boolean);
+      console.log(formatIdentities(identities, 'cart basket'));
+
+      expect(
+        bpids,
+        'THE PRODUCT PRICED ON THE PDP IS NOT THE ONE THAT LANDED IN THE CART\n\n' +
+          `  added from: /pd/${product.slug}/${product.bpid} at ₹${header.price}\n` +
+          formatIdentities(identities, 'cart basket') +
+          '\n\nA /pd/ URL names one variant, not a product, and variants of the same product ' +
+          'differ in price. The total moving by the right amount does not prove the right ' +
+          'variant was added.'
+      ).toContain(product.bpid);
+    }
 
     // ...and the MRP line moved by the MRP, which is what makes the discount
     // line above it add up. Only checked where the PDP showed a strike-through.

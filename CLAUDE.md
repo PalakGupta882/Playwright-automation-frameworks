@@ -125,6 +125,47 @@ Practical consequence: re-run `scripts/discover-products.spec.js` before any
 catalogue-wide work, and expect a spec that hardcodes a slug or bpid to drift for
 reasons unrelated to the code.
 
+## Identity before arithmetic — required in every regression
+
+**Every regression must assert WHICH item a surface is showing, not only that
+its numbers add up.** Capture an identity tuple at each hop — bpid, sku,
+variant id, product id, item count — and assert it did not change. Helpers:
+`tests/utils/surfaceIdentity.js`.
+
+This is not optional polish. On 14 Aug 2026 a Device Protection charge read ₹1
+on Review Order and ₹2,001 on Payment Summary. **Every amount check passed at
+every hop**, because each page was internally consistent — the pages were
+showing *different products*. No arithmetic assertion can see that, and it is
+the worst failure this storefront can produce: the shopper is charged for
+something they never reviewed.
+
+Two measured facts make it easy to reach:
+
+- The **subscription basket holds exactly one line**, and subscribing to a
+  product silently replaces whatever was in it. Review one product, subscribe to
+  another, and the basket has swapped underneath.
+- The same product exists under **different bpids** in the two baskets —
+  MacBook Air M5 as `APPLALAPO1IYU3` (vas 0) and `APPLALAPO55QSK` (vas 1). Same
+  name on screen, different variant, different price, different add-ons.
+
+A `/pd/` URL names one *variant*, not a product, and variants differ in price —
+so "a line appeared and the total moved by the right amount" is never proof the
+right thing was added. Only the bpid is.
+
+Where to anchor it:
+
+| Hop | Compare |
+|---|---|
+| PDP → cart | the added bpid appears in `GET /cart?payment_type=UPFRONT` |
+| cart → Review Order | `compareIdentities()` over both baskets |
+| Review Order → order | reviewed bpids vs `create-order` response `orders[].bpid` / `sku` |
+
+`POST /customer-order/v2/create-order` is the one authoritative record in the
+flow — everything before it is a rendering. When a figure differs between two
+surfaces, **check identity first**: a changed item explains it more often than
+broken maths, and reporting "Device Protection mismatch" on a
+wrong-product-on-the-page bug names the wrong culprit.
+
 ## Pricing regression: the price must be the same on every surface
 
 Every pricing check written before 14 Aug 2026 was self-consistent within **one**
