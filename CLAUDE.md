@@ -212,6 +212,44 @@ tests into skips while the run stays green — and it is in the CI public list. 
 coverage guard now fails instead. Decide whether the field moved or the feature
 was withdrawn; do not "fix" it by deleting the guard.
 
+### Device Protection: ₹1 vs ₹2,001 — root cause
+
+**Review Order renders `vas_price` (per unit) where it should render
+`vas_amount` (the total charged).** Both fields sit in the same VAS record in
+the same response:
+
+```
+vas: [{ vas_name: "12 mo Device Protection",
+        vas_price:  1,      <- Review Order displays this
+        vas_amount: 2001 }] <- Payment Summary charges this
+```
+
+Measured on a 3-item upfront order (screen recording, 14 Aug 2026):
+
+| | Review Order | Payment Summary |
+|---|---|---|
+| Price (3 items) | ₹4,02,799 | ₹4,02,799 |
+| Device Protection | **₹1** | **₹2,001** |
+| Discount | −₹17,000 | −₹17,000 |
+| Total | **₹3,85,800** | **₹3,87,800** |
+
+The shopper approves ₹3,85,800 and is charged ₹2,000 more. `₹1,999 + ₹1 + ₹1`
+across the three items is the ₹2,001 — it is a **sum**, exposed as a second
+field rather than as extra rows, which is why looking for multiple protected
+lines in the cart found nothing.
+
+`regression/device-protection-consistency.spec.js` catches this at Review Order
+with **no order minted**: it reads `vas_items[].vas_price` and the line's
+`vas_amount` from the cart API and asserts the rendered figure is the charged
+one. It reports plainly when `vas_price == vas_amount`, since the two figures
+are then indistinguishable and the check proves nothing.
+
+To read a bug recording, `scripts/extract-video-frames.spec.js` pulls stills out
+of an MP4 — Playwright's bundled ffmpeg is a WebM-only build and cannot demux
+H.264, so Chrome does the decoding. The player must be served from the video's
+own directory: `setContent` produces an `about:blank` origin and Chrome silently
+refuses to load `file://` media into it (readyState stays 0, no error fires).
+
 ### Device Protection through checkout
 
 `regression/device-protection-consistency.spec.js` walks Cart → Review Order →

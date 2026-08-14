@@ -284,6 +284,148 @@ test.describe('Device Protection pricing consistency through checkout', () => {
     expect(page.url()).not.toMatch(/payment-summary|razorpay|payment_id/i);
   });
 
+  // ---- THE BUG, CAUGHT WITHOUT MINTING ANYTHING ------------------------
+  //
+  // Root cause, read off a screen recording of the failure (14 Aug 2026):
+  // Review Order renders the VAS record's `vas_price` — the PER-UNIT figure —
+  // where it should render `vas_amount`, the total actually charged. Both live
+  // in the same object in the same response:
+  //
+  //     vas: [{ vas_name: "12 mo Device Protection",
+  //             vas_price: 1,        <- Review Order shows this
+  //             vas_amount: 2001 }]  <- Payment Summary charges this
+  //
+  // Measured on a 3-item upfront order:
+  //     Review Order     Device Protection ₹1      Total ₹3,85,800
+  //     Payment Summary  Device Protection ₹2,001  Total ₹3,87,800
+  //
+  // The shopper approves one figure and is charged ₹2,000 more. ₹1,999 + ₹1 + ₹1
+  // across the three items is the ₹2,001 — so it is a sum, exposed as a second
+  // field rather than as extra lines, which is why looking for multiple
+  // protected rows found nothing.
+  //
+  // Because both numbers arrive together, the mismatch is provable on Review
+  // Order alone. No Continue, no order, no money. This is the test to run.
+  test('Review Order shows the Device Protection that will actually be charged', async ({
+    page,
+  }, testInfo) => {
+    test.setTimeout(FLOW_TIMEOUT);
+
+    const apiCalls = makeRecorder(page);
+
+    await openCart(page);
+    await dismissExchangeDialog(page);
+
+    await page
+      .getByRole('button', { name: /^continue$/i })
+      .filter({ visible: true })
+      .first()
+      .click({ timeout: TIMEOUTS.action });
+    await page.waitForURL(new RegExp(URLS.review), { timeout: 60000 });
+    await dismissExchangeDialog(page);
+
+    const review = await readPricing(page, 'review order');
+    console.log('REVIEW ORDER\n' + formatBreakdown(review));
+    await captureEvidence(page, testInfo, 'review-order-vas');
+
+    // The VAS records, read from the cart API rather than sniffed off the wire.
+    //
+    // Sniffing was tried first and skipped: the payload in the bug recording
+    // carries order_ids, so it is the post-create-order response — the Review
+    // Order page itself may never be sent a vas_amount. The cart API carries
+    // both figures per line before anything is created, which is what makes
+    // this check free.
+    const paymentType = ((page.url().match(/payment_type=([^&]+)/) || [])[1] || 'UPFRONT')
+      .toUpperCase();
+    const cartRes = await page.request.get(`${BASE_URL}/api/cart?payment_type=${paymentType}`, {
+      headers: { accept: 'application/json' },
+    });
+    expect(cartRes.ok(), `GET /api/cart?payment_type=${paymentType} → ${cartRes.status()}`).toBe(
+      true
+    );
+
+    const cartData = (await cartRes.json()).data || {};
+    const vasRecords = [];
+    for (const item of cartData.items || []) {
+      const lineTotal = Number(item.vas_amount) || 0;
+      for (const vas of item.vas_items || []) {
+        vasRecords.push({
+          product: item.product?.product_name,
+          name: vas.vas_name,
+          vasPrice: Number(vas.vas_price) || 0,
+          // The line's vas_amount is what that line contributes to the charge.
+          vasAmount: lineTotal,
+          from: `cart line ${item.variant?.bpid}`,
+        });
+      }
+    }
+
+    // Recorded so a run can be read back later; the sniffed calls stay in the
+    // report as corroboration.
+    await testInfo.attach('api-calls', {
+      body: JSON.stringify(apiCalls.map((c) => `${c.method} ${c.status} ${c.url}`), null, 1),
+      contentType: 'text/plain',
+    });
+
+    console.log(
+      vasRecords.length
+        ? 'VAS records seen:\n' +
+            vasRecords
+              .map((v) => `  ${v.name}: vas_price ₹${v.vasPrice}, vas_amount ₹${v.vasAmount}`)
+              .join('\n')
+        : 'no VAS record appeared in any response this page made'
+    );
+
+    await testInfo.attach('vas-records', {
+      body: JSON.stringify(vasRecords, null, 1),
+      contentType: 'text/plain',
+    });
+
+    // Non-vacuous: with nothing to compare against, say so rather than pass.
+    test.skip(
+      vasRecords.length === 0,
+      'No line in this basket carries a Device Protection record, so the displayed figure ' +
+        'cannot be checked against the amount that will be charged. Add a subscription ' +
+        'product with Device Protection attached first.'
+    );
+
+    // The divergence itself, called out whether or not the page happens to be
+    // showing the right one. When these are equal the assertion below cannot
+    // fail however the page behaves, and that is worth saying out loud.
+    const divergent = vasRecords.filter((v) => v.vasPrice !== v.vasAmount);
+    console.log(
+      divergent.length
+        ? `${divergent.length} record(s) where vas_price != vas_amount — this is the state that ` +
+            'exposes the defect'
+        : 'vas_price == vas_amount on every record, so ₹1 and the charged total are the same ' +
+            'number here and this check cannot distinguish them'
+    );
+
+    const charged = vasRecords.reduce((sum, v) => sum + v.vasAmount, 0);
+    const perUnit = vasRecords.reduce((sum, v) => sum + v.vasPrice, 0);
+
+    expect(
+      review.deviceProtection,
+      'REVIEW ORDER IS SHOWING THE WRONG DEVICE PROTECTION FIGURE\n\n' +
+        `  displayed on Review Order:  ₹${review.deviceProtection}\n` +
+        `  vas_amount (charged):       ₹${charged}\n` +
+        `  vas_price (per unit):       ₹${perUnit}\n` +
+        `  the shopper will be charged ₹${charged - (review.deviceProtection ?? 0)} more than ` +
+        'this page states\n\n' +
+        vasRecords
+          .map((v) => `    ${v.name}: vas_price ₹${v.vasPrice}, vas_amount ₹${v.vasAmount}`)
+          .join('\n') +
+        '\n\nBoth figures arrive in the same vas record. Review Order renders vas_price, the ' +
+        'per-unit figure; Payment Summary charges vas_amount, the total. Where a cart holds ' +
+        'more than one protected item the two diverge, and the shopper approves the smaller ' +
+        'one.\n\n' +
+        formatBreakdown(review)
+    ).toBe(charged);
+
+    // Stopped before anything is created.
+    expect(page.url()).not.toMatch(/payment-summary|razorpay|payment_id/i);
+  });
+
   // ---- The subscription review page, before any order ------------------
   //
   // The reported defect starts here: "Device Protection is shown as ₹1
