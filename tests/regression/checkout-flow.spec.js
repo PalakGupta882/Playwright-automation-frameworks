@@ -110,40 +110,15 @@ function readOrderSummary(bodyText) {
   return { price, total, discount, extras, extrasRegion: extrasRegion.trim() };
 }
 
-// KNOWN PRODUCTION BUG — see the dedicated test at the bottom of this file.
-// Loading /cart throws `window?.nitro?.updatecart is not a function` and Next
-// replaces the page with "Application error: a client-side exception has
-// occurred". Measured 4 of 6 cold loads.
-const CLIENT_SIDE_CRASH = /Application error: a client-side exception/i;
-
-// Opens the cart, reloading past the crash above. The flow tests are about
-// checkout, not about that bug, and letting an intermittent third-party race
-// mask the checkout assertions would make them useless. The bug itself is
-// asserted separately so retrying here does not hide it.
-async function openCart(page, attempts = 4) {
-  for (let attempt = 1; attempt <= attempts; attempt++) {
-    await page.goto(`${BASE_URL}${URLS.cart}?flow=shopping`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(3000);
-
-    const text = await page.locator('body').innerText().catch(() => '');
-    if (!CLIENT_SIDE_CRASH.test(text)) return attempt;
-    console.log(`cart load ${attempt}/${attempts} hit the nitro crash — reloading`);
-  }
-  throw new Error(
-    `The cart crashed on all ${attempts} loads with a client-side exception ` +
-    '(window?.nitro?.updatecart is not a function). This is the known bug, not a test fault.'
-  );
-}
-
-// The site pops an "Exchange is now available!" dialog over the review page.
-// Left alone it intercepts pointer events, which is how a click times out
-// against a control that is plainly visible.
-async function dismissExchangeDialog(page) {
-  const notNow = page.getByRole('button', { name: /^not now$/i }).first();
-  if (await notNow.isVisible().catch(() => false)) {
-    await notNow.click({ timeout: TIMEOUTS.action }).catch(() => {});
-  }
-}
+// Clears the "Exchange is now available!" promo dialog, which otherwise
+// intercepts pointer events and times out a click on a visible control.
+//
+// Moved to tests/utils/cartNav.js when pricing-checkout-consistency.spec.js
+// needed the same behaviour. openCart() moved with it — this file defined one
+// and never called it, reaching the cart through CartPage.addFirstProductToCart
+// instead. The note at the end of this file about openCart() absorbing the
+// nitro crash was describing a function that did not run here.
+const { dismissExchangeDialog } = require('../utils/cartNav');
 
 test.describe('Checkout flow (stops before payment)', () => {
   test('cart through to review order', async ({ page }, testInfo) => {
@@ -297,9 +272,10 @@ test.describe('Checkout flow (stops before payment)', () => {
   // of 9 loads with a populated cart, 0 of 6 with an empty one. That was raised
   // and is accepted as expected behaviour, so the suite does not fail on it.
   //
-  // openCart() above absorbs it by reloading. That is a deliberate choice to
-  // ignore a known condition, not an oversight — if the accepted status ever
-  // changes, the guard belongs here.
+  // openCart() in tests/utils/cartNav.js absorbs it by reloading, and
+  // pricing-checkout-consistency.spec.js reaches the cart that way. That is a
+  // deliberate choice to ignore a known condition, not an oversight — if the
+  // accepted status ever changes, the guard belongs here.
   //
   // Full analysis, with timings and proof: docs/BUG-01-cart-nitro-crash.pdf
 });

@@ -157,6 +157,27 @@ test.describe('Pricing API — best price is genuinely the best', () => {
     expect(FIXTURES.length, 'products.json yielded no usable /pd/ URLs').toBeGreaterThan(1);
   });
 
+  // best_price IS INTENTIONALLY DISABLED — the offer behind it has ended.
+  //
+  // Confirmed by the team on 14 Aug 2026. The field is absent from
+  // variant-pricing on every product, and that is a product decision, not a
+  // defect. Nothing here may fail, or report it as a pricing bug.
+  //
+  // A coverage guard briefly lived at this spot and asserted the field was
+  // still published. It was removed on the same decision — it was answering a
+  // question that has now been answered.
+  //
+  // The per-fixture `test.skip(!best, ...)` calls below are therefore correct
+  // and are left alone. They report as skips with a reason, which is the honest
+  // status of a feature that no longer exists: not "we could not check", but
+  // "there is nothing left to check". Do not re-add a guard here, and do not
+  // let the checkout pricing suite depend on this file.
+  //
+  // Live checkout pricing is covered instead by:
+  //   regression/pricing-consistency.spec.js            (PLP -> PDP, per plan)
+  //   regression/pricing-checkout-consistency.spec.js   (PDP -> cart -> review)
+  //   regression/device-protection-consistency.spec.js  (review -> payment)
+
   for (const fixture of FIXTURES) {
     test.describe(fixture.name, () => {
       // ---- best_upfront ------------------------------------------------

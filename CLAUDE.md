@@ -125,6 +125,116 @@ Practical consequence: re-run `scripts/discover-products.spec.js` before any
 catalogue-wide work, and expect a spec that hardcodes a slug or bpid to drift for
 reasons unrelated to the code.
 
+## Pricing regression: the price must be the same on every surface
+
+Every pricing check written before 14 Aug 2026 was self-consistent within **one**
+layer — `pricing-api` reconciles `best_price` against its own competitors,
+`emi-checkout-flow` reconciles the EMI ladder against its own price. None
+compared a figure on one surface against the same figure on another, so a
+product priced differently on the listing and the PDP passed the whole suite.
+
+Two specs close that:
+
+- `regression/pricing-consistency.spec.js` — public, logged out.
+  pricing API → PLP tile → PDP header → PDP plan box, per plan. Sweeps the
+  **live** listing (~209 products), not `products.json`, which drifts.
+- `regression/pricing-checkout-consistency.spec.js` — login-gated.
+  PDP → cart line → cart summary → Review Order → Payment Summary.
+
+Shared parsers are in `tests/utils/priceText.js`. They parse **text, not
+locators**, on purpose: the plan box container is `div.MuiBox-root.mui-zv7ju9`,
+build-hashed, and its rows carry no role, test id or stable class. What is stable
+is the copy beside each figure, so every reader anchors on the amount and its
+label together.
+
+Measured formulas, all exact — do not re-derive them:
+
+| Figure on the page | Comes from |
+|---|---|
+| headline price / MRP / % off | `upfront.price` / `upfront.cut_price` / `upfront.off_on_amount` |
+| "Pay in Full" · "Buy Upfront" | `upfront.price` |
+| "Credit Card EMI ₹X/mo" · "Monthly Subscription" · "Subscription from" | `cc.emi_amount` |
+| "Cardless EMI ₹X/mo + ₹Y Now" | `nbfc.emi_amount` + `nbfc.downpay` |
+| "₹X x N mo" ladder rows | `emi.emi_option[]` — `installment_amount` × `tenure` |
+| "Total Discount" · "You'll save up to" | `(MRP − cc.total_amount) + (add-on list − add-on paid)` |
+| instalment total | `price − discount + interest`, ±₹1 per instalment |
+
+The add-on term is `BytePe Secure ₹8,000 → ₹1,999`, which sits **below** the
+buyback slider and outside the plan box. It is 22% of the headline saving on a
+Galaxy Z Fold8 Ultra, so a check that skips it leaves the largest number on the
+page unverified.
+
+**`best_price` is currently absent from `variant-pricing` on every sampled
+product** (14 Aug 2026), though the header of `api/pricing-api.spec.js` records
+it live and fully populated on 10 Aug. That silently turns 20 of that file's 21
+tests into skips while the run stays green — and it is in the CI public list. A
+coverage guard now fails instead. Decide whether the field moved or the feature
+was withdrawn; do not "fix" it by deleting the guard.
+
+### Device Protection through checkout
+
+`regression/device-protection-consistency.spec.js` walks Cart → Review Order →
+Payment Summary and compares pricing **component by component** — product
+amount, discount, Device Protection, shipping, other charges, total — so a
+mismatch names the charge that moved instead of reporting a bare total
+difference.
+
+That distinction is the whole point. With Device Protection at ₹2,001 instead of
+₹1, Payment Summary's *own* arithmetic still balances perfectly, so a
+"does this page add up" check passes on both pages and the defect is invisible.
+Only the cross-page comparison of the named component finds it.
+
+```
+BYTEPE_ALLOW_WRITES=1   # required — reaching Payment Summary mints a real order
+```
+
+The Payment Summary test sets `test.describe.configure({ retries: 0 })`. Do not
+remove it: the config retries once locally and twice in CI, and a retry here
+mints another real order. Refresh and back/forward checks are folded into the
+same test for the same reason — separate tests would each mint their own order.
+
+Its Payment Summary parsers were written against the feature description, **not
+against a rendered page** — nothing in this repo had reached it, because getting
+there costs an order. They fail loudly with the full page text rather than
+mis-parsing quietly. Expect to name real labels in `COMPONENT_PATTERNS` in
+`utils/priceText.js` on the first run.
+
+`best_price` is **intentionally disabled** (the offer ended). Nothing in the
+checkout pricing suite reads it, and it must never fail a run or be reported as
+a pricing defect.
+
+### Cart facts that cost a run each
+
+- **"Price (N Items)" is a sum of MRPs, not selling prices.** Adding a ₹1,575
+  item with a ₹3,499 MRP moves Price by 3,499, Discount by 1,924, and **Total by
+  1,575**. Hold the PDP price to the **Total**, never to the Price line.
+- **Re-adding a product already in the cart is a no-op.** `POST /api/cart`
+  returns 200 with "Your Item has been successfully added in Cart" and nothing
+  moves — not even the quantity. A spec that adds "the cheapest product" every
+  run silently stops testing anything on its second run. Pick a product the cart
+  does not already hold.
+- **The PDP shows "Add to Cart" whether or not the item is in the cart.** It
+  flips to "Go to Cart" only transiently, in the same session, right after a
+  click. It is not a reliable "is this in my basket" signal.
+- **Never locate the buy CTA by name.** `getByRole('button', {name:'Add to
+  Cart'}).first()` reaches the recommended-products carousel further down the
+  PDP, and on 14 Aug 2026 it **added a ₹1,24,999 phone to the live cart** instead
+  of a ₹1,200 powerbank. Anchor on `Buy Now` and take the button before it —
+  carousel tiles have no Buy Now.
+- **Confirm an add by its request, not its button.** `POST /api/cart` carries the
+  site's own verdict; a label can flip for reasons unrelated to your click, and
+  an early click is silently inert because the button renders before its handler
+  is bound.
+
+### Session lifetime
+
+`access_token` lasts **15 minutes**; `refresh_token` lasts 7 days. `npm run auth`
+reuses the refresh token silently and only prompts for an OTP when that has also
+expired. It now refuses to short-circuit on a token with under 5 minutes left —
+it used to save one seconds from expiry and report success, and the next command
+failed `assertFreshSession()`. `BYTEPE_OTP_WAIT_MS` widens the manual OTP window
+(default 120000); the spec timeout derives from it.
+
 ## Product Video suite
 
 `video-*.spec.js` cover the Product Video feature (VID-01..VID-53). They gate
