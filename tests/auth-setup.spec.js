@@ -1,5 +1,6 @@
 const { test } = require('@playwright/test');
 const { HomePage } = require('./pages/homepage');
+const { TIMEOUTS } = require('./data/constants');
 
 const SITE = 'https://www.bytepe.com';
 
@@ -13,19 +14,35 @@ const SITE = 'https://www.bytepe.com';
 // checking only the name lets this report success while saving a session that
 // assertFreshSession() will reject. Require it to be unexpired too — the same
 // test session.js applies.
-async function waitForAccessToken(context, timeoutMs = 20000) {
+// `minRemainingSec` guards against saving a token that is valid at this instant
+// and useless by the time a spec runs. The access_token lasts FIFTEEN MINUTES.
+// Measured 14 Aug 2026: a refresh run that started ~5 seconds before expiry
+// found the old token still nominally valid, reported "session still valid,
+// saving as-is", and wrote an auth.json that assertFreshSession() rejected on
+// the very next command. Requiring a real window forces the refresh instead.
+async function waitForAccessToken(context, timeoutMs = 20000, minRemainingSec = 0) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const token = (await context.cookies(SITE)).find(c => c.name === 'access_token');
     // expires <= 0 means a session cookie, which carries no expiry to check.
-    if (token && (token.expires <= 0 || token.expires > Date.now() / 1000)) return true;
+    if (token && (token.expires <= 0 || token.expires > Date.now() / 1000 + minRemainingSec)) {
+      return true;
+    }
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
   return false;
 }
 
+// Enough of the 15-minute lifetime left to actually run something. A spec that
+// starts with four minutes on the clock and takes five is a confusing failure.
+const USABLE_WINDOW_SEC = 300;
+
 test('one-time login and save session', async ({ page }) => {
-  test.setTimeout(180000);
+  // Derived, not a literal. This used to be a flat 180s while the OTP wait was a
+  // flat 120s, so widening the human's window past ~150s silently did nothing —
+  // the test timeout killed the run first. The 60s on top covers the navigation,
+  // the Login click and the post-login access_token poll.
+  test.setTimeout(TIMEOUTS.otp + 60000);
 
   const home = new HomePage(page);
   await home.goto();
@@ -65,9 +82,11 @@ test('one-time login and save session', async ({ page }) => {
   // was never actually needed. Visiting /my-profile gives the app the chance,
   // and turns a week's worth of logins into one.
   async function letTheAppRefresh() {
-    if (await waitForAccessToken(page.context(), 3000)) return true;
+    // Short-circuit only on a token with real life left in it, not merely an
+    // unexpired one — see USABLE_WINDOW_SEC above.
+    if (await waitForAccessToken(page.context(), 3000, USABLE_WINDOW_SEC)) return true;
     await page.goto(`${SITE}/my-profile`, { waitUntil: 'domcontentloaded' });
-    return waitForAccessToken(page.context(), 25000);
+    return waitForAccessToken(page.context(), 25000, USABLE_WINDOW_SEC);
   }
 
   let useSavedSession = await letTheAppRefresh();

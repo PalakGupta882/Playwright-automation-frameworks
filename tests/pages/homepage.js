@@ -164,14 +164,43 @@ class HomePage extends BasePage {
   // Races the success signal against an on-screen rejection, so a wrong or
   // rotated OTP reports itself as exactly that instead of as a timeout that
   // looks identical to a broken selector.
+  //
+  // THE COOKIE IS THE SIGNAL, added 14 Aug 2026. This used to wait on the
+  // "My Profile" header link alone, and that cost a real login: the OTP was
+  // accepted, the site was visibly logged in, and this sat waiting for a link
+  // that never matched until the window closed and Playwright discarded the
+  // context — throwing away the session it had just been handed.
+  //
+  // The header is only ever a proxy. What every gated spec actually checks is an
+  // unexpired `access_token` cookie for www.bytepe.com (utils/session.js), and
+  // that is also the only thing storageState saves that matters. So wait on the
+  // cookie directly and treat the header link as a second, equally sufficient
+  // signal. A header redesign can no longer waste an OTP.
   async waitForLoggedIn({ timeout }) {
     const rejected = this.page.getByText(/invalid|incorrect|expired|wrong.*otp/i).first();
     const pending = () => new Promise(() => {});
 
+    // Polled rather than awaited: there is no event for a cookie being set.
+    const cookieArrives = async () => {
+      const deadline = Date.now() + timeout;
+      while (Date.now() < deadline) {
+        const token = (await this.page.context().cookies(BASE_URL)).find(
+          c => c.name === 'access_token'
+        );
+        // expires <= 0 is a session cookie, which carries no expiry to check.
+        if (token && (token.expires <= 0 || token.expires > Date.now() / 1000)) {
+          return { ok: true, via: 'access_token cookie' };
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      return pending();
+    };
+
     const outcome = await Promise.race([
+      cookieArrives(),
       this.profileLink
         .waitFor({ state: 'visible', timeout })
-        .then(() => ({ ok: true }))
+        .then(() => ({ ok: true, via: 'My Profile header link' }))
         .catch(pending),
       rejected
         .waitFor({ state: 'visible', timeout })
@@ -180,12 +209,25 @@ class HomePage extends BasePage {
       new Promise(resolve => setTimeout(() => resolve({ ok: false, timedOut: true }), timeout + 500)),
     ]);
 
-    if (outcome.ok) return;
+    if (outcome.ok) {
+      console.log(`Logged-in signal: ${outcome.via}`);
+      return;
+    }
 
     if (outcome.timedOut) {
+      // Report what was actually on the page and in the jar. The previous
+      // message named only the missing link, which sent the diagnosis toward
+      // "the OTP was never submitted" when the real answer was visible in the
+      // cookie jar all along.
+      const names = (await this.page.context().cookies(BASE_URL).catch(() => []))
+        .map(c => c.name)
+        .join(', ');
       throw new Error(
-        `Login did not complete within ${timeout / 1000}s — no "My Profile" link and no ` +
-        'error on screen.\nEither the OTP was never submitted or the site did not respond.'
+        `Login did not complete within ${timeout / 1000}s — no access_token cookie, no ` +
+        '"My Profile" link, and no error on screen.\n' +
+        `  cookies for ${BASE_URL}: ${names || '(none)'}\n` +
+        `  url: ${this.page.url()}\n` +
+        'Either the OTP was never submitted or the site did not respond.'
       );
     }
 

@@ -51,7 +51,17 @@ module.exports = {
   TIMEOUTS: {
     nav: 15000,
     // A human reading an SMS and typing it. Only used when BYTEPE_OTP is unset.
-    otp: 120000,
+    //
+    // Overridable because 120s assumes somebody is already at the keyboard when
+    // the code arrives. Measured 14 Aug 2026: a run launched from a tool call
+    // burned both its attempts — 120s each, then a retry that sent a SECOND real
+    // SMS — because the instruction to type the code could not reach the human
+    // until after both windows had closed. Widening the window is the cheap fix;
+    // the alternative is a wasted OTP every time the SMS is slow.
+    //
+    // auth-setup.spec.js derives its own test timeout from this, so raising it
+    // here is enough — raising one without the other just moves the failure.
+    otp: Number(process.env.BYTEPE_OTP_WAIT_MS) || 120000,
     // Unattended login, where nobody is waiting on a message: the OTP screen to
     // render, then submit-to-logged-in. Kept short on purpose — a broken
     // selector should report in seconds, not sit on the human budget.
