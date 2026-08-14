@@ -94,6 +94,16 @@ function hasSavedSession() {
 // actually carries the access_token cookie. It deliberately does NOT throw when
 // the session is missing — callers decide whether that is a skip or a failure,
 // and one of the negative tests genuinely wants an unauthenticated context.
+//
+// THE `authenticated: false` BRANCH MUST PASS AN EMPTY storageState EXPLICITLY.
+// playwright.config.js sets `use.storageState: 'auth.json'` for every project,
+// and request.newContext() inherits it under the test runner — so omitting the
+// option here did not produce an anonymous context, it produced a logged-in one.
+// Measured 14 Aug 2026: the "anonymous" cart cases got 400 on a bare GET /cart
+// (the *authenticated* validation error) and 200 with five real line items on
+// `?payment_type=UPFRONT&is_review=true`, while the identical calls outside the
+// runner returned 401 every time. It went unnoticed because CI writes an empty
+// auth.json, so the leak only ever happened locally, on a fresh session.
 async function getApiContext({ authenticated = false, extraHeaders = {} } = {}) {
   const useSession = authenticated && hasSavedSession();
 
@@ -104,7 +114,7 @@ async function getApiContext({ authenticated = false, extraHeaders = {} } = {}) 
     // Paired with the leading-slash stripping in apiEndpoints.js.
     baseURL: `${BASE_API_URL.replace(/\/+$/, '')}/`,
     extraHTTPHeaders: { ...DEFAULT_HEADERS, ...extraHeaders },
-    ...(useSession ? { storageState: AUTH_PATH } : {}),
+    storageState: useSession ? AUTH_PATH : { cookies: [], origins: [] },
     // Statuses are the thing under test. Throwing on a 4xx would turn every
     // negative case into an exception before it could be asserted.
     ignoreHTTPSErrors: false,

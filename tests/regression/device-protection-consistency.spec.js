@@ -488,8 +488,14 @@ test.describe('Device Protection pricing consistency through checkout', () => {
     const addressId = (page.url().match(/address_id=([^&]+)/) || [])[1];
     test.skip(!addressId, 'the review URL carried no address_id to query the cart API with');
 
+    // payment_type + address_id, no is_review — that is the exact call the Review
+    // Order page makes (recorded off the live page, 14 Aug 2026). is_review is a
+    // filter on each line's own is_review flag, not "the review view": it happens
+    // to return the subscription line, which is flagged, and returns nothing at
+    // all for an upfront basket. Asking the page's own question keeps this from
+    // depending on a flag the page never sets.
     const res = await page.request.get(
-      `${BASE_URL}/api/cart?payment_type=SUBSCRIPTION&address_id=${addressId}&is_review=true`,
+      `${BASE_URL}/api/cart?payment_type=SUBSCRIPTION&address_id=${addressId}`,
       { headers: { accept: 'application/json' } }
     );
     expect(res.ok(), `review cart API returned ${res.status()}`).toBe(true);
@@ -787,15 +793,16 @@ test.describe('Device Protection pricing consistency through checkout', () => {
       assertAddsUp(review, testInfo);
 
       // The server's own view of the same basket, read with the exact query the
-      // review page uses — payment_type + address_id + is_review. Without all
-      // three the endpoint returns an empty cart, which is why a bare
-      // is_review=true looks like it does nothing.
+      // review page uses: payment_type + address_id. NOT is_review — recorded off
+      // the live page on 14 Aug 2026, the page never sends it. is_review filters
+      // on each line's own is_review flag, so it returns the subscription line
+      // (which is flagged) and nothing at all for an upfront basket.
       const addressId = (page.url().match(/address_id=([^&]+)/) || [])[1];
       let apiVas = null;
       let reviewIdentities = [];
       if (addressId) {
         const res = await page.request.get(
-          `${BASE_URL}/api/cart?payment_type=SUBSCRIPTION&address_id=${addressId}&is_review=true`,
+          `${BASE_URL}/api/cart?payment_type=SUBSCRIPTION&address_id=${addressId}`,
           { headers: { accept: 'application/json' } }
         );
         if (res.ok()) {

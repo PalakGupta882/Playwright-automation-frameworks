@@ -98,10 +98,17 @@ async function readProductPricing(page, { slug, bpid }) {
 // as APPLALAPO55QSK with vas 1. So "the cart" is not one thing, and any Device
 // Protection figure has to name the basket it belongs to.
 //
-// Note: adding is_review=true returns an EMPTY cart (0 items, totals undefined)
-// on both payment types. The Review Order page renders real figures, so it is
-// sending more than that flag — its URL also carries address_id. Do not treat
-// is_review alone as "the review view of the cart".
+// THE REVIEW ORDER PAGE READS THE CART WITH payment_type + address_id. Recorded
+// off the live page, 14 Aug 2026:
+//
+//   GET /api/cart?payment_type=UPFRONT&address_id=<addressId>   200, 7 items
+//
+// It never sends is_review. That parameter is a filter on each line's own
+// `is_review` boolean — it returns the lines where the flag is true and nothing
+// else, which for an upfront basket is `data: []`. Earlier notes read that empty
+// response as "is_review needs an address"; it does not. There is no separate
+// "review view" endpoint to find: Review Order and the cart page call the same
+// route, the review call just carries the address.
 const PAYMENT_TYPES = ['UPFRONT', 'SUBSCRIPTION'];
 
 // Returns the "Buy Now" button, selecting the upfront plan first if the page is
@@ -549,46 +556,117 @@ test.describe('Device Protection is charged per product', () => {
     const reviewPaymentType = ((page.url().match(/payment_type=([^&]+)/) || [])[1] || 'UPFRONT')
       .toUpperCase();
 
-    if (reviewAddressId) {
-      const res = await page.request.get(
-        `${BASE_URL}/api/cart?payment_type=${reviewPaymentType}&address_id=${reviewAddressId}&is_review=true`,
-        { headers: { accept: 'application/json' } }
+    // THE REVIEW ORDER PAGE DOES NOT SEND is_review. Recorded off the live page
+    // on 14 Aug 2026 — every API call it makes during the cart -> review
+    // transition, in order:
+    //
+    //   GET /api/customer-address/user/<userId>                        200
+    //   GET /api/cart?payment_type=UPFRONT&address_id=<addressId>      200  <- this one
+    //   POST /api/coupons/customer                                     200
+    //
+    // payment_type + address_id, and nothing else. The previous version of this
+    // block appended `is_review=true`, which is a FILTER over the basket's own
+    // lines: it returns only lines whose own `is_review` flag is true, and no
+    // UPFRONT line carries that flag. It answered `data: []`, the length guard
+    // below swallowed it, and this hop — the one that exists to catch a swapped
+    // product between cart and Review Order — never ran. It reported as a pass.
+    expect(
+      reviewAddressId,
+      'Review Order carries no address_id in its URL, so the basket it is rendering ' +
+      'cannot be read back. That is a change in the page, not a cart problem.'
+    ).toBeTruthy();
+
+    const reviewUrl =
+      `${BASE_URL}/api/cart?payment_type=${reviewPaymentType}&address_id=${reviewAddressId}`;
+    const res = await page.request.get(reviewUrl, { headers: { accept: 'application/json' } });
+    expect(res.ok(), `${reviewUrl} returned ${res.status()}`).toBe(true);
+
+    const reviewData = (await res.json()).data || {};
+    const reviewIdentities = identitiesFromCart(reviewData);
+    const cartIdentities = identitiesFromCart(
+      (await (
+        await page.request.get(`${BASE_URL}/api/cart?payment_type=${reviewPaymentType}`, {
+          headers: { accept: 'application/json' },
+        })
+      ).json()).data || {}
+    );
+
+    console.log(
+      formatIdentities(cartIdentities, 'cart basket') +
+        '\n' +
+        formatIdentities(reviewIdentities, 'review basket')
+    );
+
+    // No length guard. An empty review basket used to be an artefact of asking
+    // the wrong question; against the endpoint the page itself calls, it means
+    // Review Order is rendering a basket the server does not have, and that is a
+    // failure worth reporting rather than a reason to skip the comparison.
+    expect(
+      reviewIdentities.length,
+      `${reviewUrl}\nreturned no line items while Review Order rendered ` +
+      `${review.itemCount} item(s) on screen.`
+    ).toBeGreaterThan(0);
+
+    const drift = compareIdentities(cartIdentities, reviewIdentities, {
+      beforeLabel: 'cart',
+      afterLabel: 'review order',
+    });
+    expect(
+      drift,
+      'THE BASKET CHANGED BETWEEN CART AND REVIEW ORDER\n\n' +
+        formatIdentities(cartIdentities, 'cart basket') +
+        '\n' +
+        formatIdentities(reviewIdentities, 'review basket') +
+        '\n\nThe shopper is reviewing something other than what they had in the cart. Any ' +
+        'price difference below follows from this and is not an arithmetic fault.'
+    ).toEqual([]);
+
+    // Step 4 of the diagnostic order, on the basket Review Order is actually
+    // rendering: which field is on screen, the per-unit one or the charged one?
+    // Both live in the same record, so this needs no second surface and no order.
+    const reviewVasRecords = (reviewData.items || []).flatMap((item) =>
+      (item.vas_items || []).map((v) => ({
+        line: item.product?.product_name ?? item.variant?.bpid ?? '(unnamed)',
+        bpid: item.variant?.bpid ?? null,
+        vasName: v.vas_name,
+        vasPrice: Number(v.vas_price) || 0,
+        lineVasAmount: Number(item.vas_amount) || 0,
+      }))
+    );
+
+    console.log(
+      'REVIEW BASKET VAS (from the endpoint the page calls)\n' +
+        (reviewVasRecords
+          .map(
+            (r) =>
+              `  ${r.line}: ${r.vasName} — vas_price ₹${r.vasPrice}, ` +
+              `line vas_amount ₹${r.lineVasAmount}`
+          )
+          .join('\n') || '  (no VAS on any line)')
+    );
+
+    const displayedIsCharged = reviewVasRecords.filter((r) => r.vasPrice !== r.lineVasAmount);
+    expect(
+      displayedIsCharged,
+      'REVIEW ORDER IS SHOWING A PER-UNIT DEVICE PROTECTION FIGURE, NOT THE CHARGED TOTAL\n\n' +
+        displayedIsCharged
+          .map(
+            (r) =>
+              `  ${r.line} (${r.bpid}): vas_price ₹${r.vasPrice} vs vas_amount ₹${r.lineVasAmount}`
+          )
+          .join('\n') +
+        '\n\nName the field, not the symptom: the page renders vas_price where vas_amount is ' +
+        'what will be charged.'
+    ).toEqual([]);
+
+    // Say so when the check could not distinguish, rather than claiming a result.
+    const indistinguishable = reviewVasRecords.filter((r) => r.vasPrice === r.lineVasAmount);
+    if (indistinguishable.length === reviewVasRecords.length && reviewVasRecords.length) {
+      console.log(
+        '  NOTE: vas_price == vas_amount on every protected line in this basket, so the ' +
+        'assertion above cannot tell the two fields apart. It proves nothing until a cart ' +
+        'holds a line where they differ.'
       );
-      if (res.ok()) {
-        const reviewIdentities = identitiesFromCart((await res.json()).data || {});
-        const cartIdentities = identitiesFromCart(
-          (await (
-            await page.request.get(`${BASE_URL}/api/cart?payment_type=${reviewPaymentType}`, {
-              headers: { accept: 'application/json' },
-            })
-          ).json()).data || {}
-        );
-
-        console.log(
-          formatIdentities(cartIdentities, 'cart basket') +
-            '\n' +
-            formatIdentities(reviewIdentities, 'review basket')
-        );
-
-        // Only compare when the review view returned something; this endpoint
-        // returns an empty basket unless payment_type AND address_id are both
-        // right, and an empty list would report every item as "missing".
-        if (reviewIdentities.length) {
-          const drift = compareIdentities(cartIdentities, reviewIdentities, {
-            beforeLabel: 'cart',
-            afterLabel: 'review order',
-          });
-          expect(
-            drift,
-            'THE BASKET CHANGED BETWEEN CART AND REVIEW ORDER\n\n' +
-              formatIdentities(cartIdentities, 'cart basket') +
-              '\n' +
-              formatIdentities(reviewIdentities, 'review basket') +
-              '\n\nThe shopper is reviewing something other than what they had in the cart. Any ' +
-              'price difference below follows from this and is not an arithmetic fault.'
-          ).toEqual([]);
-        }
-      }
     }
 
     console.log('CART\n' + formatBreakdown(cart) + '\n\nREVIEW ORDER\n' + formatBreakdown(review));

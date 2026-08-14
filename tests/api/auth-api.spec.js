@@ -136,11 +136,21 @@ test.describe('Auth API — the saved session is a working credential', () => {
     try {
       const res = await getWithRetry(authed, ENDPOINTS.userDetails);
 
+      // 201, NOT 200 — measured 14 Aug 2026. A GET that answers 201 Created is a
+      // backend contract wart, but it is a successful read: body.status is true
+      // and data carries the account record. Pinning this to 200 failed the run
+      // with "the saved session did not authenticate", which sent the reader to
+      // `npm run auth` for a session that was working perfectly.
+      //
+      // Both codes are accepted rather than swapping 200 for 201, so this keeps
+      // passing whichever way the route settles. What is actually being tested
+      // is the pairing — token in, authenticated read out — so the assertions
+      // that matter are the envelope and data below, not the digit.
       expect(
-        res.status(),
-        'The saved session did not authenticate. Almost always a stale auth.json — ' +
-        'refresh with: npm run auth'
-      ).toBe(200);
+        [200, 201],
+        'The saved session did not authenticate. A 401 here is almost always a stale ' +
+        `auth.json — refresh with: npm run auth. Got ${res.status()}.`
+      ).toContain(res.status());
 
       const body = await res.json();
       expect(body.status).toBe(true);
