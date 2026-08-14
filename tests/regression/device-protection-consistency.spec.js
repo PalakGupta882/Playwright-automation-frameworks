@@ -47,6 +47,11 @@ const {
   compareIdentities,
   formatIdentities,
 } = require('../utils/surfaceIdentity');
+const {
+  explainDisplayedField,
+  fieldsAreIndistinguishable,
+  diagnosticHeader,
+} = require('../utils/pricingDiagnosis');
 
 test.beforeAll(() => assertFreshSession());
 
@@ -389,27 +394,38 @@ test.describe('Device Protection pricing consistency through checkout', () => {
         'product with Device Protection attached first.'
     );
 
-    // The divergence itself, called out whether or not the page happens to be
-    // showing the right one. When these are equal the assertion below cannot
-    // fail however the page behaves, and that is worth saying out loud.
-    const divergent = vasRecords.filter((v) => v.vasPrice !== v.vasAmount);
-    console.log(
-      divergent.length
-        ? `${divergent.length} record(s) where vas_price != vas_amount — this is the state that ` +
-            'exposes the defect'
-        : 'vas_price == vas_amount on every record, so ₹1 and the charged total are the same ' +
-            'number here and this check cannot distinguish them'
-    );
+    // Steps 3-5 of the diagnostic order: what did the API return, which of its
+    // fields is the page showing, and what does that field mean.
+    console.log(diagnosticHeader('Device Protection'));
 
     const charged = vasRecords.reduce((sum, v) => sum + v.vasAmount, 0);
     const perUnit = vasRecords.reduce((sum, v) => sum + v.vasPrice, 0);
+    const candidates = { vas_amount: charged, vas_price: perUnit };
+
+    // When the two fields hold the same number, the assertion below cannot fail
+    // however the page behaves. Saying so is the difference between a result and
+    // a coincidence.
+    const indistinguishable = fieldsAreIndistinguishable(candidates, 'vas_amount', 'vas_price');
+    console.log(
+      indistinguishable
+        ? `vas_price == vas_amount == ₹${charged}, so this check cannot tell the two apart on ` +
+            'this basket — it proves nothing until a cart holds a record where they differ'
+        : `vas_price ₹${perUnit} != vas_amount ₹${charged} — this basket CAN expose the defect`
+    );
 
     expect(
       review.deviceProtection,
       'REVIEW ORDER IS SHOWING THE WRONG DEVICE PROTECTION FIGURE\n\n' +
-        `  displayed on Review Order:  ₹${review.deviceProtection}\n` +
-        `  vas_amount (charged):       ₹${charged}\n` +
-        `  vas_price (per unit):       ₹${perUnit}\n` +
+        // Step 4 names the field rather than reporting a bare difference: "the
+        // page renders vas_price" and "Device Protection is wrong" are different
+        // bugs, fixed by different people.
+        explainDisplayedField({
+          uiValue: review.deviceProtection,
+          expectedField: 'vas_amount',
+          candidates,
+          label: 'Review Order',
+        }) +
+        '\n\n' +
         `  the shopper will be charged ₹${charged - (review.deviceProtection ?? 0)} more than ` +
         'this page states\n\n' +
         vasRecords

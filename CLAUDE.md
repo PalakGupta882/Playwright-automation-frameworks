@@ -125,6 +125,55 @@ Practical consequence: re-run `scripts/discover-products.spec.js` before any
 catalogue-wide work, and expect a spec that hardcodes a slug or bpid to drift for
 reasons unrelated to the code.
 
+## How to investigate any pricing discrepancy
+
+Work in this order. Do not skip ahead, and do not start at the bottom.
+
+```
+1. Is it the SAME product?
+        ↓
+2. Is it the SAME variant/SKU?
+        ↓
+3. What does the API return?
+        ↓
+4. Which API field is the UI displaying?
+        ↓
+5. Does that field represent a price, an amount, a discount or a total?
+        ↓
+6. Compare across Cart → Review → Payment
+        ↓
+7. Only then investigate arithmetic
+```
+
+Steps 1–5 are cheap, need no order to be minted, and **any one of them can
+fully explain a difference that looks like broken maths**. Step 7 is the
+expensive one and the one most likely to produce a confident, wrong bug report.
+
+This ordering was paid for. The Device Protection ₹1 → ₹2,001 defect was chased
+as arithmetic for a long time; the answer was step 4. Both figures were in the
+same record — `vas_price: 1` and `vas_amount: 2001` — and the page rendered the
+per-unit field where it should have rendered the total. Every page's own sums
+were correct throughout, so no amount comparison could ever have found it.
+
+Tooling for each step:
+
+| Step | Use |
+|---|---|
+| 1–2 | `utils/surfaceIdentity.js` — `identitiesFromCart`, `identitiesFromCreateOrder`, `compareIdentities` |
+| 3 | the API directly; `GET /api/cart?payment_type=UPFRONT\|SUBSCRIPTION` |
+| 4–5 | `utils/pricingDiagnosis.js` — `explainDisplayedField`, `fieldsAreIndistinguishable` |
+| 6 | `utils/priceText.js` — `parsePricingBreakdown` per surface, then compare components |
+| 7 | `expectedTotalOf` — last, not first |
+
+Two rules that fall out of it:
+
+- **Name the field, not the symptom.** "The page renders `vas_price`" and
+  "Device Protection is wrong" are different bugs, fixed by different people.
+- **Say when a check cannot distinguish.** If two candidate fields hold the same
+  number, an assertion separating them passes by coincidence.
+  `fieldsAreIndistinguishable()` exists to report that instead of claiming a
+  clean result.
+
 ## Identity before arithmetic — required in every regression
 
 **Every regression must assert WHICH item a surface is showing, not only that
