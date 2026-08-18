@@ -99,7 +99,35 @@ async function openProduct(page, bpid = PRODUCT.bpid, slug = PRODUCT.slug) {
   await page.keyboard.press('Escape').catch(() => {}); // promo modal, if present
 }
 
-test.describe('Lowest Effective Price banner', () => {
+// ============================================================================
+// DISABLED — THE FEATURE WAS WITHDRAWN, NOT BROKEN.
+//
+// `best_price` is gone from variant-pricing. Swept the whole live catalogue on
+// 18 Aug 2026: present on 0 of 226 products. The response now carries only
+// abb, cc, cc_y2, emi, emi_price, nbfc, upfront. The banner does not render on
+// the PDP either, so the UI cases below fail for the same single reason.
+//
+// The offer behind it ended; confirmed by the team on 14 Aug 2026. CLAUDE.md
+// is explicit that this must never fail a run or be reported as a pricing
+// defect. api/pricing-api.spec.js was updated on that decision and this file
+// was not — so it kept failing six tests, and it is in the CI public list, which
+// means CI was red on main for a product decision rather than a regression.
+//
+// SKIPPED, NOT DELETED. Everything here — the per-variant banner figures, the
+// rounding behaviour, the MOP-minus-coupon formula — was measured against a
+// live feature on 10 Aug and is not recoverable from anything else in the repo.
+// If the offer returns, re-enabling this is one word; re-deriving it is not.
+//
+// Do not "fix" this by asserting the field is absent. That pins the withdrawal
+// as if it were the contract, and the day merchandising switches the offer back
+// on, the suite would fail for the feature WORKING.
+//
+// Live pricing coverage does not depend on this file. It is carried by:
+//   regression/pricing-consistency.spec.js       (PLP -> PDP, per plan)
+//   regression/catalogue-integrity.spec.js       (listing -> variant-pricing)
+//   regression/pricing-checkout-consistency.spec.js
+// ============================================================================
+test.describe.skip('Lowest Effective Price banner', () => {
   // 1. PRESENCE — the banner is on the page at all.
   test('the PDP renders the banner with a label and an amount', async ({ page, productPage }) => {
     test.setTimeout(90000);

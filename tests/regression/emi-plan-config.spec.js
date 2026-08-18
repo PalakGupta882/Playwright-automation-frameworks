@@ -181,12 +181,37 @@ test.describe('EMI plan configuration', () => {
       expect(offer.tenureMonths, `${product.name} cardless tenure collapsed to 0`).toBeGreaterThan(0);
       expect(offer.monthly, `${product.name} cardless instalment collapsed to 0`).toBeGreaterThan(0);
 
+      // ROUNDING IS EXPECTED, AND THE TOLERANCE IS ±₹1 PER INSTALMENT.
+      //
+      // This used to assert exact equality and was wrong by construction. The
+      // instalment is a whole rupee, so the amount actually collected is the
+      // rounded instalment times the tenure, and it cannot land on the financed
+      // total except by luck. Swept across the live catalogue on 18 Aug 2026:
+      //
+      //   cardless plans pre-priced          31
+      //   reconciling to the exact rupee      2
+      //   drift observed                    -12 .. +11, every one within tenure
+      //
+      // Both directions occur, so the tolerance is symmetric — the API rounds,
+      // it does not floor. Measured examples:
+      //
+      //   Galaxy Z Fold7   8128 x 24 +  8125  = 203197  vs 203204   (-7)
+      //   Macbook Pro M5  11651 x 24 + 11646  = 291270  vs 291260  (+10)
+      //
+      // 29 of 31 products failed the old assertion; the 2 that passed were the
+      // coincidence, not the rule. What is still worth catching is a plan that
+      // misses by more than rounding can explain, which is what this asserts.
+      const collected = offer.monthly * offer.tenureMonths + offer.downpayment;
+      const financed = offer.total + offer.interest;
+
       expect(
-        offer.monthly * offer.tenureMonths + offer.downpayment,
+        Math.abs(collected - financed),
         `${product.name} cardless plan does not reconcile: ` +
           `${offer.monthly} x ${offer.tenureMonths} + ${offer.downpayment} downpayment ` +
-          `should equal ${offer.total} financed + ${offer.interest} interest`
-      ).toBe(offer.total + offer.interest);
+          `= ${collected}, but ${offer.total} financed + ${offer.interest} interest ` +
+          `= ${financed} — a gap of ${collected - financed} over ${offer.tenureMonths} ` +
+          'instalments, which rounding cannot account for'
+      ).toBeLessThanOrEqual(offer.tenureMonths);
     });
   }
 });
