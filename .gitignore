@@ -10,6 +10,11 @@ node_modules/
 # Your saved login session — NEVER commit this
 auth.json
 
+# Dev-environment session for the Exchange suite. Kept under a DISTINCT name so
+# a dev token can never be mistaken for the production one in auth.json, and
+# vice versa. Never point a dev spec at auth.json.
+auth.dev.json
+
 # Personal Claude Code instructions
 CLAUDE.local.md
 # Local-only bug analysis — not published to this public repo

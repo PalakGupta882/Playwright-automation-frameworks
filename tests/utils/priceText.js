@@ -164,7 +164,15 @@ function parsePlanBox(bodyText) {
   return {
     // Upfront plan. The two layouts label it differently.
     payInFull: pick(/Pay in Full\s*₹\s?[\d,]+/i),
-    buyUpfront: pick(/Buy Upfront\s*With assured buyback\s*₹\s?[\d,]+/i),
+    // "With assured buyback" is OPTIONAL. It renders only on products that
+    // offer buyback, and requiring it made this return null on every product
+    // that does not — pixel-11-pro-fold shows "Buy Upfront ₹1,78,999" with no
+    // sub-label, and pricing-consistency reported it as "offers no Buy Upfront
+    // price" while the figure was on screen and matched upfront.price exactly.
+    // Measured 19 Aug 2026 against both layouts:
+    //   pixel-11-pro-fold   Buy Upfront / ₹1,78,999
+    //   galaxy-z-fold8-5g   Buy Upfront / With assured buyback / ₹1,79,999
+    buyUpfront: pick(/Buy Upfront(?:\s*With assured buyback)?\s*₹\s?[\d,]+/i),
 
     // Card EMI monthly. On BOTH products the figure sits inside the row; on
     // UPFRONT products the row carries only "No Cost EMI available" and the

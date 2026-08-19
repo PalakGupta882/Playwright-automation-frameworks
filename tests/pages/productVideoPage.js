@@ -2,12 +2,30 @@
 //
 // PDP media gallery, video-specific. Backs VID-42..VID-46 and VID-51.
 //
-// SELECTOR CAVEAT: at the time of writing no product in the catalog had a live
-// video (see tests/data/video-products.json), so these locators are derived
-// from the feature spec and standard HTML5 media markup, NOT confirmed against
-// a rendered player. When the first video goes live, verify each locator here
-// — every video rendering test routes through this file, so it is the only
-// place that needs correcting.
+// SELECTORS VERIFIED 11 Aug 2026, once 35 of 186 products had live video.
+// The caveat that used to sit here — "not confirmed against a rendered player"
+// — has been discharged, and the answer was not a selector problem.
+//
+// THERE IS NO PLAYER TO SELECT. Measured on three video-enabled products:
+//
+//   product      API                 gallery slots  thumbs rendered   missing  <video>
+//   phone-4b     6 images + 1 video  7              0,1,2,4,5,6       3        0
+//   edge-70-pro  10 images + 1 video 11             0,1,2,3,4,6..10   5        0
+//   kilburn-iii  8 images + 1 video  9              0,1,2,3,5,6,7,8   4        0
+//
+// In every case the gallery reserves a slot for the video — slots always equal
+// images + 1 — and then renders nothing into it. The customer sees a gap in the
+// thumbnail strip and has no way to play the video. `manifest.mpd` is present
+// in the page's serialised payload, so the client receives the URL and simply
+// never mounts a player for it.
+//
+// So VID-42/43/45/46/51 fail here, and that is correct: they assert the
+// behaviour the feature promises, and the feature does not deliver it. Do not
+// convert them to skips — a skip would say "we could not check", when what we
+// actually know is "we checked, and it is broken".
+//
+// diagnoseMissingPlayer() below turns the resulting failure from an opaque
+// "waiting for locator('video')" into that measurement.
 
 const { BasePage } = require('./basePage');
 const { BASE_URL } = require('../data/constants');
@@ -42,6 +60,42 @@ class ProductVideoPage extends BasePage {
 
   async hasVideo() {
     return (await this.videoElement.count()) > 0;
+  }
+
+  // Explains WHY there is no player, so a failure reads as the product bug it
+  // is rather than as a broken locator.
+  //
+  // The gallery numbers its thumbnails "Thumbnail N" and reserves one index per
+  // media item, video included. When the video does not render, that index is
+  // simply absent from the DOM — so the gap is measurable, and its position
+  // tells you the video was accounted for and then dropped.
+  async diagnoseMissingPlayer() {
+    const alts = await this.page
+      .locator('img[alt^="Thumbnail"]')
+      .evaluateAll((nodes) => nodes.map((n) => n.alt));
+
+    const indices = [...new Set(alts)]
+      .map((alt) => Number(String(alt).replace(/\D/g, '')))
+      .filter((n) => Number.isFinite(n))
+      .sort((a, b) => a - b);
+
+    const slots = indices.length ? Math.max(...indices) + 1 : 0;
+    const missing = [];
+    for (let i = 0; i < slots; i++) {
+      if (!indices.includes(i)) missing.push(i);
+    }
+
+    const players = await this.videoElement.count();
+
+    return (
+      `No <video> element on the page (found ${players}).\n` +
+      `  gallery slots reserved : ${slots}\n` +
+      `  thumbnails rendered    : [${indices.join(', ')}]\n` +
+      `  slot rendering nothing : [${missing.join(', ')}]\n` +
+      'A slot is reserved for the video and left empty — the customer sees a gap\n' +
+      'in the thumbnail strip and cannot play the video. The manifest URL IS in\n' +
+      "the page payload, so the client has it and never mounts a player."
+    );
   }
 
   async openVideo() {

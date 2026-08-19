@@ -1,19 +1,462 @@
 {
-  "scannedProducts": 173,
-  "productsWithVideo": 0,
-  "unreachable": [
+  "scannedProducts": 186,
+  "productsWithVideo": 35,
+  "unreachable": [],
+  "products": [
     {
-      "name": "Tufton 80 Watt Wireless Bluetooth Portable Speaker",
-      "slug": "tufton-bluetooth-portable-speaker",
-      "bpid": "MARAUAUDHIAF7F",
-      "status": 404
+      "name": "Galaxy Watch Ultra2 (47mm, LTE)",
+      "slug": "galaxy-watch-ultra2-47mm-lte",
+      "bpid": "SAMSMSMAZNY17W",
+      "videos": [
+        {
+          "id": "b3439b08-4449-4771-b582-0705e2d4850d",
+          "videoServiceId": "1707e893-1ef6-4aa8-85c3-f033568a6623",
+          "videoName": "Galaxy Watch Ultra2",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/1707e893-1ef6-4aa8-85c3-f033568a6623/manifest.mpd"
+        }
+      ]
     },
     {
-      "name": "Mode USB-C wired earphones",
-      "slug": "usb-c-wired-earphones",
-      "bpid": "MARACMOB5G7UDI",
-      "status": 404
+      "name": "Sense 2 Health & Fitness Watch",
+      "slug": "sense-2-health-and-fitness-watch",
+      "bpid": "FITSMSMAWF4ME4",
+      "videos": [
+        {
+          "id": "0abd9017-f021-4949-95a3-47fc673ebbb7",
+          "videoServiceId": "2bab084b-1d55-47f2-83d3-bc9ced111e3d",
+          "videoName": "Fit Sense 2",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/2bab084b-1d55-47f2-83d3-bc9ced111e3d/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Edge 70 Fusion",
+      "slug": "edge-70-fusion",
+      "bpid": "MOTSMMOBH1YG73",
+      "videos": [
+        {
+          "id": "57134787-855a-43b9-b68b-4f6d1142e4fe",
+          "videoServiceId": "77ae8c19-0ac4-46c9-981d-ac4b005bcdf3",
+          "videoName": "Motorola Edge 70 Fusion",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/77ae8c19-0ac4-46c9-981d-ac4b005bcdf3/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Phone (4b)",
+      "slug": "phone-4b",
+      "bpid": "NOTSMMOBK25WT5",
+      "videos": [
+        {
+          "id": "1d741dc2-ac59-459e-8a3f-4c43d09bf2ec",
+          "videoServiceId": "14847547-2392-4592-91ab-4588028575ac",
+          "videoName": "Nothing Phone (4b)",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/14847547-2392-4592-91ab-4588028575ac/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Edge 70 Pro",
+      "slug": "edge-70-pro",
+      "bpid": "MOTSMMOBUP2I1F",
+      "videos": [
+        {
+          "id": "c3cfdfa4-bab5-4f22-bff1-236d1ce1925a",
+          "videoServiceId": "c582297a-ae75-4e71-b90b-ce4430af77b4",
+          "videoName": "Edge 70 Pro",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/c582297a-ae75-4e71-b90b-ce4430af77b4/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Kilburn III Portable Bluetooth Speaker with 50+ Hours of Portable Playtime",
+      "slug": "kilburn-iii-portable-bluetooth-speaker-with-50-hours-of-portable-playtime",
+      "bpid": "MARAUAUDSLOYTE",
+      "videos": [
+        {
+          "id": "c97e8b94-b828-43c4-a74d-24ef04f74c34",
+          "videoServiceId": "0b3d154a-6980-473d-9bd2-76d12fffae85",
+          "videoName": "Kilburn III",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/0b3d154a-6980-473d-9bd2-76d12fffae85/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Milton A.N.C. Wireless On-Ear Headphones with Adaptive Active Noise Cancelling",
+      "slug": "milton-anc-wireless-on-ear-headphones-with-adaptive-active-noise-cancelling",
+      "bpid": "MARAUAUD8H6W3Y",
+      "videos": [
+        {
+          "id": "eafaa47f-50d7-413a-a09b-44ef7a00e38f",
+          "videoServiceId": "e9991f1f-076d-4486-ab60-ae65981855e0",
+          "videoName": "Milton ANC",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/e9991f1f-076d-4486-ab60-ae65981855e0/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Motif II ANC - True Wireless Active Noise Cancelling Bluetooth Headphones",
+      "slug": "motif-ii-anc-true-wireless-active-noise-cancelling-bluetooth-headphones",
+      "bpid": "MARAUAUDQ6UVW5",
+      "videos": [
+        {
+          "id": "a6abfbb3-ec12-4aed-bb39-57c1de340562",
+          "videoServiceId": "70d9add6-e9b0-4b30-ae40-b07d8248221b",
+          "videoName": "Motif II ANC",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/70d9add6-e9b0-4b30-ae40-b07d8248221b/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "CMF BY NOTHING Buds Pro 2",
+      "slug": "cmf-by-nothing-buds-pro-2",
+      "bpid": "NOTWIWIRUT5EIF",
+      "videos": [
+        {
+          "id": "ea4baae6-721c-49aa-a1e9-6789506353e3",
+          "videoServiceId": "adc3c6a6-32b4-411f-b87e-b3e1848b2f8f",
+          "videoName": "CMF BY NOTHING Buds Pro 2",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/adc3c6a6-32b4-411f-b87e-b3e1848b2f8f/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "CMF BY Nothing Headphone Pro",
+      "slug": "cmf-by-nothing-headphone-pro",
+      "bpid": "NOTWIWIRU36Z6S",
+      "videos": [
+        {
+          "id": "2b1b9bb7-e7d1-422f-86f6-f5faaac3c101",
+          "videoServiceId": "5de9a46f-3ce4-44d2-8717-3fe5dfd58024",
+          "videoName": "CMF BY Nothing Headphone Pro",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/5de9a46f-3ce4-44d2-8717-3fe5dfd58024/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Headphone (1) Hybrid Active Noise Cancelling Headphones",
+      "slug": "headphone-1-hybrid-active-noise-cancelling-headphones",
+      "bpid": "NOTWIWIRR16SD4",
+      "videos": [
+        {
+          "id": "9e1214cf-4827-4c1d-8e4a-cb50e861448a",
+          "videoServiceId": "9358ab6a-4922-404f-9627-8d09de9fd50e",
+          "videoName": "Headphone (1) Hybrid Active Noise Cancelling Headphones",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/9358ab6a-4922-404f-9627-8d09de9fd50e/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Ear (a) Wireless Earbuds",
+      "slug": "ear-a-wireless-earbuds",
+      "bpid": "NOTWIWIRVV7O35",
+      "videos": [
+        {
+          "id": "33b2f95e-341d-4443-9918-b6c52b86c7e5",
+          "videoServiceId": "dd090f25-d01e-4229-ae03-c78660476c77",
+          "videoName": "Nothing Ear (a)",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/dd090f25-d01e-4229-ae03-c78660476c77/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "The Transit Backpack - 30L",
+      "slug": "the-transit-backpack-30l",
+      "bpid": "MOKLULUGSEWS62",
+      "videos": [
+        {
+          "id": "e14d3d40-5af0-4e7e-9ced-44ede00a69f9",
+          "videoServiceId": "5dbea274-ab3d-462e-837e-eb1f9a81ba4a",
+          "videoName": "Transit Backpack",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/5dbea274-ab3d-462e-837e-eb1f9a81ba4a/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "HushJet Purifier Compact-HJ10",
+      "slug": "dyson-hushjet-purifier-compact",
+      "bpid": "DYSHOHOMHA3KTQ",
+      "videos": [
+        {
+          "id": "2c6f766d-3284-4fc3-b0a9-fac877cdd232",
+          "videoServiceId": "57576dc3-1815-45d2-9d01-1e1536b57c8a",
+          "videoName": "HushJet Purifier Compact-HJ10",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/57576dc3-1815-45d2-9d01-1e1536b57c8a/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Airstrait 2-in-1 Hair Styler (No Heat Damage Technology)",
+      "slug": "dyson-airstrait-2-in-1-hair-styler-no-heat-damage-technology",
+      "bpid": "DYSPEPERRG9PGZ",
+      "videos": [
+        {
+          "id": "60bb9c78-4efc-405f-bdba-47939f253d84",
+          "videoServiceId": "d8285126-8eca-4df9-a088-b2719968992b",
+          "videoName": "Airstrait 2-in-1 Hair Styler",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/d8285126-8eca-4df9-a088-b2719968992b/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Airstrait 2-in-1 Hair Styler",
+      "slug": "dyson-airstrait-2-in-1-hair-styler",
+      "bpid": "DYSPEPERBB4RDT",
+      "videos": [
+        {
+          "id": "8297ef9d-edb8-4091-9636-226f3902c6e6",
+          "videoServiceId": "d8285126-8eca-4df9-a088-b2719968992b",
+          "videoName": "Airstrait 2-in-1 Hair Styler",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/d8285126-8eca-4df9-a088-b2719968992b/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "CY 23 Big Ball Bagless Dry Vacuum Cleaner",
+      "slug": "cy-23-big-ball-bagless-dry-vacuum-cleaner",
+      "bpid": "DYSHOHOMAR6LLI",
+      "videos": [
+        {
+          "id": "3008ac68-a4f7-4203-b25d-da7828aa45be",
+          "videoServiceId": "d6f0f6ca-b9b5-4fdf-b938-ea026ad24a31",
+          "videoName": "CY 23 Big Ball Bagless Dry Vacuum Cleaner",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/d6f0f6ca-b9b5-4fdf-b938-ea026ad24a31/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "V70 5G",
+      "slug": "vivo-v70-5g",
+      "bpid": "VIVSMMOB3T4LBN",
+      "videos": [
+        {
+          "id": "ffe6bfab-2740-4e12-b266-d936fdecd674",
+          "videoServiceId": "b95d029c-8397-4f1b-bddb-aa9408ae13f5",
+          "videoName": "Vivo V70",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/b95d029c-8397-4f1b-bddb-aa9408ae13f5/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "iPad Air M4",
+      "slug": "ipad-air-m4",
+      "bpid": "APPTATABPHRZTF",
+      "videos": [
+        {
+          "id": "da0f2a3c-5859-4cd7-b003-4e34510a52ee",
+          "videoServiceId": "9d5f5610-77e8-4471-ac25-a4df3649f929",
+          "videoName": "iPad Air M4",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/9d5f5610-77e8-4471-ac25-a4df3649f929/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "AirPods Max 2",
+      "slug": "airpods-max-2",
+      "bpid": "APPWIWIRVJP094",
+      "videos": [
+        {
+          "id": "daf3aa90-6011-4937-945c-686858845c6f",
+          "videoServiceId": "fa3ea60a-374d-44d5-aa79-5244efb2f6b2",
+          "videoName": "AirPods Max 2",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/fa3ea60a-374d-44d5-aa79-5244efb2f6b2/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Galaxy S26 Ultra",
+      "slug": "galaxy-s26-ultra",
+      "bpid": "SAMSMMOBK006PX",
+      "videos": [
+        {
+          "id": "16fd6619-99d1-4de0-aa18-27dc8c96a085",
+          "videoServiceId": "305ecc92-106c-4427-be68-0057e4ce0a7d",
+          "videoName": "Galaxy S26 Ultra",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/305ecc92-106c-4427-be68-0057e4ce0a7d/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Galaxy S25 FE",
+      "slug": "galaxy-s25-fe",
+      "bpid": "SAMSMMOB942QTH",
+      "videos": [
+        {
+          "id": "7ec99992-7414-406f-bc59-92dee9851c9f",
+          "videoServiceId": "ec42e005-2d16-4884-a3a4-847b38acaf65",
+          "videoName": "Galaxy S25 FE",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/ec42e005-2d16-4884-a3a4-847b38acaf65/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "All-In-1 All Rounder Women’s Trimmer & Epilator",
+      "slug": "all-rounder-all-in-1-womens-trimmer-and-epilator-for-face-body-underarms-and-bikini-line",
+      "bpid": "PROPEPERA1QTWS",
+      "videos": [
+        {
+          "id": "89d3df53-8e6a-4854-a2f8-1a14091df217",
+          "videoServiceId": "0ceb4370-003b-41d9-872c-7292bebe93d6",
+          "videoName": "ProTouch All-In-1 All Rounder Women’s Trimmer & Epilator",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/0ceb4370-003b-41d9-872c-7292bebe93d6/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "AIR SLEEK WET-TO-DRY Hair Straightener",
+      "slug": "air-sleek-wet-to-dry-hair-straightener",
+      "bpid": "PROPEPEROD11QL",
+      "videos": [
+        {
+          "id": "6da2f753-dd21-4504-b3a3-47de693a6cf2",
+          "videoServiceId": "0157dfd0-10e3-41e4-a675-3611b053b76a",
+          "videoName": "AIR SLEEK WET-TO-DRY Hair Straightener",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/0157dfd0-10e3-41e4-a675-3611b053b76a/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Willen II 38W Portable Bluetooth Speaker",
+      "slug": "marshall-willen-ii",
+      "bpid": "MARAUAUDKX2SWG",
+      "videos": [
+        {
+          "id": "066dc9fd-c596-4780-b074-29def0e9e098",
+          "videoServiceId": "e1a58e80-5b17-4353-bf60-20ee850d2b64",
+          "videoName": "Willen II",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/e1a58e80-5b17-4353-bf60-20ee850d2b64/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Airshot All in 1 Hair Multi Styler",
+      "slug": "airshot-all-in-1-hair-multi-styler",
+      "bpid": "PROPEPER3MP4GV",
+      "videos": [
+        {
+          "id": "c8db1dfa-f73d-44a8-bd06-97bc71469527",
+          "videoServiceId": "096b1f27-f491-4682-ae44-bd822743facb",
+          "videoName": "Airshot All in 1 Hair Multi Styler",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/096b1f27-f491-4682-ae44-bd822743facb/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Pixel 10",
+      "slug": "pixel-10",
+      "bpid": "GOOSMMOBGV3OMK",
+      "videos": [
+        {
+          "id": "8d719bb5-b0ae-41ff-bfd6-df0d75f24c56",
+          "videoServiceId": "1a8a9da9-3c72-4d1a-83f8-e5e0030d39aa",
+          "videoName": "Google Pixel 10",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/1a8a9da9-3c72-4d1a-83f8-e5e0030d39aa/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Airpods pro 3rd Gen",
+      "slug": "airpods-pro-3rd-gen-1",
+      "bpid": "APPWIWIRPY9HKE",
+      "videos": [
+        {
+          "id": "b33e931a-074e-4e5d-b148-e89f0bd92e86",
+          "videoServiceId": "f39c911d-de51-4a03-9525-fff58c6e60d6",
+          "videoName": "Airpods pro 3rd Gen",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/f39c911d-de51-4a03-9525-fff58c6e60d6/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "iPhone Air",
+      "slug": "iphone-air",
+      "bpid": "APPSMMOBTFDX4S",
+      "videos": [
+        {
+          "id": "466bfd51-9c97-45fe-8fd5-906e9137140f",
+          "videoServiceId": "8ddd0748-d683-4813-a1e1-68773c379dab",
+          "videoName": "iPhone Air",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/8ddd0748-d683-4813-a1e1-68773c379dab/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "iPhone 17 Pro",
+      "slug": "iphone-17-pro",
+      "bpid": "APPSMMOBRATANE",
+      "videos": [
+        {
+          "id": "97cf91b3-ffcb-4405-a146-dd2eca99ad06",
+          "videoServiceId": "5d6d06f8-7dbf-44ca-8e1f-f1f7d5a1a3f4",
+          "videoName": "iPhone 17 Pro",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/5d6d06f8-7dbf-44ca-8e1f-f1f7d5a1a3f4/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "iPhone 17",
+      "slug": "iphone-17",
+      "bpid": "APPSMMOBATT2JH",
+      "videos": [
+        {
+          "id": "89082da6-a44e-4626-9bd2-54154e440963",
+          "videoServiceId": "a1dcdd9c-1c77-4de3-aad5-e3ef3aa6c791",
+          "videoName": "iPhone 17",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/a1dcdd9c-1c77-4de3-aad5-e3ef3aa6c791/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "iPhone 16",
+      "slug": "iphone-16",
+      "bpid": "APPSMMOB1GW3EQ",
+      "videos": [
+        {
+          "id": "9acc18e5-a895-4a0c-ac76-e7b441408e35",
+          "videoServiceId": "f3c395ce-943f-482d-9e30-2e80f80c96eb",
+          "videoName": "iPhone 16",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/f3c395ce-943f-482d-9e30-2e80f80c96eb/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Galaxy Z Fold7",
+      "slug": "galaxy-z-fold7",
+      "bpid": "SAMSMMOBMT0HRU",
+      "videos": [
+        {
+          "id": "7623c4ec-91a8-4b6b-a74c-688a2de782f0",
+          "videoServiceId": "ac66c31e-1fa6-4cf8-bcf0-2e8a926fd739",
+          "videoName": "Galaxy Z Fold7",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/ac66c31e-1fa6-4cf8-bcf0-2e8a926fd739/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "Galaxy Z Flip7",
+      "slug": "flip-7",
+      "bpid": "SAMSMMOB1WU9Y8",
+      "videos": [
+        {
+          "id": "4971daff-67e0-4d72-ace3-8301584dae4e",
+          "videoServiceId": "7add58e0-3d25-4d33-bd22-43e164694aed",
+          "videoName": "Galaxy Z Flip7",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/7add58e0-3d25-4d33-bd22-43e164694aed/manifest.mpd"
+        }
+      ]
+    },
+    {
+      "name": "MacBook Air M5",
+      "slug": "macbook-air-m5",
+      "bpid": "APPLALAPO55QSK",
+      "videos": [
+        {
+          "id": "00e976e0-88ae-4af5-8f80-f40f3094bb9b",
+          "videoServiceId": "3e3cab5c-9066-4afc-b33d-44cfdaeda89c",
+          "videoName": "MacBook Air M5",
+          "videoUrl": "https://storage.googleapis.com/bytepestorage-prod/videos/3e3cab5c-9066-4afc-b33d-44cfdaeda89c/manifest.mpd"
+        }
+      ]
     }
-  ],
-  "products": []
+  ]
 }

@@ -15,7 +15,15 @@
 const PUBLIC_API = 'https://www.bytepe.com/api/product-service';
 
 // VID-26 pins the manifest URL to this bucket.
-const GCS_BUCKET = process.env.BYTEPE_GCS_BUCKET || 'bytepestorage';
+// Corrected 11 Aug 2026, once real video content existed to measure against.
+// The default was 'bytepestorage', taken from the feature sheet; every live
+// videoUrl is served from 'bytepestorage-prod':
+//
+//   https://storage.googleapis.com/bytepestorage-prod/videos/<uuid>/manifest.mpd
+//
+// VID-26 failed on that mismatch alone — the URL shape was otherwise exactly
+// as specified, down to the .mpd manifest.
+const GCS_BUCKET = process.env.BYTEPE_GCS_BUCKET || 'bytepestorage-prod';
 
 const adminApi = {
   baseUrl: process.env.BYTEPE_API_URL || '',

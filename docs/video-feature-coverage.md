@@ -25,15 +25,33 @@ npx playwright test scripts/discover-video-products.spec.js --project=chromium #
 | `BYTEPE_TEST_PRODUCT_ID_ALT` | VID-21 | Second product, for repointing. |
 | `BYTEPE_GCS_BUCKET` | VID-26 | Defaults to `bytepestorage`. |
 
-## Current blocker
+## Current blocker — the player, not the content
 
-As of the last catalog scan, **0 of 173 products had a live video**
-(`tests/data/video-products.json`). The `product.videos` field is present and
-returns `[]`, so the API contract is deployed — there is simply no content yet.
+Content arrived. As of 11 Aug 2026, **35 of 186 products have a live video**
+(`tests/data/video-products.json`, re-run from `discover-video-products.spec.js`).
+The API side now passes in full: VID-24, VID-25 and VID-26 are green.
 
-Until a video is published, VID-24/25/26 and VID-42–46/51 skip rather than pass.
-That is deliberate: a green run against an empty gallery would assert nothing.
-Re-run the discovery script once content exists.
+**The PDP does not render a player.** Measured on four video-enabled products:
+
+| Product | API | Gallery slots | Thumbnails rendered | Missing | `<video>` |
+|---|---|---|---|---|---|
+| phone-4b | 6 img + 1 video | 7 | 0,1,2,4,5,6 | 3 | 0 |
+| edge-70-pro | 10 img + 1 video | 11 | 0,1,2,3,4,6–10 | 5 | 0 |
+| kilburn-iii | 8 img + 1 video | 9 | 0,1,2,3,5,6,7,8 | 4 | 0 |
+| galaxy-watch-ultra2 | 6 img + 1 video | 7 | 0,1,2,4,5,6 | 3 | 0 |
+
+Slots always equal images + 1, so the gallery accounts for the video and then
+renders nothing into it. `manifest.mpd` is present in the page's serialised
+payload, so the client receives the URL and never mounts a player. The shopper
+sees a gap in the thumbnail strip and cannot play the video.
+
+VID-42/43/44/45/46/51 therefore **fail**, and that is the correct outcome — they
+assert what the feature promises. They are not skipped: a skip would say "we
+could not check", when what we know is "we checked, and it is broken".
+`ProductVideoPage.diagnoseMissingPlayer()` reports the slot gap so the failure
+reads as the product bug rather than a stale selector.
+
+Previously recorded here as a content blocker ("0 of 173"); that is resolved.
 
 ## Coverage
 

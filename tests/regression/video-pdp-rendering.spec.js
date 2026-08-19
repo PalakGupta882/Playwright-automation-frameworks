@@ -28,6 +28,21 @@ test.describe('PDP video rendering', () => {
   test.beforeEach(async ({ page }) => {
     media = new ProductVideoPage(page);
     await media.gotoProduct(videoProduct.slug, videoProduct.bpid);
+
+    // Every test below needs a player. As of 11 Aug 2026 the PDP mounts none —
+    // it reserves a gallery slot for the video and leaves it empty. Without
+    // this, all six fail with "waiting for locator('video')", which reads like
+    // a stale selector and sends the next person hunting through the page
+    // object instead of reporting the bug.
+    //
+    // Deliberately NOT a skip. We did check, and it is broken; a skip would
+    // claim we could not.
+    if (!(await media.hasVideo())) {
+      throw new Error(
+        `PDP renders no video player for ${videoProduct.slug}.\n\n` +
+          (await media.diagnoseMissingPlayer())
+      );
+    }
   });
 
   // VID-42 — plays inline, controls work.
