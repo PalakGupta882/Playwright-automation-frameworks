@@ -1,16 +1,41 @@
 const { BasePage } = require('./basePage');
-const { BASE_URL, TIMEOUTS } = require('../data/constants');
+const { BASE_URL, TIMEOUTS, URLS } = require('../data/constants');
 
 class HomePage extends BasePage {
   constructor(page) {
     super(page);
-    // All filtered to visible. The header is rendered twice — desktop and
-    // mobile — so .first() alone could resolve to the hidden copy, and clicking
-    // that never completes. The `force: true` on every nav method below was
-    // compensating for exactly this; force skips the actionability checks that
-    // would otherwise have made the problem obvious years ago.
+    // .last(), not .first(), and this is a workaround for a live DOM defect.
+    //
+    // The note that used to sit here said the header is rendered twice for
+    // desktop and mobile, so .first() might resolve the hidden copy. That is
+    // not what is happening. Measured 19 Aug 2026 on / and /home/subscription:
+    //
+    //   <header> elements: 2
+    //     header[0] 1280x85 @0,0 pos=fixed z=1100 vis=visible
+    //     header[1] 1280x85 @0,0 pos=fixed z=1100 vis=visible
+    //     a[href="/home/subscription"]: 2, both 102x37 @821,24
+    //
+    // Two identical, both visible, stacked exactly. Not a responsive pair —
+    // /all-products renders one. At equal z-index the later element paints on
+    // top, so .last() is the copy a real mouse click reaches; .first() is
+    // permanently covered:
+    //
+    //   first() copy: blocked: locator.click: Timeout 6000ms exceeded
+    //   last()  copy: clicked -> https://www.bytepe.com/home/subscription
+    //
+    // That is what took down three smoke tests on 19 Aug. Revert to .first()
+    // once the duplicate header is fixed — until then .last() is the only copy
+    // that can be clicked.
     const visibleLink = (name, opts = {}) =>
-      page.getByRole('link', { name, ...opts }).filter({ visible: true }).first();
+      page.getByRole('link', { name, ...opts }).filter({ visible: true }).last();
+
+    // The same links unresolved, so clickHeaderLink() can walk both copies.
+    // .last() is right most of the time but not every time: which of the two
+    // identical headers paints on top is decided per render, and "Products"
+    // failed twice in a row on 19 Aug while Subscription and About Us passed in
+    // the same run.
+    const headerLinks = (name, opts = {}) =>
+      page.getByRole('link', { name, ...opts }).filter({ visible: true });
 
     this.homeLink = visibleLink('Home');
     this.subscriptionLink = visibleLink('Subscription');
@@ -18,15 +43,23 @@ class HomePage extends BasePage {
     this.productsLink = visibleLink('Products');
     this.aboutUsLink = visibleLink('About Us');
     this.cartLink = visibleLink('Cart', { exact: true });
+
+    this.headerCopies = {
+      subscription: headerLinks('Subscription'),
+      emiStore: headerLinks('EMI Store'),
+      products: headerLinks('Products'),
+      aboutUs: headerLinks('About Us'),
+    };
     this.loginLink = page.getByText('Login').filter({ visible: true }).first();
     // The positive logged-in signal. auth-setup.spec.js established this is the
     // only reliable one: the header paints its logged-out state first and swaps
     // once the app resolves the session, so "Login is gone" is not equivalent.
     this.profileLink = page.getByRole('link', { name: 'My Profile' }).first();
-    this.mobileCategory = page.getByText('mobile', { exact: true }).first();
-    this.laptopCategory = page.getByText('laptop', { exact: true }).first();
-    this.tabletsCategory = page.getByText('tablets', { exact: true }).first();
-    this.smartwatchCategory = page.getByText('smartwatch', { exact: true }).first();
+    // The old lower-case category strip is gone — it is now the Sub Home Page
+    // tab bar: role=tab, Title Case, eight CMS-driven tabs. The locators that
+    // used to sit here (mobileCategory, laptopCategory, tabletsCategory,
+    // smartwatchCategory) could not match any longer and nothing referenced
+    // them. Use tests/pages/subHomeTabsPage.js instead.
     this.privacyPolicyLink = page.getByRole('link', { name: 'Privacy Policy' });
     this.termsOfUseLink = page.getByRole('link', { name: 'Terms of Use' });
     this.faqsLink = page.getByRole('link', { name: 'FAQs' });
@@ -37,24 +70,60 @@ class HomePage extends BasePage {
     await this.page.goto('https://www.bytepe.com/', { waitUntil: 'domcontentloaded' });
   }
 
+  // Clicks a header nav link and does not return until the URL has moved.
+  //
+  // The header is rendered twice, identically and in the same place (see the
+  // note in the constructor). Only the copy painted on top receives the click,
+  // and which one that is varies per render — so this tries the copies from
+  // last to first and stops at the one that actually navigates. Without it a
+  // delivered-but-swallowed click looks exactly like a broken link: the click
+  // succeeds, the URL never changes, and the assertion times out 15s later
+  // pointing at the wrong thing.
+  //
+  // Delete this and go back to a single click once the duplicate header is
+  // fixed. It is a workaround for a live DOM defect, not a pattern to copy.
+  async clickHeaderLink(key, urlPattern) {
+    const links = this.headerCopies[key];
+    const copies = await links.count();
+    if (copies === 0) throw new Error(`no visible header link for "${key}"`);
+
+    for (let i = copies - 1; i >= 0; i--) {
+      await this.page.keyboard.press('Escape').catch(() => {});
+      const clicked = await links
+        .nth(i)
+        .click({ timeout: TIMEOUTS.action })
+        .then(() => true)
+        .catch(() => false);
+      if (!clicked) continue;
+
+      const moved = await this.page
+        .waitForURL(urlPattern, { timeout: TIMEOUTS.nav })
+        .then(() => true)
+        .catch(() => false);
+      if (moved) return;
+    }
+
+    throw new Error(
+      `the header "${key}" link did not navigate to ${urlPattern}. ` +
+        `${copies} visible copies were tried; the page is still at ${this.page.url()}. ` +
+        'The header renders twice — if that has been fixed, simplify clickHeaderLink().'
+    );
+  }
+
   async goToSubscription() {
-    await this.page.keyboard.press('Escape').catch(() => {});
-    await this.subscriptionLink.click({ force: true });
+    await this.clickHeaderLink('subscription', new RegExp(URLS.subscription));
   }
 
   async goToEmiStore() {
-    await this.page.keyboard.press('Escape').catch(() => {});
-    await this.emiStoreLink.click({ force: true });
+    await this.clickHeaderLink('emiStore', new RegExp(URLS.emiStore));
   }
 
   async goToProducts() {
-    await this.page.keyboard.press('Escape').catch(() => {});
-    await this.productsLink.click({ force: true });
+    await this.clickHeaderLink('products', new RegExp(URLS.products));
   }
 
   async goToAboutUs() {
-    await this.page.keyboard.press('Escape').catch(() => {});
-    await this.aboutUsLink.click({ force: true });
+    await this.clickHeaderLink('aboutUs', new RegExp(URLS.aboutUs));
   }
 
   async goToCart() {
