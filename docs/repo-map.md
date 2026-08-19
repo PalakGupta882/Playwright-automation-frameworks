@@ -85,20 +85,28 @@ place here, not across the specs that use it.
 Does the site stand up at all. `homepage.spec.js` (navigation to each section)
 and `core-pages.spec.js` (PLP, PDP and cart load).
 
-### `tests/regression/` — 27 files
+### `tests/regression/` — 34 files
 
 Grouped by what they cover:
 
 - **Pricing** — `product-pricing`, `pincode-based-pricing`, `best-price-banner`,
   `emi-plan-config`, `emi-checkout-flow`, `cardless-emi`
-- **Search and browse** — `search`, `product-search`, `category-browsing`,
-  `data-driven-products`, `static-pages`, `site-health`
+- **Search and browse** — `search`, `product-search`,
+  `data-driven-products`, `static-pages`, `site-health`,
+  `catalogue-integrity`
+- **Sub-home tabs** — `subhome-tabs-ui`, `subhome-tabs-api`,
+  `subhome-admin-api`. These replaced `category-browsing`, which asserted the
+  `/all-products?category=<name>` navigation the tabs took over.
 - **Cart through to order** — `cart`, `coupon-valid`, `coupon-invalid`,
   `pincode-valid`, `pincode-invalid`, `checkout-flow`, `emi-store-flow`
 - **Order-minting, write-gated** — `subscription-e2e`,
   `subscription-full-flow`. Both skip unless `BYTEPE_ALLOW_WRITES=1`.
 - **Account** — `account`, `address-management` (the largest spec in the repo:
   TC-ADDR-001..013), `order-history`
+- **Cross-surface consistency** — `pricing-consistency` (public, sweeps the
+  live listing), `pricing-checkout-consistency`,
+  `device-protection-consistency`, `device-protection-multi-product`. Each
+  compares one figure on one surface against the same figure on another.
 - **Video** — `video-pdp-api` (public, runs today), `video-admin-api` (needs an
   admin JWT), `video-pdp-rendering` (currently failing on purpose — the PDP
   does not mount a player; see `docs/video-feature-coverage.md`)
