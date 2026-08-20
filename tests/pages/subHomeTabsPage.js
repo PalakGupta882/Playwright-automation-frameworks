@@ -48,6 +48,56 @@ class SubHomeTabsPage extends BasePage {
     await this.page.goto(`${BASE_URL}${path}`, { waitUntil: 'domcontentloaded' });
     // The strip renders from the serialised nav payload, ahead of the sections.
     await this.tabs.first().waitFor({ state: 'visible', timeout: 20000 });
+    // ...but a visible tab is not a WORKING tab. See stripReady().
+    await this.stripReady();
+  }
+
+  // The tabs are interactive later than they are visible.
+  //
+  // Measured 20 Aug 2026 (scripts/probe-tab-underline-timing.spec.js), from the
+  // moment the first tab becomes visible:
+  //
+  //   t=  0ms  rowChildren=8  indicator absent
+  //   t=250ms  rowChildren=8  indicator absent
+  //   t=500ms  rowChildren=9  indicator present
+  //
+  // That second render is when the active indicator mounts AND when the tiles'
+  // handlers are bound. Acting before it is silently inert — the same failure
+  // CLAUDE.md records for buy buttons: the control renders before its handler
+  // exists, so the event is delivered and nothing happens.
+  //
+  // Measured effect on TCB-046/047, pressing Enter on a focused tile
+  // (scripts/probe-tab-keyboard.spec.js):
+  //
+  //   without this wait   1 of 5 attempts selected nothing
+  //   with this wait      0 of 5
+  //
+  // Focus is NOT the problem — it survives the re-render in 5 of 5. Only the
+  // handler binding does. That is why waiting, rather than re-focusing or
+  // re-pressing, is the fix; a retry would paper over a genuinely dead key.
+  //
+  // The indicator is the signal because it is the one part of that render we
+  // can observe from outside. It does not throw on timeout: a strip that never
+  // finishes mounting should fail in the test that asserts on it, with that
+  // test's own message, not here.
+  async stripReady(timeout = 8000) {
+    await this.page
+      .waitForFunction(
+        () => {
+          const tiles = [...document.querySelectorAll('[role="tab"]')];
+          const active = tiles.find((t) => t.getAttribute('aria-selected') === 'true');
+          if (!active || !active.parentElement) return false;
+          return [...active.parentElement.children]
+            .filter((n) => !tiles.includes(n))
+            .some((n) => {
+              const r = n.getBoundingClientRect();
+              return r.height > 0 && r.height <= 6 && r.width > 20;
+            });
+        },
+        undefined,
+        { timeout }
+      )
+      .catch(() => {});
   }
 
   async useViewport(which) {
@@ -85,28 +135,10 @@ class SubHomeTabsPage extends BasePage {
     // indicator still had not rendered and reported it as absent. That is a race
     // in this page object, not a missing feature.
     //
-    // Waiting for the element rather than sleeping a fixed amount: this is the
-    // real signal, it returns as soon as the bar is there, and it deliberately
-    // does NOT throw on timeout — if the indicator genuinely never renders,
-    // underline stays null and the caller's assertion reports that as the
-    // defect it would be, instead of this helper masking it.
-    await this.page
-      .waitForFunction(
-        () => {
-          const tiles = [...document.querySelectorAll('[role="tab"]')];
-          const active = tiles.find((t) => t.getAttribute('aria-selected') === 'true');
-          if (!active || !active.parentElement) return false;
-          return [...active.parentElement.children]
-            .filter((n) => !tiles.includes(n))
-            .some((n) => {
-              const r = n.getBoundingClientRect();
-              return r.height > 0 && r.height <= 6 && r.width > 20;
-            });
-        },
-        undefined,
-        { timeout: 5000 }
-      )
-      .catch(() => {});
+    // Same wait open() performs, repeated here because several tests change the
+    // viewport after opening, which re-runs that render. It returns immediately
+    // when the strip is already mounted, and never throws — see stripReady().
+    await this.stripReady(5000);
 
     return this.page.evaluate(() => {
       const round = (n) => Math.round(n);
