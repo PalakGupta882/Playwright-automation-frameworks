@@ -4,7 +4,7 @@ const { assertFreshSession } = require('../utils/session');
 const { writesAllowed, writeSkipReason } = require('../utils/writes');
 
 // Opt-in only. This spec presses Continue on Review Order, and that is what
-// mints the order id — it produced CM1008266A1D25 / C1008260B1AAF on the run of
+// mints the order id — it produced <order-A> / <sub-order-A> on the run of
 // 10 Aug 2026, before any payment step was reached.
 test.skip(
   !writesAllowed(),

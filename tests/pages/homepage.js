@@ -110,16 +110,31 @@ class HomePage extends BasePage {
     const copies = await links.count();
     if (copies === 0) throw new Error(`no visible header link for "${key}"`);
 
+    // PER-ATTEMPT BUDGET, deliberately short.
+    //
+    // This loop can make up to 2 copies x 2 activation routes = 4 attempts. At
+    // the ambient timeouts (actionTimeout 30s, TIMEOUTS.nav 15s) a single copy
+    // could consume 75s of a 60s test budget, so the test would time out MID-LOOP
+    // and report "both routes failed on every copy" when most attempts had never
+    // run. Measured: that is exactly what happened to all four header tests once
+    // the keyboard fallback was added.
+    //
+    // 8s each bounds the worst case to ~48s, inside the 60s test timeout, so the
+    // loop always finishes and its error message is true when it is raised.
+    // Nothing legitimate needs longer: a header link that works navigates in
+    // well under a second.
+    const ATTEMPT_MS = 8000;
+
     for (let i = copies - 1; i >= 0; i--) {
       await this.page.keyboard.press('Escape').catch(() => {});
       const clicked = await links
         .nth(i)
-        .click({ timeout: TIMEOUTS.action })
+        .click({ timeout: ATTEMPT_MS })
         .then(() => true)
         .catch(() => false);
       if (clicked) {
         const moved = await this.page
-          .waitForURL(urlPattern, { timeout: TIMEOUTS.nav })
+          .waitForURL(urlPattern, { timeout: ATTEMPT_MS })
           .then(() => true)
           .catch(() => false);
         if (moved) return;
@@ -129,13 +144,13 @@ class HomePage extends BasePage {
       // hit-testing, which is the step the stacked copies interfere with.
       const pressed = await links
         .nth(i)
-        .press('Enter')
+        .press('Enter', { timeout: ATTEMPT_MS })
         .then(() => true)
         .catch(() => false);
       if (!pressed) continue;
 
       const movedByKey = await this.page
-        .waitForURL(urlPattern, { timeout: TIMEOUTS.nav })
+        .waitForURL(urlPattern, { timeout: ATTEMPT_MS })
         .then(() => true)
         .catch(() => false);
       if (movedByKey) return;

@@ -149,12 +149,12 @@ test.describe('Order history', () => {
   //
   // The count this account carries is not stable and nothing here should assume
   // one. It read ten when these assertions were written; on 10 Aug 2026 it read
-  // ONE (Order Id C140726634CF1, Pending, dated 14 Jul 2026). Every test above
+  // ONE (Order Id <order-D>, Pending, dated 14 Jul 2026). Every test above
   // derives the count at run time and skips meaningfully at zero, which is why
   // the drop changed nothing — but do not reintroduce a hardcoded expectation.
   //
   // Unexplained, and worth raising rather than encoding: the run of 10 Aug 2026
-  // minted master_order_id CM1008266A1D25 and CM1008268BF164, and neither
+  // minted master_order_id <order-A> and <order-B>, and neither
   // appears in this list, while the older Pending order does. So "pending is
   // hidden" is not the explanation.
   test('an unknown order id does not render order details', async ({ page }) => {

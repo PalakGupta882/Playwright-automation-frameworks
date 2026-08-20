@@ -1,5 +1,51 @@
 // @ts-check
+import { existsSync } from 'fs';
+import path from 'path';
 import { defineConfig, devices } from '@playwright/test';
+
+// __dirname, not import.meta.url. This file is written as ESM but package.json
+// sets "type": "commonjs", so Playwright loads it through its own transpiler and
+// it executes as CJS — `import.meta` throws "Cannot use 'import.meta' outside a
+// module" there, while __dirname is provided. Resolving from the config's own
+// directory (rather than cwd) keeps this correct when run from a subdirectory.
+const HERE = __dirname;
+
+// SESSION — optional on purpose, so a fresh clone can run.
+//
+// auth.json is gitignored (it holds a real access token), so it does NOT exist
+// after `git clone`. Pointing storageState at a missing file makes Playwright
+// fail every test before it starts, with
+//
+//   Error reading storage state from auth.json: ENOENT
+//
+// including the public specs that need no session at all. A new engineer's
+// first `npm test` then fails 100% and looks like a broken framework.
+//
+// So: use the file when it is there, and start logged out when it is not.
+// Login-gated specs still refuse to run without a session — assertFreshSession()
+// in tests/utils/session.js fails them fast with the real reason and a pointer
+// to `npm run auth`. CI is unaffected: it writes an empty auth.json before the
+// run, so this resolves to that file exactly as before.
+const AUTH_FILE = path.join(HERE, 'auth.json');
+const storageState = existsSync(AUTH_FILE) ? AUTH_FILE : undefined;
+
+// DIAGNOSTIC SCRIPTS — excluded from a bare `npx playwright test`.
+//
+// tests/scripts/ holds ~24 probes, discovery runs and the page-health sweep.
+// They are real Playwright files, so testMatch collects them: a bare
+// `npx playwright test` was picking up 352 tests in 66 files and pointing all of
+// them at production, including a 15-minute full-catalogue sweep. Someone typing
+// the Playwright command they already know should not trigger that.
+//
+// They stay runnable when you ASK for them. The ignore lifts if the command
+// names a path under scripts/ (so `npx playwright test scripts/probe-x.spec.js`
+// and `npm run discover` / `npm run page-health` all work unchanged), or if
+// BYTEPE_INCLUDE_SCRIPTS=1 is set.
+const argv = process.argv.slice(2);
+const targetsScripts = argv.some(
+  (a) => !a.startsWith('-') && a.replace(/\\/g, '/').includes('scripts/')
+);
+const includeScripts = targetsScripts || process.env.BYTEPE_INCLUDE_SCRIPTS === '1';
 
 export default defineConfig({
   testDir: './tests',
@@ -18,6 +64,7 @@ export default defineConfig({
     // spec. Any further helper added under tests/api/ needs its own entry here,
     // or it belongs in data/ or utils/ instead.
     '**/api/apiHelper.js',
+    ...(includeScripts ? [] : ['**/scripts/**']),
   ],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
@@ -42,7 +89,9 @@ export default defineConfig({
   // most others already pass an explicit 15s, so this only lifts the floor.
   expect: { timeout: 10000 },
   use: {
-    storageState: 'auth.json',
+    // Resolved above: the real file when present, otherwise undefined (a fresh,
+    // logged-out context) so a clone without auth.json can still run.
+    storageState,
     // The important one. Unset, actionTimeout defaults to 0, meaning an action
     // waits forever — so a click on an overlay-covered control consumed the
     // entire test budget instead of failing, and any retry loop around it never

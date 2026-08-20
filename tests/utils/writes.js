@@ -4,7 +4,7 @@
 // production account.
 //
 // Why this exists: on 10 Aug 2026 a routine `npm test` left two real orders
-// behind (CM1008266A1D25 and CM1008268BF164). Nothing malfunctioned — the
+// behind (<order-A> and <order-B>). Nothing malfunctioned — the
 // subscription specs press Continue on Review Order, and that is the moment the
 // order id is minted, before any payment step. They had been running that way
 // for as long as the stale `auth.json` happened to be failing them fast; the

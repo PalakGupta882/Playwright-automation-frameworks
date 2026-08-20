@@ -15,7 +15,7 @@ test('sections response shape under each query param', async ({ request }) => {
   const tab = home.sub_home_pages[0];
   console.log(`home=${home.name} id=${home.id} slug=${home.slug} tab=${tab.name} id=${tab.id}`);
 
-  const describe = (d) => {
+  const summarise = (d) => {
     if (!d) return 'no data';
     const keys = Object.keys(d);
     const shape = keys
@@ -29,7 +29,7 @@ test('sections response shape under each query param', async ({ request }) => {
     let out = `${res.status()}`;
     if (res.ok()) {
       const d = (await res.json()).data;
-      out += `  ${describe(d)}`;
+      out += `  ${summarise(d)}`;
       const list = d && (d.sections || d.collections);
       if (Array.isArray(list) && list[0]) {
         const withItems = list.filter((s) => Array.isArray(s.items || s.tiles || s.products) && (s.items || s.tiles || s.products).length);

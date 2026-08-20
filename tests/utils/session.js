@@ -23,11 +23,25 @@ function assertFreshSession() {
   try {
     state = JSON.parse(fs.readFileSync(AUTH_PATH, 'utf8'));
   } catch {
-    return; // no saved session on disk — not this helper's call to make
+    // NO auth.json AT ALL — a fresh clone.
+    //
+    // This used to return silently, which was right when the config forced
+    // storageState: 'auth.json' and Playwright refused to start without it. The
+    // config now treats the file as optional so public specs can run on a clone,
+    // which means a login-gated spec reaching this point would otherwise go on
+    // and fail 60s later on a button that only renders for a signed-in user.
+    //
+    // Distinct from the empty-session case below: a MISSING file means nobody
+    // has logged in yet, and saying so with the command to fix it is the whole
+    // job of this helper.
+    throw new Error(sessionError('there is no auth.json on disk, so nobody has signed in yet'));
   }
 
   const cookies = state.cookies || [];
-  if (cookies.length === 0) return; // CI's empty session
+  // CI's empty session: the workflow writes {"cookies":[],"origins":[]} and runs
+  // only the public specs. Staying inert here is what keeps that pipeline green,
+  // so this branch must NOT be turned into a throw.
+  if (cookies.length === 0) return;
 
   const token = cookies.find(c => c.name === 'access_token' && c.domain === SITE_DOMAIN);
   if (!token) {

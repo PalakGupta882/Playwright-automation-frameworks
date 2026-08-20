@@ -762,7 +762,7 @@ test.describe('Device Protection pricing consistency through checkout', () => {
       //
       // Default is the cheapest known product carrying Device Protection, so an
       // unconfigured run mints the smallest order it can. Measured on it
-      // (order CM14082644F25B): Device Protection held at ₹1 from Review Order
+      // (order <order-C>): Device Protection held at ₹1 from Review Order
       // through to Payment Summary — the defect did NOT reproduce there. Its
       // protection is priced at ₹1 on both sides, so it has little room to move;
       // a product whose PDP quotes a larger figure is the better probe.
@@ -958,7 +958,7 @@ test.describe('Device Protection pricing consistency through checkout', () => {
       assertAddsUp(payment, testInfo);
 
       // THE TWO PAGES QUOTE DIFFERENT BASES, so a bare total comparison would
-      // fail on correct behaviour. Measured on order CM14082644F25B:
+      // fail on correct behaviour. Measured on order <order-C>:
       //
       //   Review Order    product ₹54,999 - discount ₹23,000 + DP ₹1 = ₹32,000
       //   Payment Summary product ₹31,999 - EMI disc ₹1,442 + DP ₹1 = ₹30,558
