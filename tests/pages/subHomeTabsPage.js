@@ -72,6 +72,42 @@ class SubHomeTabsPage extends BasePage {
   // Reading it in a single evaluate keeps the numbers from a single layout —
   // two separate reads can straddle a re-render and disagree with each other.
   async measure() {
+    // The active underline mounts AFTER the tabs do.
+    //
+    // Measured 20 Aug 2026 (scripts/probe-tab-underline-timing.spec.js), from
+    // the moment open() returns — i.e. first tab visible:
+    //
+    //   t=  0ms  rowChildren=8  bars=0
+    //   t=250ms  rowChildren=8  bars=0
+    //   t=500ms  rowChildren=9  bars=1   <- indicator appears
+    //
+    // open() waits only for the first tab, so measure() read the row while the
+    // indicator still had not rendered and reported it as absent. That is a race
+    // in this page object, not a missing feature.
+    //
+    // Waiting for the element rather than sleeping a fixed amount: this is the
+    // real signal, it returns as soon as the bar is there, and it deliberately
+    // does NOT throw on timeout — if the indicator genuinely never renders,
+    // underline stays null and the caller's assertion reports that as the
+    // defect it would be, instead of this helper masking it.
+    await this.page
+      .waitForFunction(
+        () => {
+          const tiles = [...document.querySelectorAll('[role="tab"]')];
+          const active = tiles.find((t) => t.getAttribute('aria-selected') === 'true');
+          if (!active || !active.parentElement) return false;
+          return [...active.parentElement.children]
+            .filter((n) => !tiles.includes(n))
+            .some((n) => {
+              const r = n.getBoundingClientRect();
+              return r.height > 0 && r.height <= 6 && r.width > 20;
+            });
+        },
+        undefined,
+        { timeout: 5000 }
+      )
+      .catch(() => {});
+
     return this.page.evaluate(() => {
       const round = (n) => Math.round(n);
       const box = (el) => {
@@ -89,17 +125,48 @@ class SubHomeTabsPage extends BasePage {
         first && [...first.querySelectorAll('p,span,div')].find((n) => (n.innerText || '').trim());
       const active = tiles.find((t) => t.getAttribute('aria-selected') === 'true');
 
-      // The underline is not a class we can name — find it by shape: a thin,
-      // tile-wide box inside the active tile.
-      const underline = active
-        ? [...active.querySelectorAll('*')]
+      // The active underline is a SIBLING of the tabs, not a descendant.
+      //
+      // Measured 20 Aug 2026 (scripts/probe-tab-underline.spec.js). Two boxes of
+      // identical size sit at identical coordinates under the active tab:
+      //
+      //   div.mui-1kjjyxg  104x3 @262,153  bg rgba(0,0,0,0)   <- INSIDE the tab
+      //   div.mui-6djk2t   104x3 @262,153  bg rgb(255,67,6)   <- sibling, the real one
+      //
+      // The one inside the tab is a transparent spacer reserving the indicator's
+      // height. This used to search active.querySelectorAll('*'), so it could
+      // only ever find that spacer, and reported the underline as transparent —
+      // failing TCB-016/018/020 against a feature that renders correctly.
+      //
+      // So search the TABLIST ROW instead, and exclude the tabs' own subtrees.
+      // Confirmed it is the indicator and not decoration: selecting a different
+      // tab moves it (x 262 -> 610, tracking the tab exactly).
+      //
+      // Position is reported alongside the colour on purpose. A brand-coloured
+      // bar under the WRONG tab is a real defect that a colour-only check would
+      // pass, so the caller can assert alignment as well.
+      const row = active ? active.parentElement : null;
+      const underline = row
+        ? [...row.children]
+            // A tab is not its own indicator; the bar is a plain box beside them.
+            .filter((n) => !tiles.includes(n))
             .map((n) => ({ n, r: n.getBoundingClientRect() }))
             .filter((o) => o.r.height > 0 && o.r.height <= 6 && o.r.width > 20)
-            .map((o) => ({
-              h: round(o.r.height),
-              w: round(o.r.width),
-              bg: getComputedStyle(o.n).backgroundColor,
-            }))[0] || null
+            .map((o) => {
+              const ar = active.getBoundingClientRect();
+              return {
+                h: round(o.r.height),
+                w: round(o.r.width),
+                x: round(o.r.left),
+                bg: getComputedStyle(o.n).backgroundColor,
+                // Alignment against the active tab, so "is it under the right
+                // tab" is answerable without a second query.
+                activeX: round(ar.left),
+                activeW: round(ar.width),
+                alignedToActive: Math.abs(o.r.left - ar.left) <= 4,
+                widthMatchesActive: Math.abs(o.r.width - ar.width) <= 4,
+              };
+            })[0] || null
         : null;
 
       // The sticky container is the tablist's parent, not the tablist itself.

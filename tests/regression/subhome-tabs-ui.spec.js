@@ -299,7 +299,36 @@ test.describe('Sub home page tab strip', () => {
     );
 
     const m = await subHomeTabsPage.measure();
-    expect(m.underline.bg, 'the active underline is not the brand colour').toBe(ACTIVE_UNDERLINE_RGB);
+
+    // Non-vacuous: prove the indicator exists before asserting anything about
+    // it, so a missing bar reports as missing rather than throwing on undefined.
+    expect(
+      m.underline,
+      await subHomeTabsPage.diagnose(
+        'the tab strip renders no active underline at all. It is a sibling of the ' +
+          'tabs inside the tablist row, not a child of the active tab — see ' +
+          'scripts/probe-tab-underline.spec.js'
+      )
+    ).toBeTruthy();
+
+    expect(m.underline.bg, 'the active underline is not the brand colour').toBe(
+      ACTIVE_UNDERLINE_RGB
+    );
+
+    // Colour alone is not enough. A brand-coloured bar sitting under the WRONG
+    // tab tells the shopper the wrong thing is selected, and a colour-only check
+    // passes on it. Assert it is actually under the active tab, and spans it.
+    expect(
+      m.underline.alignedToActive,
+      `the underline is at x=${m.underline.x} but the active tab starts at ` +
+        `x=${m.underline.activeX} — it is highlighting a different tab`
+    ).toBe(true);
+
+    expect(
+      m.underline.widthMatchesActive,
+      `the underline is ${m.underline.w}px wide but the active tab is ` +
+        `${m.underline.activeW}px — it does not span the tab it marks`
+    ).toBe(true);
   });
 
   test('TCB-017: the sections on screen belong to the selected tab', async ({ subHomeTabsPage, page }) => {
