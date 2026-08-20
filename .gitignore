@@ -21,3 +21,7 @@ CLAUDE.local.md
 docs/BUG-*.csv
 docs/BUG-*.html
 docs/BUG-*.pdf
+
+# Generated page-health sweep output (regenerate with npm run page-health)
+/page-health.json
+/page-health-report.html

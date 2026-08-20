@@ -11,7 +11,9 @@
     "discover": "playwright test scripts/discover-products.spec.js --project=chromium",
     "auth": "playwright test auth-setup.spec.js --project=chromium --headed",
     "report": "playwright show-report",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "page-health": "playwright test scripts/page-health-report.spec.js --project=chromium --workers=1 --retries=0",
+    "page-report": "node scripts/build-page-report.js"
   },
   "keywords": [],
   "author": "",

@@ -149,11 +149,14 @@ Steps 1–5 are cheap, need no order to be minted, and **any one of them can
 fully explain a difference that looks like broken maths**. Step 7 is the
 expensive one and the one most likely to produce a confident, wrong bug report.
 
-This ordering was paid for. The Device Protection ₹1 → ₹2,001 defect was chased
+This ordering was paid for. The Device Protection ₹1 → ₹2,001 discrepancy was chased
 as arithmetic for a long time; the answer was step 4. Both figures were in the
 same record — `vas_price: 1` and `vas_amount: 2001` — and the page rendered the
 per-unit field where it should have rendered the total. Every page's own sums
 were correct throughout, so no amount comparison could ever have found it.
+
+That behaviour is now CONFIRMED EXPECTED (see below); the lesson about the
+ordering stands regardless.
 
 Tooling for each step:
 
@@ -187,6 +190,9 @@ every hop**, because each page was internally consistent — the pages were
 showing *different products*. No arithmetic assertion can see that, and it is
 the worst failure this storefront can produce: the shopper is charged for
 something they never reviewed.
+
+The ₹1/₹2,001 rendering itself is confirmed expected. The wrong-product-on-the-
+page risk it exposed is not, and is why the identity rule exists.
 
 Two measured facts make it easy to reach:
 
@@ -254,18 +260,25 @@ buyback slider and outside the plan box. It is 22% of the headline saving on a
 Galaxy Z Fold8 Ultra, so a check that skips it leaves the largest number on the
 page unverified.
 
-**`best_price` is currently absent from `variant-pricing` on every sampled
-product** (14 Aug 2026), though the header of `api/pricing-api.spec.js` records
-it live and fully populated on 10 Aug. That silently turns 20 of that file's 21
-tests into skips while the run stays green — and it is in the CI public list. A
-coverage guard now fails instead. Decide whether the field moved or the feature
-was withdrawn; do not "fix" it by deleting the guard.
+**`best_price` is intentionally disabled** — the offer behind it ended. It is
+absent from `variant-pricing` on every sampled product, which turns 20 of the 21
+tests in `api/pricing-api.spec.js` into skips with a reason.
 
-### Device Protection: ₹1 vs ₹2,001 — root cause
+That is the correct outcome, and this file previously said the opposite. A
+coverage guard briefly asserted the field was present; it was deliberately
+removed, and `api/pricing-api.spec.js` now carries an explicit "do not re-add a
+guard here" note at that spot. The per-fixture `test.skip(!best, ...)` calls are
+the intended behaviour. Nothing in the checkout pricing suite reads `best_price`,
+and it must never fail a run or be reported as a pricing defect.
 
-**Review Order renders `vas_price` (per unit) where it should render
-`vas_amount` (the total charged).** Both fields sit in the same VAS record in
-the same response:
+### Device Protection: ₹1 vs ₹2,001 — CONFIRMED EXPECTED (20 Aug 2026)
+
+**This is not a defect.** It was filed as one and chased as one; product has
+since confirmed the behaviour is intended. Do not re-report it.
+
+Review Order renders `vas_price` (per unit); Payment Summary charges
+`vas_amount` (the total). Both fields sit in the same VAS record in the same
+response:
 
 ```
 vas: [{ vas_name: "12 mo Device Protection",
@@ -282,16 +295,25 @@ Measured on a 3-item upfront order (screen recording, 14 Aug 2026):
 | Discount | −₹17,000 | −₹17,000 |
 | Total | **₹3,85,800** | **₹3,87,800** |
 
-The shopper approves ₹3,85,800 and is charged ₹2,000 more. `₹1,999 + ₹1 + ₹1`
-across the three items is the ₹2,001 — it is a **sum**, exposed as a second
-field rather than as extra rows, which is why looking for multiple protected
-lines in the cart found nothing.
+`₹1,999 + ₹1 + ₹1` across the three items is the ₹2,001 — it is a **sum**,
+exposed as a second field rather than as extra rows, which is why looking for
+multiple protected lines in the cart found nothing.
 
-`regression/device-protection-consistency.spec.js` catches this at Review Order
-with **no order minted**: it reads `vas_items[].vas_price` and the line's
-`vas_amount` from the cart API and asserts the rendered figure is the charged
-one. It reports plainly when `vas_price == vas_amount`, since the two figures
-are then indistinguishable and the check proves nothing.
+Two further facts, both measured, that decide whether you can even see this:
+
+- Device Protection attaches on **subscription** purchases only — the VAS record
+  carries `is_default_subscription: true, is_default_upfront: false`. Adding a
+  product upfront attaches ₹0, and that is correct.
+- With a single protected line `vas_price == vas_amount`, so the two figures are
+  indistinguishable and no check can separate them. You need **two or more
+  protected lines** before they diverge at all.
+
+`regression/device-protection-consistency.spec.js` no longer asserts that Review
+Order renders `vas_amount`. What it still asserts is that the rendered figure is
+**one of the two fields the response carries** — a third value would be a number
+with no source the shopper could have seen, and that would be a real bug. It
+reports plainly when `vas_price == vas_amount`, since the check then proves
+nothing.
 
 To read a bug recording, `scripts/extract-video-frames.spec.js` pulls stills out
 of an MP4 — Playwright's bundled ffmpeg is a WebM-only build and cannot demux
@@ -310,7 +332,11 @@ difference.
 That distinction is the whole point. With Device Protection at ₹2,001 instead of
 ₹1, Payment Summary's *own* arithmetic still balances perfectly, so a
 "does this page add up" check passes on both pages and the defect is invisible.
-Only the cross-page comparison of the named component finds it.
+Only the cross-page comparison of the named component finds one.
+
+The ₹1/₹2,001 case is confirmed expected and no longer fails the suite. The
+component comparison stays because it is what would catch a charge that moved
+for a reason nobody intended.
 
 ```
 BYTEPE_ALLOW_WRITES=1   # required — reaching Payment Summary mints a real order

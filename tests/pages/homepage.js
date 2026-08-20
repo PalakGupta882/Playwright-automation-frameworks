@@ -4,28 +4,29 @@ const { BASE_URL, TIMEOUTS, URLS } = require('../data/constants');
 class HomePage extends BasePage {
   constructor(page) {
     super(page);
-    // .last(), not .first(), and this is a workaround for a live DOM defect.
+    // .last(), not .first(). The homepage renders its header TWICE, and that is
+    // CONFIRMED EXPECTED (20 Aug 2026) -- it is not a defect to be fixed, so
+    // this is the permanent locator, not a workaround waiting on a bug.
     //
-    // The note that used to sit here said the header is rendered twice for
-    // desktop and mobile, so .first() might resolve the hidden copy. That is
-    // not what is happening. Measured 19 Aug 2026 on / and /home/subscription:
+    // Re-measured 20 Aug 2026 on / and /home/subscription:
     //
     //   <header> elements: 2
-    //     header[0] 1280x85 @0,0 pos=fixed z=1100 vis=visible
-    //     header[1] 1280x85 @0,0 pos=fixed z=1100 vis=visible
-    //     a[href="/home/subscription"]: 2, both 102x37 @821,24
+    //     header[0] 1280x77 @0,0 pos=fixed z=1100 vis=visible
+    //     header[1] 1280x77 @0,0 pos=fixed z=1100 vis=visible
+    //     a[href="/home/subscription"]: 2, both 86x18 @805,29
     //
-    // Two identical, both visible, stacked exactly. Not a responsive pair —
-    // /all-products renders one. At equal z-index the later element paints on
-    // top, so .last() is the copy a real mouse click reaches; .first() is
-    // permanently covered:
+    // Two identical, both visible, stacked exactly. Not a responsive pair --
+    // /all-products renders one, and a different one (1280x85). At equal
+    // z-index the later element paints on top, so .last() is the copy a real
+    // mouse click reaches and .first() is permanently covered:
     //
     //   first() copy: blocked: locator.click: Timeout 6000ms exceeded
     //   last()  copy: clicked -> https://www.bytepe.com/home/subscription
     //
-    // That is what took down three smoke tests on 19 Aug. Revert to .first()
-    // once the duplicate header is fixed — until then .last() is the only copy
-    // that can be clicked.
+    // Do NOT "simplify" this back to .first(): that is what took down three
+    // smoke tests on 19 Aug. A real shopper always hits the top copy, which is
+    // why the duplication is invisible in the product and fatal to DOM-order
+    // selection.
     const visibleLink = (name, opts = {}) =>
       page.getByRole('link', { name, ...opts }).filter({ visible: true }).last();
 
@@ -80,10 +81,32 @@ class HomePage extends BasePage {
   // succeeds, the URL never changes, and the assertion times out 15s later
   // pointing at the wrong thing.
   //
-  // Delete this and go back to a single click once the duplicate header is
-  // fixed. It is a workaround for a live DOM defect, not a pattern to copy.
+  // The duplicate header is CONFIRMED EXPECTED (20 Aug 2026), so this is the
+  // permanent way to activate a header link, not a workaround awaiting a fix.
+  //
+  // Two activation routes, in order, because a click alone is not reliable
+  // here. Measured: the DOM-first copy is permanently covered and its click
+  // times out, and on 19 and 20 Aug even the top copy swallowed the click for
+  // "Products" and "Subscription" while keyboard activation on the same locator
+  // navigated every time. Which of the two identical headers paints on top is
+  // decided per render, so neither copy can be trusted to take a mouse click.
   async clickHeaderLink(key, urlPattern) {
     const links = this.headerCopies[key];
+
+    // count() does NOT auto-wait -- it answers immediately with whatever is in
+    // the DOM at that instant. The header hydrates after first paint, so calling
+    // count() straight away can legitimately return 0 and report "no visible
+    // header link" for a link that is simply not painted yet. Measured 20 Aug
+    // 2026: About Us failed exactly that way, while a probe moments later found
+    // two visible copies and GET /about-us returning 200.
+    //
+    // Waiting for the first copy is what makes the count meaningful. A genuine
+    // "the link is gone" still fails here, with the timeout naming the link.
+    await links
+      .first()
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.nav })
+      .catch(() => {});
+
     const copies = await links.count();
     if (copies === 0) throw new Error(`no visible header link for "${key}"`);
 
@@ -94,19 +117,35 @@ class HomePage extends BasePage {
         .click({ timeout: TIMEOUTS.action })
         .then(() => true)
         .catch(() => false);
-      if (!clicked) continue;
+      if (clicked) {
+        const moved = await this.page
+          .waitForURL(urlPattern, { timeout: TIMEOUTS.nav })
+          .then(() => true)
+          .catch(() => false);
+        if (moved) return;
+      }
 
-      const moved = await this.page
+      // Keyboard activation. It reaches the anchor directly rather than through
+      // hit-testing, which is the step the stacked copies interfere with.
+      const pressed = await links
+        .nth(i)
+        .press('Enter')
+        .then(() => true)
+        .catch(() => false);
+      if (!pressed) continue;
+
+      const movedByKey = await this.page
         .waitForURL(urlPattern, { timeout: TIMEOUTS.nav })
         .then(() => true)
         .catch(() => false);
-      if (moved) return;
+      if (movedByKey) return;
     }
 
     throw new Error(
       `the header "${key}" link did not navigate to ${urlPattern}. ` +
-        `${copies} visible copies were tried; the page is still at ${this.page.url()}. ` +
-        'The header renders twice — if that has been fixed, simplify clickHeaderLink().'
+        `${copies} visible copies were tried, by click AND by Enter; the page is still at ` +
+        `${this.page.url()}. The header renders twice by design; if BOTH activation routes ` +
+        'fail on every copy, the link itself is broken rather than merely covered.'
     );
   }
 

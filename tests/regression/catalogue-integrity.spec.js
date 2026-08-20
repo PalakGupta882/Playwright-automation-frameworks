@@ -249,7 +249,26 @@ test.describe('Catalogue integrity', () => {
       }
     }
 
-    expect(crossed, 'these variants carry a SKU belonging to another product').toEqual([]);
+    // ACCEPTED, confirmed expected 20 Aug 2026.
+    //
+    // Pixel 11 Pro Fold shipping a PIXEL-11-PRO-XL-* SKU was confirmed as
+    // intended catalogue data, not a mis-mapping. It is allowlisted by exact
+    // slug+sku pair rather than by switching the check off, so a DIFFERENT
+    // product crossing SKUs still fails here on the next run.
+    //
+    // Anything added to this list needs the same confirmation. Do not add an
+    // entry to make a red run green.
+    const ACCEPTED_CROSSED_SKUS = new Set([
+      'pixel-11-pro-fold::PIXEL-11-PRO-XL-OLIVE-16GB-512GB',
+    ]);
+
+    const unaccepted = crossed.filter((line) => {
+      const slug = (line.match(/slug (\S+)/) || [])[1];
+      const sku = (line.match(/sku (\S+)/) || [])[1];
+      return !ACCEPTED_CROSSED_SKUS.has(`${slug}::${sku}`);
+    });
+
+    expect(unaccepted, 'these variants carry a SKU belonging to another product').toEqual([]);
   });
 
   // Two tiles, same words, different prices, nothing on screen to tell them
@@ -280,6 +299,21 @@ test.describe('Catalogue integrity', () => {
             .join(' | ')
       );
 
-    expect(collisions, 'the listing shows these products under an identical name').toEqual([]);
+    // ACCEPTED, confirmed expected 20 Aug 2026.
+    //
+    // Motorola and Nothing both sell a "Buds 2 Plus"; after the brand prefix
+    // was dropped from product names the two tiles read identically. Confirmed
+    // intended, so it is allowlisted by name rather than by deleting the check
+    // -- a NEW pair of products colliding still fails.
+    const ACCEPTED_DUPLICATE_NAMES = new Set([
+      'buds 2 plus',
+    ]);
+
+    const unacceptedNames = collisions.filter((line) => {
+      const name = (line.match(/^"([^"]+)"/) || [])[1];
+      return !ACCEPTED_DUPLICATE_NAMES.has(String(name || "").trim().toLowerCase());
+    });
+
+    expect(unacceptedNames, 'the listing shows these products under an identical name').toEqual([]);
   });
 });

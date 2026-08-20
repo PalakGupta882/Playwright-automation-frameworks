@@ -289,29 +289,40 @@ test.describe('Device Protection pricing consistency through checkout', () => {
     expect(page.url()).not.toMatch(/payment-summary|razorpay|payment_id/i);
   });
 
-  // ---- THE BUG, CAUGHT WITHOUT MINTING ANYTHING ------------------------
+  // ---- DEVICE PROTECTION ACROSS SURFACES -------------------------------
   //
-  // Root cause, read off a screen recording of the failure (14 Aug 2026):
-  // Review Order renders the VAS record's `vas_price` — the PER-UNIT figure —
-  // where it should render `vas_amount`, the total actually charged. Both live
-  // in the same object in the same response:
+  // STATUS, 20 Aug 2026: CONFIRMED EXPECTED. Not a defect.
+  //
+  // Review Order renders the VAS record's `vas_price` (the per-unit figure)
+  // while Payment Summary charges `vas_amount` (the total). Both live in the
+  // same object in the same response:
   //
   //     vas: [{ vas_name: "12 mo Device Protection",
   //             vas_price: 1,        <- Review Order shows this
   //             vas_amount: 2001 }]  <- Payment Summary charges this
   //
-  // Measured on a 3-item upfront order:
-  //     Review Order     Device Protection ₹1      Total ₹3,85,800
-  //     Payment Summary  Device Protection ₹2,001  Total ₹3,87,800
+  // Measured on a 3-item upfront order, 14 Aug 2026:
+  //     Review Order     Device Protection Rs 1      Total Rs 3,85,800
+  //     Payment Summary  Device Protection Rs 2,001  Total Rs 3,87,800
   //
-  // The shopper approves one figure and is charged ₹2,000 more. ₹1,999 + ₹1 + ₹1
-  // across the three items is the ₹2,001 — so it is a sum, exposed as a second
-  // field rather than as extra lines, which is why looking for multiple
-  // protected rows found nothing.
+  // This was originally filed as the worst defect the storefront could produce.
+  // Product has since confirmed the behaviour is intended, so the assertion no
+  // longer demands that Review Order render `vas_amount`.
+  //
+  // WHAT IS STILL CHECKED, and why it is worth keeping:
+  //
+  // The figure on the page must be one the response can justify -- either
+  // `vas_price` or `vas_amount`. Any third number is a figure with no source
+  // the shopper could have seen, and that would be a real defect. This is the
+  // same invariant device-protection-multi-product.spec.js applies to the cart.
+  //
+  // The component-by-component comparison further down is untouched and remains
+  // the point of this file: it names which charge moved instead of reporting a
+  // bare total mismatch.
   //
   // Because both numbers arrive together, the mismatch is provable on Review
   // Order alone. No Continue, no order, no money. This is the test to run.
-  test('Review Order shows the Device Protection that will actually be charged', async ({
+  test('Review Order Device Protection is a figure the response can justify', async ({
     page,
   }, testInfo) => {
     test.setTimeout(FLOW_TIMEOUT);
@@ -413,12 +424,14 @@ test.describe('Device Protection pricing consistency through checkout', () => {
         : `vas_price ₹${perUnit} != vas_amount ₹${charged} — this basket CAN expose the defect`
     );
 
+    // CONFIRMED EXPECTED: Review Order renders vas_price, Payment Summary
+    // charges vas_amount. So this no longer demands vas_amount -- it demands
+    // that whatever is rendered is one of the two fields the response actually
+    // carries. A third value would be a figure with no source, which IS a bug.
+    const justifiable = [charged, perUnit];
     expect(
-      review.deviceProtection,
-      'REVIEW ORDER IS SHOWING THE WRONG DEVICE PROTECTION FIGURE\n\n' +
-        // Step 4 names the field rather than reporting a bare difference: "the
-        // page renders vas_price" and "Device Protection is wrong" are different
-        // bugs, fixed by different people.
+      justifiable,
+      'REVIEW ORDER IS SHOWING A DEVICE PROTECTION FIGURE WITH NO SOURCE\n\n' +
         explainDisplayedField({
           uiValue: review.deviceProtection,
           expectedField: 'vas_amount',
@@ -426,17 +439,16 @@ test.describe('Device Protection pricing consistency through checkout', () => {
           label: 'Review Order',
         }) +
         '\n\n' +
-        `  the shopper will be charged ₹${charged - (review.deviceProtection ?? 0)} more than ` +
-        'this page states\n\n' +
+        'Rendering vas_price here is confirmed expected. Rendering neither field is not:\n' +
+        `  vas_price total  Rs ${perUnit}\n` +
+        `  vas_amount total Rs ${charged}\n` +
+        `  on the page      Rs ${review.deviceProtection}\n\n` +
         vasRecords
-          .map((v) => `    ${v.name}: vas_price ₹${v.vasPrice}, vas_amount ₹${v.vasAmount}`)
+          .map((v) => `    ${v.name}: vas_price Rs ${v.vasPrice}, vas_amount Rs ${v.vasAmount}`)
           .join('\n') +
-        '\n\nBoth figures arrive in the same vas record. Review Order renders vas_price, the ' +
-        'per-unit figure; Payment Summary charges vas_amount, the total. Where a cart holds ' +
-        'more than one protected item the two diverge, and the shopper approves the smaller ' +
-        'one.\n\n' +
+        '\n\n' +
         formatBreakdown(review)
-    ).toBe(charged);
+    ).toContain(review.deviceProtection);
 
     // Stopped before anything is created.
     expect(page.url()).not.toMatch(/payment-summary|razorpay|payment_id/i);
