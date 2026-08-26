@@ -65,8 +65,14 @@ async function readProductPricing(page, { slug, bpid }) {
 
   // Present only on subscription products. Absence is a real answer, so this
   // waits a bounded time and then accepts "not offered".
+  //
+  // Matched on /secure|protection/ rather than the literal "BytePe Secure": the
+  // row was relabelled "12 mo Device Protection" on 23 Aug 2026, and the old
+  // pattern then never matched — every product burned the full 8s and fell
+  // through to reading a body that had not finished rendering the add-on block.
+  // Same rename that broke parseAddOn; see the add-on section in CLAUDE.md.
   await page
-    .getByText(/bytepe secure/i)
+    .getByText(/bytepe secure|device protection/i)
     .first()
     .waitFor({ state: 'visible', timeout: 8000 })
     .catch(() => {});
@@ -275,6 +281,29 @@ test.describe('Device Protection is charged per product', () => {
     // must be that basket's total_vas_amount — if the page and the API disagree,
     // the shopper is reading a figure the server does not hold.
     const upfront = baskets.find((b) => b.paymentType === 'UPFRONT');
+
+    // NOTHING TO COMPARE AT vas 0. Added 21 Aug 2026.
+    //
+    // Device Protection is a SUBSCRIPTION add-on — confirmed in the 360 admin
+    // panel, where the "12 mo Device Protection" VAS record carries
+    // `VAS enable for Subscription: true` and `VAS enable for Upfront: false`.
+    // An upfront basket therefore carries vas 0 and the page renders no Device
+    // Protection row at all, which is correct.
+    //
+    // parseOrderSummary returns null for a row that is not on the page, and
+    // this used to assert `expect(null).toBe(0)` — failing on the intended
+    // configuration. Worse, even when it passed there was nothing to check:
+    // absent and zero are the same statement about a basket with no protected
+    // line. So say that plainly and skip, rather than claim a clean result.
+    // Same reasoning as the vas_price == vas_amount report in
+    // device-protection-consistency.spec.js.
+    test.skip(
+      upfront.totals.vas === 0,
+      'The upfront basket carries no Device Protection (vas 0), which is the ' +
+        'intended configuration — the VAS record is subscription-only. There is ' +
+        'no rendered figure to reconcile, so this check would prove nothing.'
+    );
+
     expect(
       cart.deviceProtection,
       'THE RENDERED CART AND THE CART API DISAGREE ABOUT DEVICE PROTECTION\n\n' +
@@ -518,6 +547,16 @@ test.describe('Device Protection is charged per product', () => {
     console.log(
       `basket carries ₹${summedVas} of Device Protection across ${protectedLines.length} line(s): ` +
         (protectedLines.map((l) => `${l.name} ₹${l.vasAmount}`).join(', ') || 'none')
+    );
+
+    // No protected line means no rendered row, and nothing to reconcile. The
+    // upfront basket is the normal case for that, because the VAS record is
+    // subscription-only — see the note on the cart-line test above.
+    test.skip(
+      summedVas === 0,
+      'The upfront basket carries no Device Protection (vas 0), which is the ' +
+        'intended configuration — the VAS record is subscription-only. There is ' +
+        'no rendered figure to carry through to Review Order.'
     );
 
     // The cart page must show the sum its own basket holds.

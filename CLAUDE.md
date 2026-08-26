@@ -252,13 +252,69 @@ Measured formulas, all exact — do not re-derive them:
 | "Credit Card EMI ₹X/mo" · "Monthly Subscription" · "Subscription from" | `cc.emi_amount` |
 | "Cardless EMI ₹X/mo + ₹Y Now" | `nbfc.emi_amount` + `nbfc.downpay` |
 | "₹X x N mo" ladder rows | `emi.emi_option[]` — `installment_amount` × `tenure` |
-| "Total Discount" · "You'll save up to" | `(MRP − cc.total_amount) + (add-on list − add-on paid)` |
+| "Total Discount" · "You'll save up to" | `(MRP − cc.total_amount) + Σ(add-on list − add-on paid)` |
 | instalment total | `price − discount + interest`, ±₹1 per instalment |
 
-The add-on term is `BytePe Secure ₹8,000 → ₹1,999`, which sits **below** the
-buyback slider and outside the plan box. It is 22% of the headline saving on a
-Galaxy Z Fold8 Ultra, so a check that skips it leaves the largest number on the
-page unverified.
+**The add-on term is a SUM over every bundled row, not one row.** The block sits
+**below** the buyback slider and outside the plan box, and as of 23 Aug 2026 it
+holds more than one entry:
+
+```
+Pixel 11 Pro Fold   12 mo Device Protection  ₹12,999 → ₹1
+                    Free Wireless Charger     ₹5,999 → ₹0
+```
+
+That term is 22% of the headline saving on a Galaxy Z Fold8 Ultra and **54%** on
+the Pixel, so a check that skips it leaves the largest number on the page
+unverified — which is exactly what happened when the labels moved.
+
+**Never match these rows on a literal name.** The old parser looked for
+`BytePe Secure`; protection is now labelled `12 mo Device Protection` and priced
+from ₹12,999 rather than ₹8,000, so the match missed, `parseAddOn` returned
+`null`, and the caller read that as "this product bundles nothing". Get the names
+from the VAS record instead and look each one up:
+
+```
+GET /api/apps/product-vas/:slug/:bpid   (public, no auth)
+
+vas: [{ vas_name: "12 mo Device Protection", vas_mrp: 12999, vas_price: 1,
+        details: { other_type: "Damage Protection" } },
+      { vas_name: "Free Wireless Charger",   vas_mrp:  5999, vas_price: 0,
+        details: { other_type: "Freebie" } }]
+```
+
+This is **not** part of `variant-pricing` — that response carries
+`upfront/cc/cc_y2/nbfc/emi/emi_price/abb` and no `vas` key at all. Helpers:
+`productVasPath` / `vasNamesFrom` in `tests/data/emiApi.js`, `parseAddOns` in
+`tests/utils/priceText.js`. `parseAddOn` still returns the protection row alone
+for the callers that mean protection specifically.
+
+There is no way to find these rows in body text without the names. "A label, then
+two amounts, the second no larger" also describes the PDP header (price then
+struck MRP) and every adjacent pair in the buyback slider, and the block carries
+no heading, role, test id or stable class to scope a search to.
+
+### BytePe Exchange dismisses itself, or nothing else on the page is clickable
+
+Device trade-in shipped between 20 and 26 Aug 2026. On cart and Review Order it
+opens a dialog **by itself**, gated on the delivery address being eligible:
+
+```
+Exchange is now available!
+Your selected delivery address is eligible for BytePe Exchange.
+[ Add Exchange ]   [ Not now ]   [ Close ]
+```
+
+Left alone it intercepts pointer events, and the failure names the control you
+were aiming at rather than the dialog — a `locator.click` timeout on an element
+the screenshot plainly shows. It cost `coupon-valid`, `coupon-invalid` and
+`checkout-flow` a run each on 26 Aug 2026.
+
+It is handled for every spec by `installExchangeDialogHandler()`
+(`tests/utils/exchangeDialog.js`), registered on the `page` fixture in
+`tests/fixtures/pageFixtures.js`, so no spec has to remember. It declines via
+**Not now** and logs each dismissal. **Never click "Add Exchange" from a test** —
+it attaches a trade-in to a real order.
 
 **`best_price` is intentionally disabled** — the offer behind it ended. It is
 absent from `variant-pricing` on every sampled product, which turns 20 of the 21
@@ -275,6 +331,28 @@ and it must never fail a run or be reported as a pricing defect.
 
 **This is not a defect.** It was filed as one and chased as one; product has
 since confirmed the behaviour is intended. Do not re-report it.
+
+**The ₹1 price is also intentional — confirmed 21 Aug 2026.** This is a second,
+separate question from the rendering above, and it has now been answered too.
+The base VAS record in the 360 Admin Panel (`360.bytepe.com/vas` → Edit VAS,
+"12 mo Device Protection") carries `Price: 1.00`, and per-product figures come
+from the **Upload VAS Pricing** flow on the same screen. So a product showing
+`BytePe Secure ₹8,000 → ₹1` — Macbook Pro M5 and iPhone 17e both do, while
+Galaxy Z Fold8 Ultra shows ₹1,999 — is **priced as intended**, not a product
+missing its row and falling through to the default. Do not raise it as a revenue
+exposure; that question was asked and closed.
+
+The label and the list price have both moved since: the same record was updated
+23 Aug 2026 and now reads `12 mo Device Protection ₹12,999 → ₹1`. Treat the
+figures above as measurements of that date, not as constants — and read the row
+by the name the VAS record gives it, per the add-on section above.
+
+The same admin record is the source for the subscription-only rule below:
+
+```
+VAS enable for Subscription : true
+VAS enable for Upfront      : false
+```
 
 Review Order renders `vas_price` (per unit); Payment Summary charges
 `vas_amount` (the total). Both fields sit in the same VAS record in the same

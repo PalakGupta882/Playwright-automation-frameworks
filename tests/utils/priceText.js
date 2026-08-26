@@ -213,31 +213,134 @@ function parsePlanBox(bodyText) {
   };
 }
 
-// ---- Bundled add-on ----------------------------------------------------
+// ---- Bundled add-ons ---------------------------------------------------
 //
-//   "BytePe Secure ₹8,000 ₹1,999"     (Galaxy Z Fold8 Ultra)
-//   "BytePe Secure ₹8,000 ₹1"         (Macbook Pro M5)
+// The block below the buyback slider — outside parsePlanBox's region, so read
+// from the whole body — where the PDP lists what comes bundled with the device.
+// Each row is a name, an optional description, then a struck-through list price
+// and what the shopper actually pays. Measured on pixel-11-pro-fold,
+// 26 Aug 2026:
 //
-// List price then what the shopper actually pays. This sits BELOW the buyback
-// slider, so it is outside parsePlanBox's region and is read from the whole
-// body instead.
+//     12 mo Device Protection                     Free Wireless Charger
+//     1 time coverage for accidental and liquid   Free Wireless Charger
+//     damage                                      ₹5,999
+//     Validity - 12 months                        ₹0
+//     See more
+//     ₹12,999
+//     ₹1
 //
-// It matters because it is the missing term in the advertised saving. Measured
-// exact on both products above: the "Total Discount" the PDP prints is
-// (MRP - cc.total_amount) + (list - paid). Without this term the check on that
-// figure can only be a loose bound; with it, the claim is verifiable to the
-// rupee. It is also the same class of line item as the ₹1 Device Protection
-// that once made the cart total look like a rounding defect.
-function parseAddOn(bodyText) {
-  const flat = flatten(bodyText);
-  const match = flat.match(/BytePe Secure\s*₹\s?([\d,]+)\s*₹\s?([\d,]+)/i);
+// THIS USED TO READ ONE ROW, MATCHED ON THE LITERAL "BytePe Secure". Both halves
+// of that stopped being true on 23 Aug 2026, and it failed in the worst way
+// available: the match missed, the function returned null, the caller read that
+// as "this product bundles nothing", and the advertised-saving check came up
+// short without naming an add-on at all —
+//
+//     pixel-11-pro-fold: the PDP advertises a saving of ₹35062, but the figures
+//     behind it come to something else.
+//       device saving          ₹16065
+//       no add-on line found  +₹0
+//       expected               ₹16065
+//       advertised             ₹35062
+//
+// The missing ₹18,997 is TWO rows, not one: ₹12,999 → ₹1 protection plus a
+// ₹5,999 → ₹0 freebie. Both are in the VAS record, which dates them — the
+// freebie's `details.createdAt` is 2026-08-23, and protection was relabelled
+// and repriced (₹8,000 → ₹12,999 list) in the same update.
+//
+// WHY THE NAMES ARE PASSED IN. There is no honest way to find these rows in body
+// text alone. "A label, then two rupee amounts, the second no larger" also
+// describes the PDP header (price then struck MRP) and every adjacent pair in
+// the buyback slider (₹1,21,500 ₹84,100 ₹1,12,200 ₹65,400), and the block has no
+// heading, test id or stable class to scope a search to. So the caller fetches
+// the names from GET /api/apps/product-vas/:slug/:bpid — the same record the
+// page is rendering — and each one is looked up by name. Ask the API the
+// question the page asks.
+//
+//     vas: [{ vas_name: "12 mo Device Protection", vas_mrp: 12999, vas_price: 1,
+//             details: { other_type: "Damage Protection" } },
+//           { vas_name: "Free Wireless Charger",   vas_mrp:  5999, vas_price: 0,
+//             details: { other_type: "Freebie" } }]
+
+// The names to try when a caller has no VAS response to hand. A fallback, not a
+// catalogue: it covers protection under both labels it has shipped under, and it
+// cannot know about a freebie added tomorrow. Results built from it are marked
+// `namesFrom: 'fallback'` so a caller can say the row set may be incomplete
+// rather than report a total as though it were complete.
+const FALLBACK_ADDON_NAMES = ['BytePe Secure', '12 mo Device Protection'];
+
+// Which row is the protection plan. Name-based because the page has nothing
+// else: `vas_type` is "other" for every row, and the field that actually
+// separates them — `details.other_type`, "Damage Protection" vs "Freebie" — is
+// not rendered anywhere a shopper or a parser can see.
+const PROTECTION_NAME = /secure|protection/i;
+
+function readNamedAddOn(flat, name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // What sits between the name and the first amount is skipped rather than
+  // described: the row carries a free-text description, and some cards repeat
+  // their own name ("Free Wireless Charger Free Wireless Charger"). [^₹] stops
+  // the skip running past an amount that belongs to a different row.
+  const match = flat.match(
+    new RegExp(`${escaped}[^₹]{0,400}₹\\s?([\\d,]+)[^₹]{0,40}₹\\s?([\\d,]+)`, 'i')
+  );
   if (!match) return null;
 
   const list = Number(match[1].replace(/,/g, ''));
   const paid = Number(match[2].replace(/,/g, ''));
   if (!Number.isFinite(list) || !Number.isFinite(paid)) return null;
 
-  return { name: 'BytePe Secure', list, paid, saving: list - paid };
+  // Parsed with Number rather than toRupees on purpose: a freebie is paid ₹0,
+  // and toRupees returns null for 0 by design.
+  //
+  // A list price is never below what is paid for it. If it is, the name matched
+  // text outside its own card and these two figures are unrelated — report
+  // nothing rather than a negative saving.
+  if (paid > list) return null;
+
+  return { name, list, paid, saving: list - paid };
+}
+
+// All bundled rows. `names` comes from vas[].vas_name; omit it and the fallback
+// list above is used instead.
+function parseAddOns(bodyText, names) {
+  const flat = flatten(bodyText);
+  const supplied = Array.isArray(names) && names.length > 0;
+  const wanted = supplied ? names : FALLBACK_ADDON_NAMES;
+
+  const rows = [];
+  const missing = [];
+  for (const name of wanted) {
+    const row = readNamedAddOn(flat, name);
+    if (row) rows.push(row);
+    else missing.push(name);
+  }
+
+  return {
+    rows,
+
+    // The term the advertised saving needs:
+    //   Total Discount = (MRP - cc.total_amount) + sum(list - paid)
+    // Only rows actually found on the page are summed. A name the VAS record
+    // offers but the page does not render is worth nothing to a shopper, so it
+    // is worth nothing here.
+    totalSaving: rows.reduce((sum, row) => sum + row.saving, 0),
+
+    // Names asked for and not found. Empty is the normal case. Non-empty on a
+    // supplied-names call means the page and the VAS record disagree about what
+    // is bundled — a finding to report, not a parse failure to swallow.
+    missing,
+
+    namesFrom: supplied ? 'api' : 'fallback',
+  };
+}
+
+// The protection row on its own, for the callers that mean Device Protection
+// specifically rather than "everything bundled". Same shape it has always
+// returned; `name` is now whatever the page calls it rather than a constant.
+function parseAddOn(bodyText, names) {
+  const { rows } = parseAddOns(bodyText, names);
+  return rows.find((row) => PROTECTION_NAME.test(row.name)) || null;
 }
 
 // ---- Order Summary (Cart and Review Order share this block) ------------
@@ -498,6 +601,7 @@ module.exports = {
   parsePdpHeader,
   parsePlanBox,
   parseAddOn,
+  parseAddOns,
   parseOrderSummary,
   parsePricingBreakdown,
   expectedTotalOf,

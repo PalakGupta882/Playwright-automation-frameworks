@@ -24,9 +24,9 @@
 
 const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL, TIMEOUTS } = require('../data/constants');
-const { pdpApiPath, variantPricingPath } = require('../data/emiApi');
+const { pdpApiPath, variantPricingPath, productVasPath, vasNamesFrom } = require('../data/emiApi');
 const { getWithRetry } = require('../utils/apiRetry');
-const { parsePlpTile, parsePdpHeader, parsePlanBox, parseAddOn } = require('../utils/priceText');
+const { parsePlpTile, parsePdpHeader, parsePlanBox, parseAddOns } = require('../utils/priceText');
 
 // Logged out, deliberately and explicitly — same reason cardless-emi.spec.js and
 // emi-plan-config.spec.js do it. It also makes every case here a candidate for
@@ -544,10 +544,34 @@ test.describe('Pricing consistency across surfaces', () => {
     test.skip(!subject, 'no BOTH-mode product found in the listing sample');
 
     const { entry, pricing } = subject;
+
+    // The bundled rows, named by the same record the page renders. Fetched
+    // rather than guessed because the add-on block has no stable anchor in the
+    // page text — see the header of parseAddOns in utils/priceText.js.
+    const vasRes = await getWithRetry(request, productVasPath(entry.slug, entry.bpid));
+    const vasNames = vasRes.ok() ? vasNamesFrom(await vasRes.json()) : [];
+
     const body = await openPdp(page, entry);
     const box = parsePlanBox(body);
-    const addOn = parseAddOn(body);
+    const addOns = parseAddOns(body, vasNames);
     const { upfront = {}, cc = {} } = pricing.data;
+
+    // Non-vacuous: if the VAS record names rows and none of them is found in the
+    // page text, the add-on term below is silently zero and the reconciliation
+    // "passes" against a saving that has nothing to do with what is bundled.
+    // That is exactly how this check went quiet when the labels changed on
+    // 23 Aug 2026. Only asserted when the names came from the API — with the
+    // fallback list, "not found" means the fallback does not cover this product,
+    // which is a known limit rather than a defect.
+    if (addOns.namesFrom === 'api') {
+      expect(
+        addOns.missing,
+        `${entry.slug}: the VAS record bundles [${vasNames.join(', ')}], but ` +
+          `[${addOns.missing.join(', ')}] could not be found in the PDP text. Either the ` +
+          'page is not rendering what the record offers, or the add-on block was ' +
+          'restyled and parseAddOns needs updating.'
+      ).toEqual([]);
+    }
 
     test.skip(box.saveUpTo === null, `${entry.slug} advertises no saving`);
 
@@ -562,26 +586,36 @@ test.describe('Pricing consistency across surfaces', () => {
 
     // The claim, reconciled to the rupee rather than bounded.
     //
-    //   Total Discount = (MRP - cc.total_amount) + (add-on list - add-on paid)
+    //   Total Discount = (MRP - cc.total_amount) + SUM(add-on list - add-on paid)
     //
-    // Derived by measurement, not assumption, and confirmed exact on both
-    // subscription products available on 14 Aug 2026:
+    // Derived by measurement, not assumption. Confirmed exact on the two
+    // subscription products available on 14 Aug 2026, when one add-on was all
+    // there was:
     //
     //   Galaxy Z Fold8 Ultra  204999 - 183693 = 21306  + (8000 - 1999) = 27307
     //   Macbook Pro M5        239900 - 217632 = 22268  + (8000 -    1) = 30267
     //
-    // Both are exactly what the PDP prints. The add-on term is the one a bounds
-    // check would have to give up on — and it is 22% of the headline saving on
-    // the Fold8, so giving up on it means the largest number on the page goes
-    // unchecked.
+    // and on the two-row shape that shipped 23 Aug 2026:
+    //
+    //   Pixel 11 Pro Fold     186999 - 170934 = 16065
+    //                                         + (12999 - 1) + (5999 - 0) = 35062
+    //
+    // The add-on term is the one a bounds check would have to give up on — it is
+    // 22% of the headline saving on the Fold8 and 54% on the Pixel, so giving up
+    // on it leaves the largest number on the page unchecked. It is a SUM: the
+    // block holds as many rows as the VAS record has.
     const mrp = upfront.cut_price ?? upfront.mop_base;
     const deviceSaving = mrp - cc.total_amount;
-    const addOnSaving = addOn ? addOn.saving : 0;
+    const addOnSaving = addOns.totalSaving;
+
+    const addOnDetail = addOns.rows.length
+      ? addOns.rows.map((row) => `${row.name} ₹${row.list}->₹${row.paid}`).join(' + ')
+      : 'no add-on line found';
 
     console.log(
       `${entry.slug}: advertised ₹${box.saveUpTo} = device ₹${deviceSaving} ` +
-        `(MRP ₹${mrp} - cc.total ₹${cc.total_amount})` +
-        (addOn ? ` + ${addOn.name} ₹${addOn.list}->₹${addOn.paid} = ₹${addOnSaving}` : ' + no add-on')
+        `(MRP ₹${mrp} - cc.total ₹${cc.total_amount}) + ${addOnDetail} = ₹${addOnSaving} ` +
+        `[names from ${addOns.namesFrom}]`
     );
 
     expect(
@@ -591,12 +625,13 @@ test.describe('Pricing consistency across surfaces', () => {
         `  MRP                      ₹${mrp}\n` +
         `  cheapest plan total     -₹${cc.total_amount}  (cc.total_amount)\n` +
         `  device saving            ₹${deviceSaving}\n` +
-        `  ${addOn ? `${addOn.name} ₹${addOn.list} -> ₹${addOn.paid}` : 'no add-on line found'}` +
-        `  +₹${addOnSaving}\n` +
+        `  ${addOnDetail}  +₹${addOnSaving}\n` +
         `  expected                 ₹${deviceSaving + addOnSaving}\n` +
         `  advertised               ₹${box.saveUpTo}\n` +
-        'If the gap matches a bundled item this parser does not read, the page grew ' +
-        'a second add-on. Otherwise the largest number on the page is overstated.'
+        `  add-on names from        ${addOns.namesFrom}` +
+        (addOns.missing.length ? ` (not found on the page: ${addOns.missing.join(', ')})` : '') +
+        '\nEvery bundled row the VAS record names is counted, so a gap here is no longer ' +
+        'explained by an add-on this parser cannot see.'
     ).toBe(deviceSaving + addOnSaving);
   });
 

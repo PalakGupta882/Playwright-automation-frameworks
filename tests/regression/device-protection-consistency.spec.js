@@ -368,6 +368,7 @@ test.describe('Device Protection pricing consistency through checkout', () => {
         vasRecords.push({
           product: item.product?.product_name,
           name: vas.vas_name,
+          otherType: vas.details?.other_type ?? vas.other_type ?? null,
           vasPrice: Number(vas.vas_price) || 0,
           // The line's vas_amount is what that line contributes to the charge.
           vasAmount: lineTotal,
@@ -376,6 +377,31 @@ test.describe('Device Protection pricing consistency through checkout', () => {
       }
     }
 
+    // NOT EVERY VAS IS DEVICE PROTECTION. This test read `vas_items[]` as though
+    // it were, which was true until 23 Aug 2026 and is not any more:
+    //
+    //   12 mo Device Protection   other_type "Damage Protection"
+    //                             is_default_subscription true, is_default_upfront false
+    //   Free Wireless Charger     other_type "Freebie"
+    //                             is_default_subscription true, is_default_upfront true
+    //
+    // So on an UPFRONT basket the only VAS is the freebie, and summing all of
+    // them produced a "Device Protection" total of ₹0 that belonged to a wireless
+    // charger. The Device Protection line on Review Order is correctly absent,
+    // and the check demanded a figure anyway — its own message said
+    // "Review Order shows null, which is vas_amount — correct" and then failed.
+    //
+    // `details.other_type` is the field that actually separates them, so it is
+    // preferred. The cart line's VAS object is a thinner projection than the one
+    // /apps/product-vas returns and may not carry it, hence the name fallback —
+    // the same /secure|protection/ pattern priceText.parseAddOn uses, and for the
+    // same reason.
+    const isProtection = (v) =>
+      v.otherType ? /protection/i.test(v.otherType) : /secure|protection/i.test(v.name || '');
+
+    const protectionRecords = vasRecords.filter(isProtection);
+    const otherRecords = vasRecords.filter((v) => !isProtection(v));
+
     // Recorded so a run can be read back later; the sniffed calls stay in the
     // report as corroboration.
     await testInfo.attach('api-calls', {
@@ -383,72 +409,110 @@ test.describe('Device Protection pricing consistency through checkout', () => {
       contentType: 'text/plain',
     });
 
+    // Logged as two groups, never as one total. A run that prints "VAS ₹0"
+    // without saying which VAS is how this went wrong in the first place.
+    const describeVas = (list) =>
+      list.map((v) => `  ${v.name} [${v.otherType ?? 'type unknown'}]: ` +
+        `vas_price ₹${v.vasPrice}, vas_amount ₹${v.vasAmount}`).join('\n');
+
     console.log(
       vasRecords.length
-        ? 'VAS records seen:\n' +
-            vasRecords
-              .map((v) => `  ${v.name}: vas_price ₹${v.vasPrice}, vas_amount ₹${v.vasAmount}`)
-              .join('\n')
+        ? `Device Protection records (${protectionRecords.length}):\n` +
+            (protectionRecords.length ? describeVas(protectionRecords) : '  none') +
+            `\nOther VAS in this basket (${otherRecords.length}), not part of the ` +
+            'Device Protection figure:\n' +
+            (otherRecords.length ? describeVas(otherRecords) : '  none')
         : 'no VAS record appeared in any response this page made'
     );
 
     await testInfo.attach('vas-records', {
-      body: JSON.stringify(vasRecords, null, 1),
+      body: JSON.stringify({ protection: protectionRecords, other: otherRecords }, null, 1),
       contentType: 'text/plain',
     });
-
-    // Non-vacuous: with nothing to compare against, say so rather than pass.
-    test.skip(
-      vasRecords.length === 0,
-      'No line in this basket carries a Device Protection record, so the displayed figure ' +
-        'cannot be checked against the amount that will be charged. Add a subscription ' +
-        'product with Device Protection attached first.'
-    );
 
     // Steps 3-5 of the diagnostic order: what did the API return, which of its
     // fields is the page showing, and what does that field mean.
     console.log(diagnosticHeader('Device Protection'));
 
-    const charged = vasRecords.reduce((sum, v) => sum + v.vasAmount, 0);
-    const perUnit = vasRecords.reduce((sum, v) => sum + v.vasPrice, 0);
+    // Summed over the PROTECTION records only. `vasAmount` is the cart line's
+    // `vas_amount` — a line-level total, so a line carrying protection plus a
+    // ₹0 freebie still contributes exactly the protection charge. A freebie that
+    // ever costs money would need this split per VAS record instead.
+    const charged = protectionRecords.reduce((sum, v) => sum + v.vasAmount, 0);
+    const perUnit = protectionRecords.reduce((sum, v) => sum + v.vasPrice, 0);
     const candidates = { vas_amount: charged, vas_price: perUnit };
 
-    // When the two fields hold the same number, the assertion below cannot fail
-    // however the page behaves. Saying so is the difference between a result and
-    // a coincidence.
-    const indistinguishable = fieldsAreIndistinguishable(candidates, 'vas_amount', 'vas_price');
-    console.log(
-      indistinguishable
-        ? `vas_price == vas_amount == ₹${charged}, so this check cannot tell the two apart on ` +
-            'this basket — it proves nothing until a cart holds a record where they differ'
-        : `vas_price ₹${perUnit} != vas_amount ₹${charged} — this basket CAN expose the defect`
-    );
+    if (protectionRecords.length === 0) {
+      // No protection on this basket, and that is the documented rule rather
+      // than a gap: the VAS record carries `is_default_upfront: false`, so
+      // adding a product upfront attaches no Device Protection. What has to be
+      // true then is that Review Order prints NO Device Protection line —
+      // a figure here would be a charge with nothing behind it, and a ₹0 line
+      // borrowed from the freebie would be the wrong charge under the right
+      // name.
+      //
+      // Non-vacuous: `review` parsed a real breakdown (its product amount and
+      // total are asserted below by formatBreakdown's own inputs), so "absent"
+      // means the line is missing from a page that rendered, not that nothing
+      // was read.
+      expect(
+        review.deviceProtection,
+        'REVIEW ORDER IS SHOWING A DEVICE PROTECTION CHARGE THAT NO VAS RECORD BACKS\n\n' +
+          `The ${paymentType} basket carries no Device Protection record, so the page should ` +
+          'print no Device Protection line at all.\n\n' +
+          `  Device Protection records  ${protectionRecords.length}\n` +
+          `  other VAS in the basket    ${otherRecords.length}\n` +
+          (otherRecords.length ? describeVas(otherRecords) + '\n' : '') +
+          `  on the page                Rs ${review.deviceProtection}\n\n` +
+          'If the figure above matches one of the other VAS rows, the page is labelling a ' +
+          'different service as Device Protection.\n\n' +
+          formatBreakdown(review)
+      ).toBeNull();
 
-    // CONFIRMED EXPECTED: Review Order renders vas_price, Payment Summary
-    // charges vas_amount. So this no longer demands vas_amount -- it demands
-    // that whatever is rendered is one of the two fields the response actually
-    // carries. A third value would be a figure with no source, which IS a bug.
-    const justifiable = [charged, perUnit];
-    expect(
-      justifiable,
-      'REVIEW ORDER IS SHOWING A DEVICE PROTECTION FIGURE WITH NO SOURCE\n\n' +
-        explainDisplayedField({
-          uiValue: review.deviceProtection,
-          expectedField: 'vas_amount',
-          candidates,
-          label: 'Review Order',
-        }) +
-        '\n\n' +
-        'Rendering vas_price here is confirmed expected. Rendering neither field is not:\n' +
-        `  vas_price total  Rs ${perUnit}\n` +
-        `  vas_amount total Rs ${charged}\n` +
-        `  on the page      Rs ${review.deviceProtection}\n\n` +
-        vasRecords
-          .map((v) => `    ${v.name}: vas_price Rs ${v.vasPrice}, vas_amount Rs ${v.vasAmount}`)
-          .join('\n') +
-        '\n\n' +
-        formatBreakdown(review)
-    ).toContain(review.deviceProtection);
+      console.log(
+        `${paymentType} basket: no Device Protection record and no Device Protection line — ` +
+          `as configured (is_default_upfront: false). ${otherRecords.length} other VAS row(s) ` +
+          'kept out of the figure.'
+      );
+    } else {
+      // When the two fields hold the same number, the assertion below cannot
+      // fail however the page behaves. Saying so is the difference between a
+      // result and a coincidence.
+      const indistinguishable = fieldsAreIndistinguishable(candidates, 'vas_amount', 'vas_price');
+      console.log(
+        indistinguishable
+          ? `vas_price == vas_amount == ₹${charged}, so this check cannot tell the two apart on ` +
+              'this basket — it proves nothing until a cart holds a record where they differ'
+          : `vas_price ₹${perUnit} != vas_amount ₹${charged} — this basket CAN expose the defect`
+      );
+
+      // CONFIRMED EXPECTED: Review Order renders vas_price, Payment Summary
+      // charges vas_amount. So this no longer demands vas_amount -- it demands
+      // that whatever is rendered is one of the two fields the response actually
+      // carries. A third value would be a figure with no source, which IS a bug.
+      const justifiable = [charged, perUnit];
+      expect(
+        justifiable,
+        'REVIEW ORDER IS SHOWING A DEVICE PROTECTION FIGURE WITH NO SOURCE\n\n' +
+          explainDisplayedField({
+            uiValue: review.deviceProtection,
+            expectedField: 'vas_amount',
+            candidates,
+            label: 'Review Order',
+          }) +
+          '\n\n' +
+          'Rendering vas_price here is confirmed expected. Rendering neither field is not:\n' +
+          `  vas_price total  Rs ${perUnit}\n` +
+          `  vas_amount total Rs ${charged}\n` +
+          `  on the page      Rs ${review.deviceProtection}\n\n` +
+          describeVas(protectionRecords) +
+          (otherRecords.length
+            ? '\n  not counted (not Device Protection):\n' + describeVas(otherRecords)
+            : '') +
+          '\n\n' +
+          formatBreakdown(review)
+      ).toContain(review.deviceProtection);
+    }
 
     // Stopped before anything is created.
     expect(page.url()).not.toMatch(/payment-summary|razorpay|payment_id/i);
