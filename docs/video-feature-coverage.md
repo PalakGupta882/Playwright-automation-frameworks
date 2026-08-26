@@ -129,7 +129,7 @@ every skipped test above routes through that one file.
 
 | TC | Scenario | Why |
 |---|---|---|
-| VID-27 | Upload valid video via Add Video modal | 360 Panel app — URL and admin login not configured here |
+| VID-27 | Upload valid video via Add Video modal | 360 Panel app — **URL known (`360.bytepe.com`)**; admin login not configured here |
 | VID-28 | Unsupported format rejected | 360 Panel + real file fixtures |
 | VID-29 | Oversized file rejected | 360 Panel + a large fixture |
 | VID-30 | Corrupt file handled gracefully | 360 Panel + a corrupt fixture |
@@ -162,9 +162,20 @@ that is now confirmed expected, so it skips with the rest rather than failing.
 
 ## Unblocking the rest
 
-1. **360 Panel** (15 cases) — needs the panel URL, an admin login that can be
-   saved as a second storage state, and video fixtures (valid MP4, oversized,
-   corrupt, portrait, landscape).
+1. **360 Panel** (15 cases) — the panel is at **`360.bytepe.com`**, confirmed
+   21 Aug 2026 from its VAS editor at `360.bytepe.com/vas`. Left nav carries
+   Product Catalog, Pricing Config, Customer, Retailer, Team, Orders, VAS,
+   Collection, Coupons, Partners, Unicorn. **Which nav entry owns video
+   management is still unconfirmed** — do not assume one.
+
+   Still needed: an admin login saved as a **second storage state under its own
+   filename** — never `auth.json`, which holds the storefront token — and video
+   fixtures (valid MP4, oversized, corrupt, portrait, landscape).
+
+   **These are writes against a real admin panel.** Anything that uploads,
+   edits or deletes belongs behind `BYTEPE_ALLOW_WRITES=1`, and a production
+   host should be an **error rather than a skip**. That pattern is already
+   written: `productionGuard()` in `tests/data/subHomeFeature.js`.
 2. **Mobile browsers** (VID-49) — add `webkit` and mobile-Chrome projects to
    `playwright.config.js`; no new credentials needed.
 3. **SLA cases** (VID-35, VID-50) — get a threshold from dev/PM, then they

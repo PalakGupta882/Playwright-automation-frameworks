@@ -226,9 +226,18 @@ docs/           coverage maps and analysis
 scripts/        node utilities (not Playwright specs)
 ```
 
-`docs/repo-map.md` explains what every file is for. `CLAUDE.md` documents **how
-BytePe sells** — plans, variants, cardless EMI, and the pricing rules the specs
-encode. Read it before writing a pricing or payment test.
+**[`docs/index.md`](docs/index.md) is the documentation map.** From there:
+[architecture](docs/architecture.md) (execution chain and every config
+decision), [test inventory](docs/test-inventory.md) (what each of the 40 spec
+files covers), [API reference](docs/api-reference.md) (every page object and
+util, and why each locator beat the alternatives),
+[authoring guide](docs/authoring-guide.md) (how to add a spec),
+[operations](docs/operations.md) (gates, CI, troubleshooting) and
+[repo map](docs/repo-map.md) (where each file lives).
+
+`CLAUDE.md` documents **how BytePe sells** — plans, variants, cardless EMI, and
+the pricing rules the specs encode. Read it before writing a pricing or payment
+test.
 
 ### Conventions
 
@@ -280,14 +289,19 @@ Two failure modes that are **not** bugs in the site:
 
 ## Known failing tests
 
-Seven tests fail today and reproduce standalone. They are **not** flakes and
+Eight tests fail today and reproduce standalone. They are **not** flakes and
 should not be "fixed" by weakening them:
 
 | Tests | Status |
 |---|---|
 | `emi-checkout-flow` — 4 tenure-ladder tests | Instalment totals differ from `price − discount + interest` by ₹1–₹8. The spec asserts exact equality; `CLAUDE.md` documents the same formula with a ±₹1-per-instalment tolerance. **Awaiting a product decision** on which is right. |
 | `subhome-tabs-ui` — TCB-005, TCB-007 | Tab-strip divider and dimensions differ from the design sheet, which was written against localhost fixtures. **Awaiting design confirmation.** |
-| `subhome-tabs-ui` — TCB-016/018/020 | The active-tab underline renders transparent instead of the brand colour, so no tab looks selected. **Likely a real defect.** |
+| `device-protection-multi-product` — 2 cart tests | **Test defect, not a site defect.** The upfront basket carries `vas: 0` and the page renders no Device Protection line, so the spec asserts `expect(null).toBe(0)`. See [`docs/operations.md`](docs/operations.md#known-failing-tests). |
+
+**No longer failing:** `subhome-tabs-ui` TCB-016/018/020 (the transparent
+active-tab underline) passed on 21 Aug 2026 — most likely fixed by the two tab-
+underline locator commits, not by a site change. Confirm before closing anything
+raised against the site.
 
 Behaviours confirmed as **expected** (do not re-report): the PDP mounting no
 video player on web, the duplicate header, `/all-products?category=` returning

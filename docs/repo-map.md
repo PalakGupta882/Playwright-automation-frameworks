@@ -1,12 +1,17 @@
 # Repo map — what every file is for
 
-Orientation for anyone new to this suite, and a refresher for anyone who has
-been away from it. Read it alongside `CLAUDE.md`, which covers *how BytePe
-sells* (plans, variants, cardless EMI); this file covers *where the code is*.
+Where the code is. Read it alongside `CLAUDE.md`, which covers *how BytePe
+sells*.
+
+This file is the **index**. The detail lives in:
+
+- [architecture.md](architecture.md) — the execution chain and every config decision
+- [api-reference.md](api-reference.md) — every exported function, and why each locator
+- [test-inventory.md](test-inventory.md) — what each spec covers
+- [authoring-guide.md](authoring-guide.md) — how to add one
+- [operations.md](operations.md) — running, gating, CI, troubleshooting
 
 ## The execution chain
-
-Everything hangs off this. Learn it first.
 
 ```
 npm test
@@ -15,7 +20,7 @@ npm test
       → tests/fixtures/pageFixtures.js   injects page objects as test args
         → tests/pages/*.js               locators + actions
           → tests/data/*.js|json         URLs, constants, fixtures
-        → tests/utils/*.js               session guard, write gate, retry
+        → tests/utils/*.js               session guard, write gate, retry, parsers
 ```
 
 A spec never touches a raw URL or a raw selector. It asks a **page object**,
@@ -25,130 +30,116 @@ which reads from **data**, and is guarded by **utils**.
 
 | File | What it does |
 |---|---|
-| `playwright.config.js` | The only ESM file in the repo. `testDir: ./tests`, `testMatch: **/*.js` — so **everything under `tests/` is a spec** unless `testIgnore` excludes it (`pages/`, `data/`, `fixtures/`, `utils/`, `wip/`, plus one explicit entry for `api/apiHelper.js`). Also sets `storageState: 'auth.json'`, 2 workers locally (capped on purpose — production rate-limits an uncapped run), a 60s timeout, and traces on first retry. **There is no `baseURL`**, which is why `page.goto('/cart')` does not work. |
-| `package.json` | The script names: `test`, `smoke`, `regression`, `api`, `auth`, `discover`, `report`, `lint`. `"type": "commonjs"`. |
-| `eslint.config.js` | `eslint-plugin-playwright`. Catches missing `await`s, a stray `.only`, conditionals wrapped around assertions. Carries per-folder relaxations: `scripts/` may branch and log, `video-*` and `api/` may skip (skipping is their safety design), `otpHelper.js` may call `page.pause()`. |
-| `auth.json` | A real logged-in session. **Gitignored — never commit it.** Regenerate with `npm run auth`. |
-| `.github/workflows/playwright.yml` | Writes an **empty** `auth.json`, then runs only the specs that pass logged out. Adding a login-gated spec to that list breaks the pipeline. |
-| `CLAUDE.md` | Domain knowledge: plans vs funding options, cardless EMI's four expected states, why a bpid is not a stable key. Read before writing pricing or payment tests. |
-| `CLAUDE.local.md` | Personal working preferences. Gitignored. |
+| `playwright.config.js` | The only ESM file in the repo. `testDir: ./tests`, `testMatch: **/*.js` — so **everything under `tests/` is a spec** unless `testIgnore` excludes it (`pages/`, `data/`, `fixtures/`, `utils/`, `wip/`, `scripts/` unless asked for, plus one explicit entry for `api/apiHelper.js`). Resolves `storageState` to `auth.json` only when it exists, caps workers at 2 locally, 60s timeout, 30s action/navigation timeouts, traces on first retry. **There is no `baseURL`.** [Full rationale](architecture.md#playwrightconfigjs--the-decisions) |
+| `package.json` | Script names: `test`, `smoke`, `regression`, `api`, `auth`, `discover`, `report`, `lint`, `page-health`, `page-report`. `"type": "commonjs"` |
+| `eslint.config.js` | `eslint-plugin-playwright`. Catches missing `await`s, a stray `.only`, conditionals around assertions. Per-folder relaxations: `scripts/` may branch and log, `video-*`, `exchange-*` and `api/` may skip, `otpHelper.js` may call `page.pause()` |
+| `auth.json` | A real logged-in session. **Gitignored — never commit it.** Regenerate with `npm run auth` |
+| `auth.dev.json` | Reserved, gitignored name for a dev session, so a dev token can never be mistaken for the production one |
+| `.github/workflows/playwright.yml` | Writes an **empty** `auth.json`, then runs only the 8 specs that pass logged out |
+| `CLAUDE.md` | Domain knowledge: plans vs funding options, cardless EMI's four expected states, why a bpid is not a stable key. Read before writing pricing or payment tests |
+| `CLAUDE.local.md` | Personal working preferences. Gitignored |
+| `README.md` | Clone-to-green-run |
 
 ## `tests/fixtures/`
 
 `pageFixtures.js` — extends Playwright's `test` so a spec receives `homePage`,
-`productPage`, `productsListPage`, `reviewOrderPage` and `emiStorePage` as
-arguments. **Import `test` and `expect` from here, not from
-`@playwright/test`.**
+`productPage`, `productsListPage`, `reviewOrderPage`, `emiStorePage` and
+`subHomeTabsPage` as arguments, and overrides `page` to install the BytePe
+Exchange dialog handler. **Import `test` and `expect` from here, not from
+`@playwright/test`** — a spec that does not will time out on cart and Review
+Order clicks the moment that dialog opens.
+
+`cartPage`, `accountPage` and `productVideoPage` are **not** registered — the
+specs that need them construct them directly.
 
 ## `tests/pages/` — the locators
 
-This is where most of the real work lives. A flaky selector is fixed in one
-place here, not across the specs that use it.
+Most of the real work. A flaky selector is fixed in one place here, not across
+the specs that use it. Method tables and locator rationale:
+[api-reference.md](api-reference.md#testspages--locators-and-actions).
 
 | File | Owns |
 |---|---|
-| `basePage.js` | 20 lines. `goto(path)` prefixes the host; `clickText`, `waitAndClick`. Everything else extends it. |
-| `homepage.js` | Navigation to every section, plus the whole login/OTP flow: `openLoginDialog` → `submitMobile` → `enterOtp` → `waitForLoggedIn`, and `describeOtpFailure` for diagnostics. |
-| `productPage.js` | The PDP: `getPrice`, `getLowestEffectivePrice`, `selectVariantOption`, `clickSubscribe`, `checkPincode`. |
-| `productsListPage.js` | The PLP and the search box: `search` (with retries), `selectAutocompleteSuggestion`, `clickAddToCart`, `clickGoToCart`. |
-| `cartPage.js` | 35 lines. `addFirstProductToCart`, `selectBuyUpfrontPlan`. |
-| `reviewOrderPage.js` | `applyCoupon`, `getCouponErrorMessage`, `clickContinue`. **`clickContinue` is the click that mints a real order id** — reaching this page is safe, that last click is not. |
-| `accountPage.js` | `/my-profile`, My Orders, and Saved Addresses CRUD. Locators are **by placeholder, not by role**: the live address form has no label, `aria-label` or accessible name, so `getByRole('textbox', { name })` resolves nothing. |
-| `emiStorePage.js` | `/home/emi-store` and the hop into a product. `whyStuck()` turns a bare locator timeout into an error that says "you are logged out". |
-| `productVideoPage.js` | The PDP media gallery, backing VID-42..VID-51. `diagnoseMissingPlayer()` reports the thumbnail slot gap, so a failure reads as the product bug rather than a stale selector. |
+| `basePage.js` | 20 lines. `goto(path)` prefixes the host; `clickText`, `waitAndClick` |
+| `homepage.js` | Navigation to every section, plus the whole login/OTP flow. Uses `.last()` on header links — the homepage renders its header **twice**, confirmed expected |
+| `productPage.js` | The PDP: `getPrice`, `getLowestEffectivePrice`, `selectVariantOption`, `clickSubscribe`, `checkPincode` |
+| `productsListPage.js` | The PLP and the search box: `search` (with retries), `selectAutocompleteSuggestion`, `clickAddToCart`, `clickGoToCart` |
+| `cartPage.js` | 35 lines. `addFirstProductToCart`, `selectBuyUpfrontPlan` |
+| `reviewOrderPage.js` | `applyCoupon`, `getCouponErrorMessage`, `clickContinue`. **`clickContinue` is the click that mints a real order id** |
+| `accountPage.js` | `/my-profile`, My Orders, and Saved Addresses CRUD. Locators are **by placeholder, not by role** — the live address form has no accessible name |
+| `emiStorePage.js` | `/home/emi-store` and the hop into a product. `whyStuck()` turns a bare locator timeout into "you are logged out" |
+| `subHomeTabsPage.js` | The Sub Home Page tab strip, backing TCB-001..054. Anchors on **ARIA** — the only authored thing on the strip |
+| `productVideoPage.js` | The PDP media gallery, backing VID-42..VID-51. `diagnoseMissingPlayer()` reports the thumbnail slot gap |
 
 ## `tests/data/` — facts, no logic
 
 | File | Holds |
 |---|---|
-| `constants.js` | `BASE_URL`, `BASE_API_URL`, `URLS`, `MESSAGES`, `TEST_ADDRESS`, `TIMEOUTS`. **New URLs, messages and timeouts go here rather than inline in a spec.** |
-| `config.js` | `baseURL`, the coupon codes (`BYTE500` valid, `FAKE000` invalid), the manual-OTP timeout. |
-| `apiEndpoints.js` | Every API route, read out of the shipped client bundles and then confirmed live. Two facts that surprise people: there is no separate API host (it is same-origin under `/api`), and **auth is a cookie, not a Bearer header**. |
-| `emiApi.js` | Parsers for the pricing payload — `cardlessEmiFrom` (`data.nbfc`), `creditCardEmiFrom` (`data.cc`), `cardEmiOptionsFrom` (`data.emi.emi_option[]`). |
-| `videoFeature.js` | Video suite configuration: the admin API env vars, the GCS bucket (`bytepestorage-prod`), the skip reasons, `expectedManifestUrl()`. |
-| `products.json`, `cardless-emi.json`, `video-products.json` | Generated fixtures. Regenerate them from `tests/scripts/` — slugs and bpids drift on their own, for reasons unrelated to this code. |
+| `constants.js` | `BASE_URL`, `BASE_API_URL`, `URLS`, `MESSAGES`, `TEST_ADDRESS`, `TIMEOUTS`. **New URLs, messages and timeouts go here** |
+| `config.js` | `baseURL`, the coupon codes (`BYTE500` valid, `FAKE000` invalid), the manual-OTP timeout |
+| `apiEndpoints.js` | Every API route, read out of the shipped client bundles and then confirmed live, plus a `FORBIDDEN` list of routes never to call. Two surprises: there is no separate API host, and **auth is a cookie, not a Bearer header** |
+| `emiApi.js` | Parsers for the pricing payload — `cardlessEmiFrom` (`data.nbfc`), `creditCardEmiFrom` (`data.cc`), `cardEmiOptionsFrom` (`data.emi.emi_option[]`) |
+| `videoFeature.js` | Video suite config: admin env vars, the GCS bucket, skip reasons, `expectedManifestUrl()` |
+| `subHomeFeature.js` | Sub-home config: the public API, `sectionsPath()`, `ACTIVE_UNDERLINE_RGB`, `TABLIST_LABEL`, skip reasons, and **`productionGuard()`** |
+| `products.json`, `cardless-emi.json`, `video-products.json`, `device-protection.json` | Generated fixtures. Regenerate from `tests/scripts/` — slugs and bpids drift on their own |
 
 ## `tests/utils/` — the guards
 
 | File | Job |
 |---|---|
-| `session.js` | `assertFreshSession()` — a pure file read of `auth.json`, no network. Fails a login-gated spec immediately with "token expired, run `npm run auth`" instead of timing out on a button that only renders for a logged-in user. **Deliberately inert when `auth.json` is missing or has zero cookies**, because CI writes an empty session. Call it in `test.beforeAll`. |
-| `writes.js` | `writesAllowed()` / `writeSkipReason()` — the `BYTEPE_ALLOW_WRITES=1` gate. It exists because a routine `npm test` once left two real orders on the production account. Guards anything that mints an order, moves money, or leaves a record a human has to clean up. |
-| `apiRetry.js` | `getWithRetry()` — retries only 429/502/503/504, with backoff and `Retry-After` support. A 404 or a 500 is a real answer and is returned untouched, so a genuine failure still fails. |
-| `domProbe.js` | Describes the inputs, buttons and frames on screen, for diagnostics. **Never reports input values** — these screens carry a phone number and a one-time code, and this output lands in reports and CI logs. |
-| `otpHelper.js` | `waitForManualOtp` (a deliberate `page.pause()` so a human can type the code) and `isOtpScreenVisible`. |
+| `session.js` | `assertFreshSession()` — a pure file read of `auth.json`, no network. **Deliberately inert** when the file is missing or empty, because CI writes an empty session |
+| `writes.js` | `writesAllowed()` / `writeSkipReason()` — the `BYTEPE_ALLOW_WRITES=1` gate. Exists because a routine `npm test` once left two real orders behind |
+| `apiRetry.js` | `getWithRetry()` — retries only 429/502/503/504, with backoff and `Retry-After`. A 404 or 500 is a real answer and is returned untouched |
+| `cartNav.js` | `openCart()` reloads past the known nitro crash. Its `dismissExchangeDialog()` is superseded by `exchangeDialog.js` — it uses `isVisible()`, so it fires only when the timing happens to suit |
+| `exchangeDialog.js` | `installExchangeDialogHandler()` — declines the BytePe Exchange dialog via "Not now", registered on the `page` fixture so every spec is covered. Anchored on the dialog holding an **Add Exchange** button, not on a build-hashed class or on marketing copy |
+| `priceText.js` | The cross-surface price parsers. Parses **text, not locators**, because the plan box has build-hashed classes and no stable rows |
+| `surfaceIdentity.js` | Identity tuples per surface, and `compareIdentities()`. **Identity before arithmetic** |
+| `pricingDiagnosis.js` | The fixed 7-step diagnostic order, `explainDisplayedField()`, and `fieldsAreIndistinguishable()` |
+| `domProbe.js` | Describes inputs, buttons and frames on screen. **Never reports input values** — these screens carry a phone number and a one-time code |
+| `otpHelper.js` | `waitForManualOtp` (a deliberate `page.pause()`) and `isOtpScreenVisible` |
 
 ## The suites
 
-### `tests/smoke/` — 2 files
+Full per-spec detail: [test-inventory.md](test-inventory.md). **312 tests in 40
+spec files.**
 
-Does the site stand up at all. `homepage.spec.js` (navigation to each section)
-and `core-pages.spec.js` (PLP, PDP and cart load).
+| Directory | Files | Runs by default |
+|---|---|---|
+| `tests/smoke/` | 2 | ✅ |
+| `tests/regression/` | 34 | ✅ |
+| `tests/api/` | 4 specs + `apiHelper.js` | `npm run api` |
+| `tests/scripts/` | 28 probes, discovery and reporting | ❌ — by name, or `BYTEPE_INCLUDE_SCRIPTS=1` |
+| `tests/demos/` | 1 walkthrough | ✅ (collected, but a demo) |
+| `tests/auth-setup.spec.js` | headed one-time login → `auth.json` | `npm run auth` |
 
-### `tests/regression/` — 34 files
+`tests/regression/` groups as: **pricing** · **search and browse** · **sub-home
+tabs** · **cart through to order** · **order-minting (write-gated)** ·
+**account** · **cross-surface consistency** · **video**.
 
-Grouped by what they cover:
+## `docs/`, `scripts/` and `test-cases/`
 
-- **Pricing** — `product-pricing`, `pincode-based-pricing`, `best-price-banner`,
-  `emi-plan-config`, `emi-checkout-flow`, `cardless-emi`
-- **Search and browse** — `search`, `product-search`,
-  `data-driven-products`, `static-pages`, `site-health`,
-  `catalogue-integrity`
-- **Sub-home tabs** — `subhome-tabs-ui`, `subhome-tabs-api`,
-  `subhome-admin-api`. These replaced `category-browsing`, which asserted the
-  `/all-products?category=<name>` navigation the tabs took over.
-- **Cart through to order** — `cart`, `coupon-valid`, `coupon-invalid`,
-  `pincode-valid`, `pincode-invalid`, `checkout-flow`, `emi-store-flow`
-- **Order-minting, write-gated** — `subscription-e2e`,
-  `subscription-full-flow`. Both skip unless `BYTEPE_ALLOW_WRITES=1`.
-- **Account** — `account`, `address-management` (the largest spec in the repo:
-  TC-ADDR-001..013), `order-history`
-- **Cross-surface consistency** — `pricing-consistency` (public, sweeps the
-  live listing), `pricing-checkout-consistency`,
-  `device-protection-consistency`, `device-protection-multi-product`. Each
-  compares one figure on one surface against the same figure on another.
-- **Video** — `video-pdp-api` (public, runs today), `video-admin-api` (needs an
-  admin JWT), `video-pdp-rendering` (currently failing on purpose — the PDP
-  does not mount a player; see `docs/video-feature-coverage.md`)
+| Path | Holds |
+|---|---|
+| `docs/index.md` | The documentation map |
+| `docs/video-feature-coverage.md` | VID-01..53 traceability and env vars |
+| `docs/subhome-tabs-coverage.md` | TCB and E2E-SHP traceability |
+| `docs/cardless-emi.md`, `docs/cardless-emi-bugs.md` | How cardless EMI works; investigation closed, **no defects** |
+| `docs/site-health.md` | The 5 Aug 2026 full-site run |
+| `docs/BUG-02-address-delete-no-confirmation.md` | Open bug record |
+| `docs/regression-report.*`, `docs/search-test-cases.*` | Generated output |
+| `scripts/build-page-report.js` | Turns `page-health.json` into a self-contained HTML report (no CDN, no external CSS) |
+| `test-cases/address-management.md` | The manual test-case source behind the address spec |
 
-### `tests/api/` — 4 specs and 1 helper
+## `.claude/`
 
-HTTP only: a `request` context, no browser and no page objects.
-`apiHelper.js` is the shared plumbing and is **excluded from collection by an
-explicit `testIgnore` entry** — any further helper added here needs its own
-entry, or it belongs in `data/` or `utils/` instead.
-
-`products-api` and `pricing-api` are public and run in CI. `auth-api` and
-`cart-api` gate on a real session, so they are deliberately kept out of the CI
-list: their anonymous cases would pass, but the rest would report as skips,
-which reads as coverage that is not there.
-
-### `tests/scripts/` — 5 files
-
-One-off discovery utilities that happen to run on the Playwright runner and
-regenerate the JSON fixtures: `discover-products`, `discover-cardless-emi`,
-`discover-video-products`, `crawl-site`, `probe-login-screens`. They log rather
-than assert, which is why eslint relaxes several rules for this folder.
-
-Re-run `discover-products.spec.js` before any catalogue-wide work.
-
-### `tests/auth-setup.spec.js`
-
-Headed one-time login that writes `auth.json`. Run it via `npm run auth`; it
-needs `BYTEPE_MOBILE` set and a human to type the OTP.
-
-### `tests/demos/full-demo-flow.spec.js`
-
-A scripted walkthrough for demonstrating the suite to someone.
-
-## `docs/` and `test-cases/`
-
-`video-feature-coverage.md` (VID-01..53 traceability and env vars),
-`cardless-emi.md` and `cardless-emi-bugs.md`, `site-health.md`,
-`BUG-02-address-delete-no-confirmation.md`, plus the generated
-`regression-report.*` and `search-test-cases.*` outputs.
-`test-cases/address-management.md` is the manual test-case source behind the
-address spec.
+| Path | Holds |
+|---|---|
+| `agents/spec-writer.md` | UI spec author |
+| `agents/api-tester.md` | HTTP-layer test author |
+| `skills/new-spec/SKILL.md` | Scaffolds a spec to these conventions |
+| `skills/refresh-session/SKILL.md` | Headed re-auth; `disable-model-invocation: true` |
+| `hooks/check-spec-syntax.js` | `PostToolUse` `node --check` on edited files under `tests/`. Parse-only |
+| `settings.local.json` | Wires the hook and a small permission allowlist |
 
 ## The four rules that catch people out
 
