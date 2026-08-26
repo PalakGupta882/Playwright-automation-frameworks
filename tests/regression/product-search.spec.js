@@ -6,11 +6,18 @@ test.describe('product search', () => {
     test.setTimeout(90000);
 
     await productsListPage.goto();
-    await productsListPage.searchFor('iphone air');
+    // search(), not searchFor(): the dropdown is debounced AND the endpoint is
+    // rate-limited when the rest of the suite is running, so a term that should
+    // match comes back empty on the first try. searchFor() waits a flat 1s and
+    // accepts that empty result; search() waits out the debounce and retries
+    // with backoff. CI run 32329663580 failed here with "element(s) not found"
+    // and passed on Playwright retry -- i.e. the whole test was being used as
+    // the retry loop that the page object already provides.
+    const count = await productsListPage.search('iphone air');
+    expect(count, 'autocomplete returned no suggestions for a term that matches a live product').toBeGreaterThan(0);
 
     // The autocomplete must offer the product we typed, as its top hit
-    const suggestions = page.getByRole('listitem').filter({ hasText: /\S/ });
-    await expect(suggestions.first()).toContainText(/iPhone Air/i, { timeout: 15000 });
+    await expect(productsListPage.suggestions.first()).toContainText(/iPhone Air/i, { timeout: 15000 });
 
     await productsListPage.selectAutocompleteSuggestion('iPhone Air');
 
@@ -28,8 +35,14 @@ test.describe('product search', () => {
     // First prove the dropdown renders at all. Without this, the zero-count
     // assertion below can pass vacuously against a not-yet-rendered page
     // rather than because the search genuinely returned nothing.
-    const suggestions = page.getByRole('listitem').filter({ hasText: /\S/ });
-    await productsListPage.searchFor('iphone');
+    const suggestions = productsListPage.suggestions;
+    // search(), not searchFor(): this is the positive control, and under a full
+    // parallel run the search endpoint is rate-limited hard enough that a flat
+    // 1s wait returns an empty dropdown. Measured -- this line failed exactly
+    // that way inside a 122-test run while passing when the file runs alone,
+    // which reads as "the control is broken" rather than "we were throttled".
+    const control = await productsListPage.search('iphone');
+    expect(control, 'positive control returned no suggestions').toBeGreaterThan(0);
     await expect(suggestions.first()).toBeVisible({ timeout: 15000 });
 
     // Now a term nothing matches — the suggestions must clear

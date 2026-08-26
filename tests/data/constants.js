@@ -1,6 +1,10 @@
 // tests/data/constants.js
 module.exports = {
   BASE_URL: 'https://www.bytepe.com',
+  // The HTTP API behind the storefront. Same origin — there is no
+  // api.bytepe.com. Overridable so the api/ suite can be pointed at a staging
+  // host without editing a spec; see tests/data/apiEndpoints.js for the routes.
+  BASE_API_URL: process.env.BYTEPE_API_BASE || 'https://www.bytepe.com/api',
   URLS: {
     subscription: '/home/subscription',
     emiStore: '/home/emi-store',
@@ -20,12 +24,20 @@ module.exports = {
   },
   // Address used by regression/address-management.spec.js.
   //
-  // Obviously synthetic on purpose. The saved-addresses UI has no delete
-  // control, so anything created here stays on the account permanently — it
-  // needs to be recognisable as test data by a human looking at the account,
-  // and matchable by the spec so it is only ever created once.
+  // Obviously synthetic on purpose: it sits on a real account alongside real
+  // addresses, so a human looking at the account has to be able to tell at a
+  // glance that it is test data.
   //
-  // AREA_STREET is the match key. Do not reuse it for anything else.
+  // This comment used to say the saved-addresses UI has no delete control and
+  // that anything created here was therefore permanent. Both halves were wrong
+  // — every card carries an unlabelled delete icon; see tests/pages/accountPage.js.
+  //
+  // It is still created at most once, but now by choice rather than necessity:
+  // several cases read this address, and re-creating it every run would leave a
+  // pile of near-identical rows. Throwaway addresses take the other route and
+  // delete themselves.
+  //
+  // areaStreet is the match key. Do not reuse it for anything else.
   TEST_ADDRESS: {
     fullName: 'QA Automation',
     flatNo: 'Apt 4B',
@@ -39,7 +51,17 @@ module.exports = {
   TIMEOUTS: {
     nav: 15000,
     // A human reading an SMS and typing it. Only used when BYTEPE_OTP is unset.
-    otp: 120000,
+    //
+    // Overridable because 120s assumes somebody is already at the keyboard when
+    // the code arrives. Measured 14 Aug 2026: a run launched from a tool call
+    // burned both its attempts — 120s each, then a retry that sent a SECOND real
+    // SMS — because the instruction to type the code could not reach the human
+    // until after both windows had closed. Widening the window is the cheap fix;
+    // the alternative is a wasted OTP every time the SMS is slow.
+    //
+    // auth-setup.spec.js derives its own test timeout from this, so raising it
+    // here is enough — raising one without the other just moves the failure.
+    otp: Number(process.env.BYTEPE_OTP_WAIT_MS) || 120000,
     // Unattended login, where nobody is waiting on a message: the OTP screen to
     // render, then submit-to-logged-in. Kept short on purpose — a broken
     // selector should report in seconds, not sit on the human budget.

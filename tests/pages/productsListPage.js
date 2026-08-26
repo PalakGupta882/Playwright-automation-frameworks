@@ -31,11 +31,33 @@ class ProductsListPage {
     await this.page.waitForTimeout(1000);
   }
 
-  // The autocomplete dropdown. Suggestions render as list items reading
-  // "<product name> <brand>", which is why a brand term such as "Apple"
-  // matches even when the product name does not contain it.
+  // The autocomplete dropdown, scoped to the header popup it actually lives in.
+  //
+  // Measured on /all-products (scripts/probe-search-dropdown.spec.js): every
+  // suggestion is an <li> under a single
+  //   MuiToolbar-root > ... > MuiPaper-root > ul.MuiList-root
+  // and there is exactly one such container in the document. There is no
+  // data-testid, no role="listbox", and no role attribute on the items, so a
+  // role-only anchor for the container does not exist.
+  //
+  // Anchored on MuiToolbar/MuiPaper/MuiList and NOT on mui-14iv2rf / mui-10taw13:
+  // those are emotion build hashes and change on every rebuild -- the same trap
+  // documented for the plan box in CLAUDE.md. The MuiXxx-root names are MUI own
+  // component classes and survive a rebuild.
+  //
+  // The scope matters even though nothing else on this page emits an <li>
+  // today: unscoped, .first() means the first <li> in the document rather than
+  // the top hit, so one nav or footer list added later would silently retarget
+  // the assertion instead of failing loudly.
+  //
+  // Suggestions read "<product name><brand>", which is why a brand term such as
+  // "Apple" matches even when the product name does not contain it.
+  get suggestionList() {
+    return this.page.locator('.MuiToolbar-root .MuiPaper-root ul.MuiList-root');
+  }
+
   get suggestions() {
-    return this.page.getByRole('listitem').filter({ hasText: /\S/ });
+    return this.suggestionList.getByRole('listitem').filter({ hasText: /\S/ });
   }
 
   // Types a term and waits for the dropdown to settle. Returns how many

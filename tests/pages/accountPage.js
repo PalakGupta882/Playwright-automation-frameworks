@@ -12,9 +12,38 @@
 // handles are the placeholder text and the `name` attribute. Placeholder is
 // preferred here because it is what a shopper actually reads.
 //
-// THE UI HAS NO EDIT AND NO DELETE. Probed for buttons and text matching
-// /edit/i and /delete|remove/i on the address list: zero matches. Anything
-// created here is permanent, which is why addAddressIfMissing() exists.
+// THE UI DOES HAVE EDIT AND DELETE — corrected 11 Aug 2026.
+//
+// This file previously stated the opposite: "probed for buttons and text
+// matching /edit/i and /delete|remove/i on the address list: zero matches".
+// Those counts were accurate and the conclusion was wrong. Every address card
+// carries two MUI IconButtons with **no text, no aria-label and no title**, so
+// no name-based locator can ever see them. Re-probed:
+//
+//   button:has(svg) on the list = 16, of which 12 are visible and 30x30,
+//   alternating strictly down the page:
+//
+//     y=183 data-testid="EditIcon"     y=221 data-testid="DeleteIcon"   card 1
+//     y=361 data-testid="EditIcon"     y=399 data-testid="DeleteIcon"   card 2
+//     ...                                                              6 cards
+//
+// So the icon's data-testid is the only handle. It is chosen over the
+// alternatives deliberately:
+//
+//   - getByRole('button', { name: ... })  -> 0, there is no accessible name
+//   - nth(index)                          -> depends on card order, which is
+//                                            server-ordered and moves
+//   - position (every one is at x=1209)   -> breaks on any layout change
+//   - the MUI class (mui-1k33q06)         -> a build-hashed emotion class
+//
+// data-testid on the icon is set by MUI itself from the icon component name, so
+// it survives restyling and reordering. It is not a test id the app team added,
+// which means it could change if they swap icon libraries — that is the one
+// risk, and it fails loudly rather than silently matching the wrong control.
+//
+// Because delete exists, an address created here is NO LONGER permanent.
+// addAddressIfMissing() is still used for the shared TEST_ADDRESS, but
+// throwaway addresses can now create and remove their own state.
 
 const { BASE_URL, TIMEOUTS } = require('../data/constants');
 
@@ -41,6 +70,31 @@ class AccountPage {
     };
 
     this.saveButton = page.getByRole('button', { name: /save\s*&\s*proceed/i }).first();
+
+    // Per-card controls. See the header note for why these key off the icon's
+    // data-testid rather than an accessible name.
+    this.editIcons = page.locator('button:has([data-testid="EditIcon"])');
+    this.deleteIcons = page.locator('button:has([data-testid="DeleteIcon"])');
+
+    // Exactly one address carries this. Exact match on purpose: the add form
+    // renders "Set as Default", which a loose /default/i would also match.
+    this.defaultMarkers = page.getByText('Default', { exact: true });
+  }
+
+  // A single address card, located by text it contains.
+  //
+  // Cards have no test id and only build-hashed emotion classes, so the card is
+  // the innermost element that both contains the marker text and holds an edit
+  // control. Ancestors match too — the page body contains every marker — and
+  // they precede their descendants in document order, so .last() is the
+  // innermost, i.e. the card itself. Requiring the EditIcon keeps it from
+  // resolving to a bare text node wrapper that cannot be acted on.
+  cardFor(marker) {
+    return this.page
+      .locator('div')
+      .filter({ has: this.page.locator('[data-testid="EditIcon"]') })
+      .filter({ hasText: marker })
+      .last();
   }
 
   async gotoProfile() {
@@ -146,10 +200,142 @@ class AccountPage {
     await this.saveButton.click({ timeout: TIMEOUTS.action });
   }
 
+  // How many address cards are rendered. Counted from the edit controls —
+  // exactly one per card, and unlike the card <div> they are unambiguous.
+  async addressCount() {
+    return this.editIcons.count();
+  }
+
+  async openEditFor(marker) {
+    await this.cardFor(marker)
+      .locator('button:has([data-testid="EditIcon"])')
+      .first()
+      .click({ timeout: TIMEOUTS.action });
+    await this.form.flatNo.waitFor({ state: 'visible', timeout: TIMEOUTS.nav });
+  }
+
+  // Every field's current value. Proves the edit form opened populated rather
+  // than blank — a blank edit form would mean "edit" silently creates.
+  async readFormValues() {
+    const values = {};
+    for (const [name, locator] of Object.entries(this.form)) {
+      values[name] = await locator.inputValue();
+    }
+    return values;
+  }
+
+  // Creates an address unconditionally. Separate from addAddressIfMissing()
+  // because a throwaway address wants to be created every run and removed
+  // again; the shared TEST_ADDRESS wants the opposite.
+  async createAddress(data, { mobile }) {
+    await this.gotoAddresses();
+    await this.openAddForm();
+    await this.fillAddressForm(data, { mobile });
+    await this.submitAddress();
+
+    await this.addNewAddress.waitFor({ state: 'visible', timeout: 30000 });
+    // The list can return still showing its previous contents, so wait for the
+    // new row itself — the same reason addAddressIfMissing() does.
+    await this.page
+      .getByText(data.areaStreet, { exact: false })
+      .first()
+      .waitFor({ state: 'visible', timeout: 30000 });
+  }
+
+  // Deletes the card matching `marker` and reports whether the UI asked for
+  // confirmation first.
+  //
+  // The branching lives here, not in the test, for two reasons: a conditional
+  // in a spec is a lint warning in this repo, and whether a confirm step exists
+  // was genuinely unknown before running — finding out means clicking delete on
+  // a real address, which no probe would do. The test asserts on the returned
+  // value instead.
+  async deleteAddressReportingConfirmation(marker) {
+    await this.gotoAddresses();
+
+    // Never delete on an ambiguous match. Picking the wrong card here destroys
+    // real account data and there is no undo.
+    const occurrences = (await this.addressListText()).split(marker).length - 1;
+    if (occurrences !== 1) {
+      throw new Error(
+        `Refusing to delete: "${marker}" matches ${occurrences} addresses on the ` +
+        'account, expected exactly 1. Delete only ever targets an address this ' +
+        'suite created.'
+      );
+    }
+
+    const before = await this.addressCount();
+
+    await this.cardFor(marker)
+      .locator('button:has([data-testid="DeleteIcon"])')
+      .first()
+      .click({ timeout: TIMEOUTS.action });
+
+    // A confirm step may be a role=dialog, or just text in a mounted panel.
+    // Check both before concluding there is none.
+    const dialog = this.page.getByRole('dialog').first();
+    const seenDialog = await dialog
+      .waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+
+    const prompt = this.page.getByText(/are you sure|confirm|do you want to delete/i).first();
+    const seenPrompt =
+      seenDialog ||
+      (await prompt
+        .waitFor({ state: 'visible', timeout: 2000 })
+        .then(() => true)
+        .catch(() => false));
+
+    let dialogText = '';
+    if (seenPrompt) {
+      const scope = seenDialog ? dialog : this.page;
+      dialogText = seenDialog
+        ? (await dialog.innerText()).replace(/\s+/g, ' ').trim()
+        : (await prompt.innerText()).replace(/\s+/g, ' ').trim();
+
+      // Confirm regardless, so the throwaway address is always cleaned up even
+      // when the assertion about confirmation goes on to fail.
+      await scope
+        .getByRole('button', { name: /^(yes|confirm|delete|ok|remove)\b/i })
+        .first()
+        .click({ timeout: TIMEOUTS.action })
+        .catch(() => {});
+    }
+
+    await this.gotoAddresses();
+    const after = await this.addressCount();
+
+    return {
+      confirmationSeen: seenPrompt,
+      dialogText,
+      before,
+      after,
+      removed: !(await this.hasAddressMatching(marker)),
+    };
+  }
+
+  // Cleanup for a negative test whose whole point is that nothing was created.
+  //
+  // If validation turns out to be broken and a row did appear, remove it rather
+  // than leaving junk on a real account. Returns whether anything was deleted,
+  // so the test can report "validation failed AND it created a row" rather than
+  // quietly tidying up behind a bug.
+  async removeIfPresent(marker) {
+    await this.gotoAddresses();
+    if (!(await this.hasAddressMatching(marker))) return false;
+    await this.deleteAddressReportingConfirmation(marker);
+    return true;
+  }
+
   // Creates the address only when it is not already there.
   //
-  // The UI offers no way to delete an address, so a spec that created one on
-  // every run would pile up junk on a real account with no way to clear it.
+  // This is for the SHARED address (TEST_ADDRESS), which is deliberately kept on
+  // the account run to run: several cases read it, and re-creating it every time
+  // would pile up near-identical rows a human then has to sort out. A throwaway
+  // address wants the opposite — see createAddress(), which always creates, and
+  // deleteAddressReportingConfirmation(), which removes it again.
+  //
   // Returns 'created' or 'already-present' so a test can assert on either.
   async addAddressIfMissing(data, { mobile, marker }) {
     await this.gotoAddresses();

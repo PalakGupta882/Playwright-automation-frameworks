@@ -1,0 +1,609 @@
+// tests/utils/priceText.js
+//
+// Reads the rupee figures a shopper actually sees, off each surface that shows
+// one: PLP tile, PDP header, PDP "Choose your plan" box, and the Order Summary
+// that appears on both Cart and Review Order.
+//
+// WHY TEXT PARSING AND NOT LOCATORS. The plan box's container is
+// `div.MuiBox-root.mui-zv7ju9` — build-hashed, so it changes on every deploy
+// (the same trap documented on ProductPage.lowestEffectivePriceRow). Its rows
+// carry no role, no test id and no stable class. Measured on a live PDP, the
+// page renders 17 rupee-shaped text nodes and nothing distinguishes them
+// structurally. What IS stable is the copy next to each figure — "Pay in Full",
+// "Cardless EMI", "₹164 x 24mo" — so every reader below anchors on that copy and
+// the amount together. A row that loses either half returns null and the caller
+// reports it as missing, rather than silently matching a different figure.
+//
+// checkout-flow.spec.js already takes this approach for the order summary; this
+// generalises it so cart, review and PDP are read the same way.
+//
+// Every reader takes FLATTENED text: page.locator('body').innerText() with
+// /\s+/g collapsed to single spaces. innerText (not textContent) matters — it
+// respects visibility, so hidden pre-rendered plan panels are excluded.
+
+// "₹1,99,999" -> 199999. Returns null rather than NaN or 0: a parser that
+// returns 0 makes two broken pages compare equal, which is exactly the failure
+// mode ProductPage.getPrice() throws to avoid.
+function toRupees(text) {
+  const match = (text || '').match(/₹\s?([\d,]+)/);
+  if (!match) return null;
+  const value = Number(match[1].replace(/,/g, ''));
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function flatten(text) {
+  return (text || '').replace(/\s+/g, ' ').trim();
+}
+
+// ---- PLP tile ----------------------------------------------------------
+//
+// Measured shapes on /all-products, 14 Aug 2026 (208 tiles):
+//
+//   "Samsung Galaxy Z Fold8 Ultra ₹1,99,999 ₹2,04,999 2% off EMI from ₹8,994 /mo"
+//   "Stuffcool Nomad II ... ₹3,499 ₹4,999 30% off"
+//   "Dyson HushJet Purifier Compact-HJ10 ₹29,900"          <- no discount at all
+//
+// 7 of 208 tiles carry a price and nothing else. Those are not broken: the
+// product has no discount, so there is no MRP to strike and no badge to show.
+// mrp/percentOff come back null and the caller must not treat null as zero.
+//
+// Note the PLP writes "EMI from ₹X /mo" with a space before /mo, while the PDP
+// writes "₹X/mo" without one. Both are matched.
+function parsePlpTile(tileText) {
+  const flat = flatten(tileText);
+  const amounts = (flat.match(/₹\s?[\d,]+/g) || []).map(toRupees).filter((n) => n !== null);
+  if (amounts.length === 0) return null;
+
+  const offMatch = flat.match(/(\d+)\s*%\s*off/i);
+  const perMonthMatch = flat.match(/₹\s?([\d,]+)\s*\/\s*mo/i);
+
+  // Discount tiles lead with price then MRP. Where there is no "% off" badge
+  // there is only one amount and it is both.
+  const price = amounts[0];
+  const mrp = offMatch ? amounts[1] ?? null : null;
+
+  return {
+    price,
+    mrp,
+    percentOff: offMatch ? Number(offMatch[1]) : null,
+    perMonth: perMonthMatch ? toRupees(perMonthMatch[0]) : null,
+    // "EMI from" vs "Subscription from" — the PLP and PDP disagree on the label
+    // for the same figure, so the caller can compare the number without
+    // asserting the copy.
+    perMonthLabel: (flat.match(/(EMI|Subscription)\s+from\s*₹/i) || [])[1] || null,
+    text: flat,
+  };
+}
+
+// ---- PDP header --------------------------------------------------------
+//
+//   "... ₹1,99,999 ₹2,04,999 2% off Subscription from ₹8,994/mo Color - Graphite"
+//   "... ₹3,499 ₹4,999 30% off EMI From ₹164/mo Color - White"
+//
+// Anchored between the product name and "Choose your plan", because the same
+// three figures recur further down the page (the plan box repeats the price,
+// the buyback slider repeats rupee amounts). Taking the first match in the
+// document is what makes this the *header*.
+function parsePdpHeader(bodyText) {
+  const flat = flatten(bodyText);
+
+  // The header runs from the first price-shaped run to "Choose your plan".
+  const end = flat.search(/Choose your plan/i);
+  const region = end > 0 ? flat.slice(0, end) : flat;
+
+  const priced = region.match(/₹\s?[\d,]+\s+₹\s?[\d,]+\s+(\d+)\s*%\s*off/i);
+  if (priced) {
+    const amounts = (priced[0].match(/₹\s?[\d,]+/g) || []).map(toRupees);
+    const perMonth = region.match(/(EMI|Subscription)\s+from\s*₹\s?([\d,]+)\s*\/?\s*mo/i);
+    return {
+      price: amounts[0],
+      mrp: amounts[1],
+      percentOff: Number(priced[1]),
+      perMonth: perMonth ? toRupees(perMonth[0].slice(perMonth[0].indexOf('₹'))) : null,
+      perMonthLabel: perMonth ? perMonth[1] : null,
+      region,
+    };
+  }
+
+  // No-discount product: a single price and no badge.
+  const single = region.match(/₹\s?[\d,]+/);
+  if (!single) return null;
+  return {
+    price: toRupees(single[0]),
+    mrp: null,
+    percentOff: null,
+    perMonth: null,
+    perMonthLabel: null,
+    region,
+  };
+}
+
+// ---- PDP "Choose your plan" box ---------------------------------------
+//
+// Two layouts, driven by prodPaymentMode (see CLAUDE.md).
+//
+// UPFRONT, measured on nomad-ii-smallest-100w-gan-charger:
+//   "Choose your plan Recommended No Cost EMI 0% interest ₹583 x 6mo 3 Mon 6 Mon
+//    Credit Card EMI No Cost EMI available Cardless EMI Credit score based
+//    Check Eligibility 🎉 You'll save up to ₹1,658 Low Cost EMI Upto 24 mo
+//    ₹164 x 24mo Pay in Full ₹3,499 All major payment modes accepted"
+//
+// BOTH, measured on galaxy-z-fold8-ultra:
+//   "Choose your plan Subscription New device every year... Credit Card EMI
+//    Low Cost EMI available ₹8,994/mo Cardless EMI No Card Needed ₹10,224/mo
+//    + ₹10,220 Now 🎉 You'll save up to ₹27,307 Buy Upfront With assured
+//    buyback ₹1,99,999 Pre-Approved Offers No Documents/ KYC From ₹8,994/mo
+//    Check Eligibility Monthly Subscription ₹8,994/mo Subscribe ...
+//    Total Discount ₹27,307 Assured buyback ₹90,000"
+//
+// Every field is optional by design — which rows render depends on the payment
+// mode and, for Cardless EMI, on per-shopper eligibility, which CLAUDE.md is
+// explicit must never be asserted. Callers assert on what is present.
+function parsePlanBox(bodyText) {
+  const flat = flatten(bodyText);
+  const start = flat.search(/Choose your plan/i);
+  if (start < 0) return null;
+
+  // Ends at the buy controls; on subscription products the section continues
+  // into a buyback slider whose rupee figures are not plan prices.
+  const tail = flat.slice(start);
+  const stopAt = tail.search(/Adjust the slider|Delivery details|What's included/i);
+  const region = stopAt > 0 ? tail.slice(0, stopAt) : tail;
+
+  const pick = (pattern) => {
+    const m = region.match(pattern);
+    return m ? toRupees(m[0].slice(m[0].indexOf('₹'))) : null;
+  };
+
+  // The tenure ladder, where it is rendered: "₹164 x 24mo" / "₹1,166 X 3 mo".
+  const tenureRows = [...region.matchAll(/₹\s?([\d,]+)\s*[xX]\s*(\d+)\s*mo/g)].map((m) => ({
+    installment: Number(m[1].replace(/,/g, '')),
+    tenure: Number(m[2]),
+  }));
+
+  return {
+    // Upfront plan. The two layouts label it differently.
+    payInFull: pick(/Pay in Full\s*₹\s?[\d,]+/i),
+    // "With assured buyback" is OPTIONAL. It renders only on products that
+    // offer buyback, and requiring it made this return null on every product
+    // that does not — pixel-11-pro-fold shows "Buy Upfront ₹1,78,999" with no
+    // sub-label, and pricing-consistency reported it as "offers no Buy Upfront
+    // price" while the figure was on screen and matched upfront.price exactly.
+    // Measured 19 Aug 2026 against both layouts:
+    //   pixel-11-pro-fold   Buy Upfront / ₹1,78,999
+    //   galaxy-z-fold8-5g   Buy Upfront / With assured buyback / ₹1,79,999
+    buyUpfront: pick(/Buy Upfront(?:\s*With assured buyback)?\s*₹\s?[\d,]+/i),
+
+    // Card EMI monthly. On BOTH products the figure sits inside the row; on
+    // UPFRONT products the row carries only "No Cost EMI available" and the
+    // monthly figure lives in the header instead.
+    creditCardEmiPerMonth: pick(/Credit Card EMI[^₹]{0,40}₹\s?[\d,]+\s*\/\s*mo/i),
+
+    // Cardless EMI. Two figures: the instalment and the amount due now.
+    cardlessEmiPerMonth: pick(/Cardless EMI[^₹]{0,40}₹\s?[\d,]+\s*\/\s*mo/i),
+    cardlessDownPayment: pick(/\+\s*₹\s?[\d,]+\s*Now/i),
+
+    // A separate plan with its own eligibility — NOT cardless EMI (CLAUDE.md).
+    preApprovedFrom: pick(/Pre-?Approved Offers[^₹]{0,40}₹\s?[\d,]+\s*\/\s*mo/i),
+
+    monthlySubscription: pick(/Monthly Subscription\s*₹\s?[\d,]+\s*\/\s*mo/i),
+
+    saveUpTo: pick(/save up to\s*₹\s?[\d,]+/i),
+    totalDiscount: pick(/Total Discount\s*₹\s?[\d,]+/i),
+    assuredBuyback: pick(/Assured buyback\s*₹\s?[\d,]+/i),
+    instantDiscount: pick(/Instant Discount of\s*₹\s?[\d,]+/i),
+
+    tenureRows,
+
+    // Which plan names the box offers. Scoped to the region on purpose: the
+    // site header carries a "Subscription" nav link (/home/subscription), so a
+    // whole-body search reports a Subscription plan on every UPFRONT product.
+    plans: [
+      'Subscription',
+      'Credit Card EMI',
+      'Cardless EMI',
+      'Pay in Full',
+      'Buy Upfront',
+      'No Cost EMI',
+      'Low Cost EMI',
+      'Pre-Approved Offers',
+    ].filter((label) => new RegExp(label.replace(/[-]/g, '-?'), 'i').test(region)),
+
+    region,
+  };
+}
+
+// ---- Bundled add-ons ---------------------------------------------------
+//
+// The block below the buyback slider — outside parsePlanBox's region, so read
+// from the whole body — where the PDP lists what comes bundled with the device.
+// Each row is a name, an optional description, then a struck-through list price
+// and what the shopper actually pays. Measured on pixel-11-pro-fold,
+// 26 Aug 2026:
+//
+//     12 mo Device Protection                     Free Wireless Charger
+//     1 time coverage for accidental and liquid   Free Wireless Charger
+//     damage                                      ₹5,999
+//     Validity - 12 months                        ₹0
+//     See more
+//     ₹12,999
+//     ₹1
+//
+// THIS USED TO READ ONE ROW, MATCHED ON THE LITERAL "BytePe Secure". Both halves
+// of that stopped being true on 23 Aug 2026, and it failed in the worst way
+// available: the match missed, the function returned null, the caller read that
+// as "this product bundles nothing", and the advertised-saving check came up
+// short without naming an add-on at all —
+//
+//     pixel-11-pro-fold: the PDP advertises a saving of ₹35062, but the figures
+//     behind it come to something else.
+//       device saving          ₹16065
+//       no add-on line found  +₹0
+//       expected               ₹16065
+//       advertised             ₹35062
+//
+// The missing ₹18,997 is TWO rows, not one: ₹12,999 → ₹1 protection plus a
+// ₹5,999 → ₹0 freebie. Both are in the VAS record, which dates them — the
+// freebie's `details.createdAt` is 2026-08-23, and protection was relabelled
+// and repriced (₹8,000 → ₹12,999 list) in the same update.
+//
+// WHY THE NAMES ARE PASSED IN. There is no honest way to find these rows in body
+// text alone. "A label, then two rupee amounts, the second no larger" also
+// describes the PDP header (price then struck MRP) and every adjacent pair in
+// the buyback slider (₹1,21,500 ₹84,100 ₹1,12,200 ₹65,400), and the block has no
+// heading, test id or stable class to scope a search to. So the caller fetches
+// the names from GET /api/apps/product-vas/:slug/:bpid — the same record the
+// page is rendering — and each one is looked up by name. Ask the API the
+// question the page asks.
+//
+//     vas: [{ vas_name: "12 mo Device Protection", vas_mrp: 12999, vas_price: 1,
+//             details: { other_type: "Damage Protection" } },
+//           { vas_name: "Free Wireless Charger",   vas_mrp:  5999, vas_price: 0,
+//             details: { other_type: "Freebie" } }]
+
+// The names to try when a caller has no VAS response to hand. A fallback, not a
+// catalogue: it covers protection under both labels it has shipped under, and it
+// cannot know about a freebie added tomorrow. Results built from it are marked
+// `namesFrom: 'fallback'` so a caller can say the row set may be incomplete
+// rather than report a total as though it were complete.
+const FALLBACK_ADDON_NAMES = ['BytePe Secure', '12 mo Device Protection'];
+
+// Which row is the protection plan. Name-based because the page has nothing
+// else: `vas_type` is "other" for every row, and the field that actually
+// separates them — `details.other_type`, "Damage Protection" vs "Freebie" — is
+// not rendered anywhere a shopper or a parser can see.
+const PROTECTION_NAME = /secure|protection/i;
+
+function readNamedAddOn(flat, name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // What sits between the name and the first amount is skipped rather than
+  // described: the row carries a free-text description, and some cards repeat
+  // their own name ("Free Wireless Charger Free Wireless Charger"). [^₹] stops
+  // the skip running past an amount that belongs to a different row.
+  const match = flat.match(
+    new RegExp(`${escaped}[^₹]{0,400}₹\\s?([\\d,]+)[^₹]{0,40}₹\\s?([\\d,]+)`, 'i')
+  );
+  if (!match) return null;
+
+  const list = Number(match[1].replace(/,/g, ''));
+  const paid = Number(match[2].replace(/,/g, ''));
+  if (!Number.isFinite(list) || !Number.isFinite(paid)) return null;
+
+  // Parsed with Number rather than toRupees on purpose: a freebie is paid ₹0,
+  // and toRupees returns null for 0 by design.
+  //
+  // A list price is never below what is paid for it. If it is, the name matched
+  // text outside its own card and these two figures are unrelated — report
+  // nothing rather than a negative saving.
+  if (paid > list) return null;
+
+  return { name, list, paid, saving: list - paid };
+}
+
+// All bundled rows. `names` comes from vas[].vas_name; omit it and the fallback
+// list above is used instead.
+function parseAddOns(bodyText, names) {
+  const flat = flatten(bodyText);
+  const supplied = Array.isArray(names) && names.length > 0;
+  const wanted = supplied ? names : FALLBACK_ADDON_NAMES;
+
+  const rows = [];
+  const missing = [];
+  for (const name of wanted) {
+    const row = readNamedAddOn(flat, name);
+    if (row) rows.push(row);
+    else missing.push(name);
+  }
+
+  return {
+    rows,
+
+    // The term the advertised saving needs:
+    //   Total Discount = (MRP - cc.total_amount) + sum(list - paid)
+    // Only rows actually found on the page are summed. A name the VAS record
+    // offers but the page does not render is worth nothing to a shopper, so it
+    // is worth nothing here.
+    totalSaving: rows.reduce((sum, row) => sum + row.saving, 0),
+
+    // Names asked for and not found. Empty is the normal case. Non-empty on a
+    // supplied-names call means the page and the VAS record disagree about what
+    // is bundled — a finding to report, not a parse failure to swallow.
+    missing,
+
+    namesFrom: supplied ? 'api' : 'fallback',
+  };
+}
+
+// The protection row on its own, for the callers that mean Device Protection
+// specifically rather than "everything bundled". Same shape it has always
+// returned; `name` is now whatever the page calls it rather than a constant.
+function parseAddOn(bodyText, names) {
+  const { rows } = parseAddOns(bodyText, names);
+  return rows.find((row) => PROTECTION_NAME.test(row.name)) || null;
+}
+
+// ---- Order Summary (Cart and Review Order share this block) ------------
+//
+// Measured 10 Aug 2026 (checkout-flow.spec.js records the same):
+//
+//     Price (18 Items)     ₹9,30,391
+//     Discount            -₹1,89,404
+//     Device Protection          ₹1      <- value-added service, easy to miss
+//     Total Amount         ₹7,40,988
+//
+// Everything charged between the Discount line and Total Amount is summed
+// rather than named, so a second add-on (a fee, a warranty, a delivery charge)
+// does not reintroduce the ₹1 false failure that was once read as a rounding
+// defect. The site's arithmetic was right; the assertion's model was incomplete.
+function parseOrderSummary(bodyText) {
+  const flat = flatten(bodyText);
+
+  const priceMatch = flat.match(/Price\s*\(\s*(\d+)\s*Items?\s*\)\s*₹\s?[\d,]+/i);
+  if (!priceMatch) return null;
+
+  const totalMatch = flat.match(/Total Amount\s*₹\s?[\d,]+/i);
+  if (!totalMatch) return null;
+
+  const discountMatch = flat.match(/Discount\s*-\s*₹\s?[\d,]+/i);
+
+  const lastKnown = discountMatch
+    ? flat.indexOf(discountMatch[0]) + discountMatch[0].length
+    : priceMatch.index + priceMatch[0].length;
+  const totalAt = flat.search(/Total Amount\s*₹/i);
+
+  const extrasRegion = totalAt > lastKnown ? flat.slice(lastKnown, totalAt) : '';
+  const extras = (extrasRegion.match(/₹\s?[\d,]+/g) || []).reduce((sum, a) => sum + toRupees(a), 0);
+
+  return {
+    itemCount: Number(priceMatch[1]),
+    price: toRupees(priceMatch[0]),
+    discount: discountMatch ? toRupees(discountMatch[0]) : 0,
+    extras,
+    extrasRegion: extrasRegion.trim(),
+    total: toRupees(totalMatch[0]),
+  };
+}
+
+// ---- Pricing breakdown, component by component -------------------------
+//
+// parseOrderSummary above answers "does this page's total add up". That is not
+// enough to chase a charge that CHANGES between two pages: it lumps every line
+// between Discount and Total into one `extras` figure, so a Device Protection
+// that goes from ₹1 to ₹2,001 shows up only as "total mismatch" with no name
+// attached to it.
+//
+// This returns each component separately, so a cross-page comparison can say
+// WHICH line moved. Every amount is a Number — never a formatted string —
+// because "₹2,001" and "₹2001" compare unequal as text while being the same
+// money, and "₹1" vs "₹2,001" must never be hidden by a formatting nicety.
+//
+// Works on Cart, Review Order and Payment Summary: it classifies by the label
+// beside each amount rather than by position, and anything it cannot classify
+// is preserved in `unclassified` rather than dropped — an unrecognised charge
+// is exactly what a checkout bug looks like, and silently discarding it would
+// make the totals reconcile when they should not.
+// Matched against the END of a label, not the whole of it.
+//
+// innerText gives no row boundaries, so the text before an amount often carries
+// the section heading too — the first row of a cart summary reads "Order Summary
+// Price", not "Price". Anchoring these to the end of the label lets that match
+// while still refusing to classify an unrelated line.
+//
+// Order matters: the first match wins, so the specific "Device Protection" is
+// tested before anything that could also catch a generic charge.
+const COMPONENT_PATTERNS = [
+  ['deviceProtection', /(?:^|\s)(device protection|protection plan|bytepe secure|care plan)$/i],
+  // "Order Total" is Payment Summary's payable figure and must win over the
+  // "Total amount ₹1,496/mo" heading that sits above it — that one is an
+  // instalment, and is discarded by the /mo rule in moneyRows anyway.
+  ['total', /(?:^|\s)(order total|total amount|amount payable|payable amount|to pay|grand total|net payable)$/i],
+  // Bank interest is charged on top of the order and is NOT part of it. Kept
+  // separate so it can be reported rather than silently swelling otherCharges.
+  ['interest', /(?:^|\s)(interest charged by bank|interest|bank interest)$/i],
+  // The cost of the whole EMI plan including interest. Not the payable total.
+  ['totalCost', /(?:^|\s)(total cost)$/i],
+  ['productAmount', /(?:^|\s)(price|sub ?total|item total|order value|mrp total)$/i],
+  // "Low Cost EMI discount" ends with "discount" and is caught here. It is a
+  // payment-stage adjustment rather than the product discount, which is why
+  // callers reconcile totals through `adjustments` instead of demanding that
+  // two pages show the same number.
+  ['discount', /(?:^|\s)(discount|coupon discount|instant discount|savings?)$/i],
+  ['shipping', /(?:^|\s)(shipping|delivery|shipping charges?|delivery charges?|shipping fee)$/i],
+];
+
+// Splits the summary region into labelled money rows.
+//
+// Walks amount by amount and takes the text between the previous amount and
+// this one as the label, rather than trying to match label-and-amount in one
+// expression — a single regex either forces every row to carry the "(N Items)"
+// suffix that only the price line has, or lets a lazy label group swallow an
+// entire heading. Amounts written "-₹X" are recorded negative, which is how the
+// Discount line reads.
+function moneyRows(regionText) {
+  const AMOUNT = /(-?)\s*₹\s?([\d,]+)/g;
+  const rows = [];
+  let cursor = 0;
+  let match;
+
+  while ((match = AMOUNT.exec(regionText)) !== null) {
+    const before = regionText.slice(cursor, match.index);
+    const after = regionText.slice(match.index + match[0].length, match.index + match[0].length + 14);
+    cursor = match.index + match[0].length;
+
+    // INSTALMENTS ARE NOT COMPONENTS. Payment Summary heads its panel with
+    // "Total amount ₹1,496/mo" and closes it with "EMI ₹1,496 × 24 mo"; both are
+    // the monthly figure, not money owed now. Left in, the first would be read
+    // as the order total and report ₹1,496 as the amount payable.
+    if (/^\s*(\/\s*mo|per month|×\s*\d+\s*mo|x\s*\d+\s*mo)/i.test(after)) continue;
+
+    // "Price (7 Items)" carries the count in the label; lift it out, then take
+    // the trailing words as the label proper.
+    const countMatch = before.match(/\(\s*(\d+)\s*Items?\s*\)\s*$/i);
+    const withoutCount = countMatch ? before.slice(0, countMatch.index) : before;
+    const label = (withoutCount.match(/[A-Za-z][A-Za-z &/.'-]*$/) || [''])[0]
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!label) continue;
+
+    rows.push({
+      label,
+      itemCount: countMatch ? Number(countMatch[1]) : null,
+      amount: Number(match[2].replace(/,/g, '')) * (match[1] === '-' ? -1 : 1),
+    });
+  }
+
+  return rows;
+}
+
+function parsePricingBreakdown(bodyText, { label = 'page' } = {}) {
+  const flat = flatten(bodyText);
+
+  // THE PRICE LINE IS THE ANCHOR, NOT THE HEADING.
+  //
+  // This used to start at /Order Summary|Payment Summary/ and stop at the first
+  // PCIDSS. On Payment Summary that is catastrophically wrong and cost a real
+  // order to discover: "Order Summary" is the page's back-link in the top-left,
+  // while the pricing panel is the third column — and the PCI/SSL badges sit in
+  // the card form in the MIDDLE column, which comes first in DOM order. So the
+  // region ran from the page title to the middle of the card form and stopped
+  // before reaching a single pricing row. Device Protection parsed as absent on
+  // a page that plainly displays "Device Protection ₹1".
+  //
+  // "Price (N item)" is inside the panel on every surface that has one — cart,
+  // review and payment summary alike — so anchoring there starts the region in
+  // the right column by construction. The headings remain as a fallback for a
+  // page that renders a summary without a price line.
+  const priceLineAt = flat.search(/Price\s*\(\s*\d+\s*Items?\s*\)/i);
+  const startAt =
+    priceLineAt >= 0 ? priceLineAt : flat.search(/Order Summary|Payment Summary|Amount Payable/i);
+  if (startAt < 0) return null;
+
+  // Terminators are searched for AFTER the start, and only ones that genuinely
+  // close a pricing panel.
+  const endAt = flat
+    .slice(startAt)
+    .search(/You saved|PCIDSS|Your payment is 100% safe|Continue Shopping|Proceed|Pay Now/i);
+  const region = endAt > 0 ? flat.slice(startAt, startAt + endAt) : flat.slice(startAt);
+
+  const rows = moneyRows(region);
+  if (rows.length === 0) return null;
+
+  const out = {
+    label,
+    productAmount: null,
+    discount: null,
+    deviceProtection: null,
+    shipping: null,
+    // Charged on top of the order rather than being part of it. Reported, never
+    // folded into the payable total.
+    interest: null,
+    totalCost: null,
+    otherCharges: 0,
+    total: null,
+    itemCount: null,
+    unclassified: [],
+    rows,
+    region,
+  };
+
+  for (const row of rows) {
+    const hit = COMPONENT_PATTERNS.find(([, re]) => re.test(row.label));
+
+    if (!hit) {
+      // Not a line we know. It still costs the shopper money, so it counts
+      // toward the total and is named in `unclassified` for the report.
+      out.otherCharges += row.amount;
+      out.unclassified.push(row);
+      continue;
+    }
+
+    const [key] = hit;
+    // Discount is displayed as a negative; carry it as a positive magnitude so
+    // callers can write `product - discount + ...` and read like the page.
+    const value = key === 'discount' ? Math.abs(row.amount) : row.amount;
+
+    // interest and totalCost are recorded but excluded from the payable
+    // arithmetic — Total Cost is Price + interest over the whole plan, so
+    // adding either to the expected total would double-count.
+    if (key === 'interest' || key === 'totalCost') {
+      if (out[key] === null) out[key] = value;
+      continue;
+    }
+
+    // A repeated label (the cart prints Subtotal as well as Total Amount) must
+    // not silently overwrite the first reading.
+    if (out[key] === null) {
+      out[key] = value;
+      if (key === 'productAmount' && row.itemCount !== null) out.itemCount = row.itemCount;
+    }
+  }
+
+  return out;
+}
+
+// Product - discount + device protection + shipping + other charges.
+//
+// Returned rather than asserted so the caller controls the failure message, and
+// so the same arithmetic can be shown for two pages side by side.
+function expectedTotalOf(breakdown) {
+  return (
+    (breakdown.productAmount ?? 0) -
+    (breakdown.discount ?? 0) +
+    (breakdown.deviceProtection ?? 0) +
+    (breakdown.shipping ?? 0) +
+    (breakdown.otherCharges ?? 0)
+  );
+}
+
+// A one-line-per-component rendering, for failure messages and logs.
+function formatBreakdown(breakdown) {
+  const money = (n) => (n === null || n === undefined ? '(absent)' : `₹${n.toLocaleString('en-IN')}`);
+  return (
+    `  product amount     ${money(breakdown.productAmount)}` +
+    `${breakdown.itemCount !== null ? ` (${breakdown.itemCount} items)` : ''}\n` +
+    `  discount          -${money(breakdown.discount)}\n` +
+    `  device protection  ${money(breakdown.deviceProtection)}\n` +
+    `  shipping           ${money(breakdown.shipping)}\n` +
+    `  other charges      ${money(breakdown.otherCharges)}` +
+    `${breakdown.unclassified.length ? ` [${breakdown.unclassified.map((r) => `${r.label} ${money(r.amount)}`).join(', ')}]` : ''}\n` +
+    `  ---\n` +
+    `  expected total     ${money(expectedTotalOf(breakdown))}\n` +
+    `  displayed total    ${money(breakdown.total)}`
+  );
+}
+
+module.exports = {
+  toRupees,
+  flatten,
+  parsePlpTile,
+  parsePdpHeader,
+  parsePlanBox,
+  parseAddOn,
+  parseAddOns,
+  parseOrderSummary,
+  parsePricingBreakdown,
+  expectedTotalOf,
+  formatBreakdown,
+};

@@ -16,6 +16,16 @@
 const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL, URLS, TIMEOUTS } = require('../data/constants');
 const { assertFreshSession } = require('../utils/session');
+const { writesAllowed, writeSkipReason } = require('../utils/writes');
+
+// Opt-in only. A passing run of this spec mints a real order — see the header.
+// Declared before the session guard on purpose: when writes are not permitted
+// there is no reason to care whether the session is fresh, and a skip is a
+// clearer report than a session failure that was never going to run anyway.
+test.skip(
+  !writesAllowed(),
+  writeSkipReason('This spec creates a real order')
+);
 
 // Subscribe only goes straight to Review Order while logged in; logged out it
 // diverts to an OTP screen and every assertion below would fail for the wrong
