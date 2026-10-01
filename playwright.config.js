@@ -26,7 +26,12 @@ const HERE = __dirname;
 // in tests/utils/session.js fails them fast with the real reason and a pointer
 // to `npm run auth`. CI is unaffected: it writes an empty auth.json before the
 // run, so this resolves to that file exactly as before.
-const AUTH_FILE = path.join(HERE, 'auth.json');
+//
+// The file is per-environment (auth.json for production, auth.stage.json for
+// BASE_URL=https://stage-web.bytepe.com, ...) so a token is never sent to the
+// wrong host. tests/data/env.js decides the name.
+const { AUTH_FILENAME } = require('./tests/data/env');
+const AUTH_FILE = path.join(HERE, AUTH_FILENAME);
 const storageState = existsSync(AUTH_FILE) ? AUTH_FILE : undefined;
 
 // DIAGNOSTIC SCRIPTS — excluded from a bare `npx playwright test`.

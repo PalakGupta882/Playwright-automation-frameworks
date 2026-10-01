@@ -2,7 +2,7 @@ const { test } = require('@playwright/test');
 const { HomePage } = require('./pages/homepage');
 const { TIMEOUTS } = require('./data/constants');
 
-const SITE = 'https://www.bytepe.com';
+const { BASE_URL: SITE, AUTH_FILENAME, AUTH_PATH, ENV_NAME } = require('./data/env');
 
 // The app renders its logged-in header off refresh_token, which outlives
 // access_token by days. So "the page says I am logged in" does NOT mean an
@@ -132,12 +132,12 @@ test('one-time login and save session', async ({ page }) => {
   // later with what looks like a broken selector.
   if (!(await waitForAccessToken(page.context(), 20000))) {
     throw new Error(
-      'Refusing to save: the browser has no access_token cookie for www.bytepe.com,\n' +
+      `Refusing to save: the browser has no access_token cookie for ${SITE},\n` +
       'so every login-gated spec would fail with "no access_token cookie".\n' +
       'Re-run npm run auth and complete the OTP login.'
     );
   }
 
-  await page.context().storageState({ path: 'auth.json' });
-  console.log('Login session saved to auth.json');
+  await page.context().storageState({ path: AUTH_PATH });
+  console.log(`Login session saved to ${AUTH_FILENAME} (${ENV_NAME})`);
 });

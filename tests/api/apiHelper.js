@@ -15,8 +15,8 @@ const fs = require('fs');
 const path = require('path');
 const { BASE_API_URL, ENDPOINTS } = require('../data/apiEndpoints');
 
-const AUTH_PATH = path.join(__dirname, '..', '..', 'auth.json');
-const SITE_DOMAIN = 'www.bytepe.com';
+const { AUTH_PATH, SITE_HOST } = require('../data/env');
+const SITE_DOMAIN = SITE_HOST;
 
 // A browser UA on purpose. Some edges in front of this origin treat an obvious
 // bot UA differently, and a test that only fails because it looked like a

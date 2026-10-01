@@ -25,3 +25,15 @@ docs/BUG-*.pdf
 # Generated page-health sweep output (regenerate with npm run page-health)
 /page-health.json
 /page-health-report.html
+
+# HAR captures for JMeter (tests/scripts/har-*.spec.js). The raw .har holds the
+# phone number, OTP and live access/refresh tokens. Only the masked .md
+# summaries next to them are safe to commit.
+tests/data/har/*.har
+
+# Test phone + fixed OTP for the HAR login journey. Copy .env.har.example.
+.env.har
+
+# Stage-environment session (tests/data/env.js names it from BASE_URL).
+# Same rule as auth.dev.json: never commit, never mix with production.
+auth.stage.json

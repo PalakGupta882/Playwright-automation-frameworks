@@ -4,7 +4,7 @@
 // Both were confirmed by watching the PDP's own network calls — the payment
 // plan does NOT come from the catalog endpoint.
 
-const HOST = 'https://www.bytepe.com';
+const { BASE_URL: HOST } = require('./env');
 
 // Catalog record. Needed only to translate a slug/bpid into a variant id.
 function pdpApiPath(slug, bpid) {

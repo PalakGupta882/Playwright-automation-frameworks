@@ -2,8 +2,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const AUTH_PATH = path.join(__dirname, '..', '..', 'auth.json');
-const SITE_DOMAIN = 'www.bytepe.com';
+const { AUTH_PATH, SITE_HOST } = require('../data/env');
+const SITE_DOMAIN = SITE_HOST;
 
 function sessionError(reason) {
   return (
