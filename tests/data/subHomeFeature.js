@@ -40,6 +40,40 @@ const TAB_QUERY_PARAM = 'sub_home_page';
 // Design spec from the sheet (TCB-006 / TCB-007), confirmed against the live
 // strip on 19 Aug 2026 at both widths — every number below was measured, not
 // copied. They are asserted exactly because they were exact.
+//
+// TCB-005 AND TCB-007 FAIL AS OF 27 Aug 2026. LEFT FAILING ON PURPOSE.
+//
+// The DESKTOP strip moved off this spec on production between 19 and 27 Aug.
+// Mobile is untouched and still matches on all five numbers.
+//
+//   measure          19 Aug (spec)   27 Aug (live)
+//   tile width       110px           104px
+//   icon             44x44           38x38
+//   label            15px            14px
+//   gap              24px            12px      <- halved
+//   underline         3px             3px      (unchanged)
+//   strip divider     1px             2px      <- TCB-005
+//
+// Ruled out before calling it a defect, via scripts/probe-tab-strip-design:
+//
+//   - Not a breakpoint move. Swept 390..1920: there are exactly two size sets,
+//     below 900px and at/above it, and NEITHER is the desktop spec. The live
+//     desktop numbers are a third set that no width produces the spec for.
+//   - Not a first-tile artefact. All 8 tiles measure 104x68 / 38x38 / 14px at
+//     desktop and 68x51 / 28x28 / 10px at mobile — uniform.
+//   - Not a hydration race. Values are identical across repeated measures and
+//     the underline (which mounts late) is the one number still on spec.
+//
+// It is a CSS change: div.MuiBox-root.mui-wn77bt now carries gap: 12px and
+// padding: 12px 16px 0, the tile is a flat width: 104px, and the sticky
+// container's border-bottom-width is 2px.
+//
+// DO NOT "fix" this by editing the numbers below. Either the change is intended
+// — in which case the sheet is stale and someone who owns the design says so,
+// and these get updated with a new measurement date — or it is a visual
+// regression, which is exactly what TCB-006/007 exist to catch. Same rule the
+// video suite follows for VID-35/38: assert the correct behaviour and fail
+// until it is answered, rather than encoding the drift as expected.
 const DESIGN = {
   desktop: { viewport: { width: 1440, height: 900 }, tile: 110, icon: 44, label: 15, underline: 3, gap: 24 },
   mobile:  { viewport: { width: 390,  height: 844 }, tile: 68,  icon: 28, label: 10, underline: 2, gap: 8 },

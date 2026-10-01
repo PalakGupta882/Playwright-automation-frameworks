@@ -51,7 +51,17 @@ class HomePage extends BasePage {
       products: headerLinks('Products'),
       aboutUs: headerLinks('About Us'),
     };
-    this.loginLink = page.getByText('Login').filter({ visible: true }).first();
+    // .last(), not .first(). The site renders the MuiAppBar header TWICE — two
+    // <header> elements, same parent, both position:fixed, both z-index 1100,
+    // identical 0,0 1280x77 rects (measured 16 Sep 2026). With equal z-index,
+    // DOM order decides the stack, so the SECOND copy paints on top and
+    // swallows every click aimed at the first. Playwright reports it as
+    // "<span>Login</span> ... subtree intercepts pointer events" — the element
+    // blocking the click is its own twin. force:true does not help: it skips
+    // the actionability check, not the browser hit-test, so the click still
+    // lands on the copy above. Taking the last match aims at the one a shopper
+    // actually clicks, and stays correct if the duplicate is ever removed.
+    this.loginLink = page.getByText('Login').filter({ visible: true }).last();
     // The positive logged-in signal. auth-setup.spec.js established this is the
     // only reliable one: the header paints its logged-out state first and swaps
     // once the app resolves the session, so "Login is gone" is not equivalent.
@@ -68,7 +78,7 @@ class HomePage extends BasePage {
   }
 
   async goto() {
-    await this.page.goto('https://www.bytepe.com/', { waitUntil: 'domcontentloaded' });
+    await this.page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
   }
 
   // Clicks a header nav link and does not return until the URL has moved.
@@ -181,7 +191,7 @@ class HomePage extends BasePage {
   }
 
   async goToCart() {
-    await this.page.goto('https://www.bytepe.com/cart');
+    await this.page.goto(`${BASE_URL}/cart`);
   }
 
   async goToLogin() {

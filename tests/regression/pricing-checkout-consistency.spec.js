@@ -32,14 +32,19 @@ const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL, URLS, TIMEOUTS } = require('../data/constants');
 const { assertFreshSession } = require('../utils/session');
 const { writesAllowed, writeSkipReason } = require('../utils/writes');
+const { watchCreateOrder, readCreateOrder, createOrderFailure } = require('../utils/createOrder');
 const { openCart, dismissExchangeDialog } = require('../utils/cartNav');
+const { ProductsListPage } = require('../pages/productsListPage');
 const { parsePdpHeader, parseOrderSummary, toRupees } = require('../utils/priceText');
 const { identitiesFromCart, formatIdentities } = require('../utils/surfaceIdentity');
 
 test.beforeAll(() => assertFreshSession());
 
 // Four real page loads plus the pricing round trip behind each one.
-const FLOW_TIMEOUT = 240000;
+// Raised from 240s on 1 Sep 2026: the product picker now scrolls the whole
+// lazy-loading listing (217 tiles, ~40s) before ranking, and may then walk
+// several candidates' PDPs before finding one it can add upfront.
+const FLOW_TIMEOUT = 420000;
 
 // Picks the cheapest priced product on the listing.
 //
@@ -53,10 +58,44 @@ const FLOW_TIMEOUT = 240000;
 // and its CTA reads "Go to Cart". The caller walks down the list until it finds
 // one it can actually add — which is what stops it from clicking whatever else
 // on the page happens to say "Add to Cart".
+// THE LISTING LAZY-LOADS, SO "CHEAPEST" MEANT "CHEAPEST OF THE FIRST TWELVE".
+//
+// Measured 1 Sep 2026: after the 2s settle below, the PLP has rendered 12 of
+// its 217 tiles. This function then called those 12 "the listing". Eleven of
+// them were already in the cart, so the run picked Pixel 11 at ₹81,999 — on a
+// spec whose entire stated purpose for choosing the cheapest is that it "leaves
+// a real line item on a real account's cart every run, and the residue should
+// be a ₹1,700 cable rather than a ₹2,27,900 laptop". The true cheapest on the
+// live listing is a ₹1,575 powerbank.
+//
+// So scroll it out before ranking, the same way pricing-consistency.spec.js
+// does. Bounded by a deadline and a stall count rather than a fixed number of
+// wheels, because the batch size is not ours to predict.
+async function scrollOutListing(page) {
+  const DEADLINE = Date.now() + 120000;
+  const STALL_ROUNDS = 6;
+  let last = 0;
+  let stable = 0;
+
+  while (Date.now() < DEADLINE) {
+    const n = await page.locator('a[href*="/pd/"]').count();
+    if (n === last && n > 0) {
+      if (++stable >= STALL_ROUNDS) break;
+    } else {
+      stable = 0;
+      last = n;
+    }
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+  }
+  return last;
+}
+
 async function cheapestListedProduct(page) {
   await page.goto(`${BASE_URL}${URLS.products}`, { waitUntil: 'domcontentloaded' });
   await page.locator('a[href*="/pd/"]').first().waitFor({ state: 'visible', timeout: 30000 });
   await page.waitForTimeout(2000);
+  await scrollOutListing(page);
 
   const cards = page.locator('a[href*="/pd/"]');
   const total = await cards.count();
@@ -102,11 +141,15 @@ async function addCurrentProductToCart(page) {
   // successfully added in Cart"}` on the same product. The button renders before
   // React binds its handler, so an early click lands on an inert element.
   //
-  // "Choose your plan" is the right thing to wait on: it is populated from the
-  // pricing round trip, so its presence means the client has finished wiring
-  // this page up. A bare timeout would work too and would be a guess.
+  // The signal is now "See Plans", not "Choose your plan". Both are populated
+  // from the pricing round trip, so either proves the client has finished wiring
+  // the page up — but the old copy was removed in the 23 Sep 2026 redesign, so
+  // this wait could only ever time out and fall through its own .catch(). That
+  // was silent (by design, it is a best-effort settle) but it meant every add
+  // burned the full nav timeout AND then clicked an unhydrated button, which is
+  // precisely the inert-click failure the comment above describes.
   await page
-    .getByText(/choose your plan/i)
+    .getByText(/see plans|choose your plan/i)
     .first()
     .waitFor({ state: 'visible', timeout: TIMEOUTS.nav })
     .catch(() => {});
@@ -130,40 +173,101 @@ async function addCurrentProductToCart(page) {
   // control and cannot be anything else. Reading its label rather than assuming
   // it: "Go to Cart" means this product is already in the basket, and the
   // caller picks a different one instead of clicking something at random.
+  // NO "Buy Now" MEANS A SUBSCRIPTION-LAYOUT PDP, NOT A BROKEN PAGE.
+  //
+  // Measured 1 Sep 2026. The buy box on a product whose pre-selected plan is
+  // Subscription renders a single CTA:
+  //
+  //   pixel-11   ... "Subscribe", "See more", "No exchange", "Buy with exchange"
+  //   oblique-…  ... "Add to Cart", "Buy Now", "No exchange", "Buy with exchange"
+  //
+  // There is no "Buy Now" and no "Add to Cart" to sit before it, so anchoring on
+  // Buy Now — which is the rule that keeps this spec off the recommended-products
+  // carousel, and must not be relaxed — cannot resolve on that layout at all.
+  // This used to spend 20s and then fail the whole test on a page that was
+  // rendering perfectly well.
+  //
+  // Reported back to the caller as "not purchasable upfront" so it moves to the
+  // next candidate. This selects a SUBJECT; it asserts nothing, so skipping a
+  // layout this flow cannot use loses no coverage. The caller still fails if no
+  // candidate turns out to be addable.
   const buyNow = page
     .getByRole('button', { name: 'Buy Now' })
     .filter({ visible: true })
     .first();
-  await buyNow.waitFor({ state: 'visible', timeout: 20000 });
+  const hasBuyNow = await buyNow
+    .waitFor({ state: 'visible', timeout: 20000 })
+    .then(() => true)
+    .catch(() => false);
+
+  if (!hasBuyNow) {
+    return {
+      notPurchasableUpfront: true,
+      reason: 'the PDP renders no "Buy Now", which is the subscription buy-box layout',
+    };
+  }
 
   const cta = buyNow.locator('xpath=preceding-sibling::button[1]');
 
-  // Wait for the CTA to actually carry a label before reading it. Reading it
+  // Wait for the CTA to actually resolve before reading it. Reading it
   // immediately returned an empty string, and an empty string is not
   // "Go to Cart", so a product already in the basket fell through to the click
   // path — and then the "the label flipped, so our add landed" branch below
   // read the pre-existing "Go to Cart" as proof of success and reported a
   // phantom add. The cart never moved and the delta assertion failed by the
   // whole price.
-  await expect(cta, 'the buy-box CTA never rendered a label').toHaveText(
-    /add to cart|go to cart|subscribe/i,
-    { timeout: 20000 }
-  );
+  //
+  // THE CTA IS ICON-ONLY NOW, 16 Sep 2026. This used to require the text
+  // /add to cart|go to cart|subscribe/i and failed with `Received string: ""`
+  // — correctly, because the sibling anchor DID find the right control and
+  // that control no longer has any text. It carries `aria-label="Add to cart"`
+  // instead (see utils/buyRow.js), so wait on the accessible name and accept
+  // the text form too, since "Go to Cart" still appears after an add.
+  await expect(cta, 'the buy-box CTA never resolved').toBeVisible({ timeout: 20000 });
+  await expect
+    .poll(
+      async () => {
+        const label = (await cta.getAttribute('aria-label')) || (await cta.innerText()) || '';
+        return label.trim();
+      },
+      {
+        message: 'the buy-box CTA never rendered a label or an aria-label',
+        timeout: 20000,
+      }
+    )
+    .toMatch(/add to cart|go to cart|subscribe/i);
 
-  const label = (await cta.innerText()).trim();
+  // Read the ACCESSIBLE NAME first, then the text. Since the 16 Sep 2026 buy-row
+  // redesign the cart control is icon-only and its innerText is "" — so reading
+  // only the text left `label` empty, which is neither "Go to Cart" nor "Add to
+  // Cart", and every UPFRONT product fell through to the subscription-first
+  // branch below and died waiting on a build-hashed class. The poll above was
+  // already updated to accept the aria-label; this read was missed.
+  // COMBINED, not aria-first. After an add the icon control keeps its
+  // aria-label "Add to cart" while its text flips to "Go to Cart", so reading
+  // the aria-label alone would mask the flip and the already-in-cart branch
+  // below would never fire. Joining both means whichever signal the site uses
+  // is visible, and "go to cart" is tested first so it wins when both appear.
+  const effectiveLabel = async (locator) =>
+    [await locator.getAttribute('aria-label'), await locator.innerText()]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+
+  const label = await effectiveLabel(cta);
   if (/go to cart/i.test(label)) {
     return { alreadyInCart: true };
   }
 
   if (!/add to cart/i.test(label)) {
-    // Subscription-first products lead with "Subscribe" and only expose the
-    // upfront CTA once a plan is picked. The plan tile ignores a plain click, so
-    // the event is dispatched directly — same workaround as
-    // ProductsListPage.selectBuyUpfrontPlan.
-    const planCard = page.locator('.MuiBox-root.mui-1eub90p').filter({ visible: true }).first();
-    await planCard.waitFor({ state: 'visible', timeout: 20000 });
-    await planCard.dispatchEvent('click');
-    await page.waitForTimeout(1500);
+    // Subscription-first products only expose the upfront CTA once the upfront
+    // plan is picked. Rewritten 23 Sep 2026: this used to dispatch a click at
+    // `.MuiBox-root.mui-1eub90p`, a build hash that no longer resolves, and the
+    // 20s wait on it was the visible failure for every UPFRONT product once the
+    // icon-only cart control made `label` empty above. Routed through the page
+    // object so the "See Plans" disclosure and the radio-less panel are handled
+    // in one place — see utils/planPanel.js.
+    await new ProductsListPage(page).selectBuyUpfrontPlan();
   }
 
   const addToCart = cta;
@@ -171,7 +275,7 @@ async function addCurrentProductToCart(page) {
 
   // Belt and braces after the incident above: never click a control that is not
   // literally this product's Add to Cart.
-  const finalLabel = (await addToCart.innerText()).trim();
+  const finalLabel = await effectiveLabel(addToCart);
   if (!/add to cart/i.test(finalLabel)) {
     throw new Error(
       `Refusing to click: the button before "Buy Now" reads ${JSON.stringify(finalLabel)}, ` +
@@ -226,7 +330,7 @@ async function addCurrentProductToCart(page) {
 
     // The CTA flipping means a late add did land, so stop rather than retry.
     // Scoped to this product's own control, for the reason above.
-    const flipped = /go to cart/i.test((await cta.innerText().catch(() => '')).trim());
+    const flipped = /go to cart/i.test(await effectiveLabel(cta).catch(() => ''));
     if (flipped) return { added: true };
 
     if (attempt === ATTEMPTS) {
@@ -369,7 +473,9 @@ test.describe('Pricing consistency through checkout', () => {
         console.log(`added: ${candidate.name} — ₹${candidate.price} (${candidate.slug})`);
         break;
       }
-      console.log(`skipped ${candidate.slug} — already in the cart`);
+      console.log(
+        `skipped ${candidate.slug} — ${outcome.reason || 'already in the cart'}`
+      );
     }
 
     expect(
@@ -580,10 +686,21 @@ test.describe('Pricing consistency through checkout', () => {
       console.log(`review total ₹${review.total} — pressing Continue now MINTS A REAL ORDER`);
 
       // THE IRREVERSIBLE CLICK.
+      //
+      // Watched, because the site answers a refusal on this request and nowhere
+      // else — see tests/utils/createOrder.js. Without it a 400 reads as a 90s
+      // navigation timeout and says nothing about why.
+      const created = watchCreateOrder(page);
       await page
         .getByRole('button', { name: /^continue$/i })
         .first()
         .click({ timeout: TIMEOUTS.action });
+      const verdict = await readCreateOrder(created);
+      console.log(
+        `create-order: ${verdict.sent ? `${verdict.status} — ${verdict.message}` : 'never sent'}`
+      );
+      expect(verdict.ok, createOrderFailure(verdict)).toBe(true);
+
       await page.waitForURL(new RegExp(URLS.orderSummary), { timeout: 90000 });
 
       const paymentText = await page.locator('body').innerText();

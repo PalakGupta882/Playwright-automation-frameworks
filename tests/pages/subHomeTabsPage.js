@@ -110,6 +110,34 @@ class SubHomeTabsPage extends BasePage {
     );
   }
 
+  // Every tile, not just the first.
+  //
+  // measure() reports tiles[0] because the design spec is one set of numbers,
+  // and that is the right shape for TCB-006/007. It also means a single tile
+  // rendered at the wrong size — a long label wrapping, one icon arriving at
+  // its natural dimensions instead of the styled ones — is invisible to those
+  // cases. Measured 27 Aug 2026: all 8 tiles are identical at both widths, so
+  // asserting uniformity is checking something that currently holds rather
+  // than encoding a wish.
+  async tileMetrics() {
+    return this.tabs.evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        const img = el.querySelector('img');
+        const ir = img && img.getBoundingClientRect();
+        const cap = [...el.querySelectorAll('p,span,div')].find((n) => (n.innerText || '').trim());
+        return {
+          label: (el.innerText || '').trim().split('\n')[0],
+          w: Math.round(r.width),
+          h: Math.round(r.height),
+          iconW: ir ? Math.round(ir.width) : null,
+          iconH: ir ? Math.round(ir.height) : null,
+          fontSize: cap ? getComputedStyle(cap).fontSize : null,
+        };
+      })
+    );
+  }
+
   async activeLabels() {
     return this.tabs.evaluateAll((els) =>
       els

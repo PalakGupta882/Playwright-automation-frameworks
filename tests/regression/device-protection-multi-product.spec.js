@@ -684,27 +684,67 @@ test.describe('Device Protection is charged per product', () => {
           .join('\n') || '  (no VAS on any line)')
     );
 
-    const displayedIsCharged = reviewVasRecords.filter((r) => r.vasPrice !== r.lineVasAmount);
+    // A LINE'S vas_amount IS THE SUM OF ITS OWN vas_price ROWS.
+    //
+    // Corrected 1 Sep 2026. This used to compare each VAS ROW's `vas_price`
+    // against its LINE's `vas_amount` and fail when they differed. That was
+    // sound while a protected line carried exactly one VAS row — CLAUDE.md
+    // records the two fields being indistinguishable in that case — and it
+    // became wrong the moment the free-accessory row shipped (20-26 Aug 2026).
+    //
+    // Measured on the live upfront basket, 1 Sep 2026:
+    //
+    //   Pixel 11 Pro   Free Wireless Charger   vas_price 0
+    //                  12 mo Device Protection vas_price 1   line vas_amount 1
+    //
+    // 0 + 1 = 1, so the arithmetic is right, and the old check still reported
+    // the freebie row as a defect — it compared a per-row field against a
+    // per-line sum, which is the category error the diagnostic order in
+    // CLAUDE.md exists to prevent (step 5: does that field represent a price,
+    // an amount, a discount or a total?). It also named Device Protection as
+    // the culprit while pointing at a row called "Free Wireless Charger".
+    //
+    // What is actually assertable from this response is the sum. A line whose
+    // vas_amount is not the total of its rows is charging for an add-on the
+    // shopper cannot see itemised, which is a real fault and survives however
+    // many rows a line grows.
+    const byLine = new Map();
+    for (const r of reviewVasRecords) {
+      const key = r.bpid ?? r.line;
+      if (!byLine.has(key)) {
+        byLine.set(key, { line: r.line, bpid: r.bpid, rows: [], lineVasAmount: r.lineVasAmount });
+      }
+      byLine.get(key).rows.push(r);
+    }
+
+    const sumFaults = [...byLine.values()]
+      .filter((l) => l.rows.reduce((s, r) => s + r.vasPrice, 0) !== l.lineVasAmount)
+      .map(
+        (l) =>
+          `  ${l.line} (${l.bpid}): rows ${l.rows
+            .map((r) => `${r.vasName} ₹${r.vasPrice}`)
+            .join(' + ')} = ₹${l.rows.reduce((s, r) => s + r.vasPrice, 0)}, ` +
+          `but the line's vas_amount is ₹${l.lineVasAmount}`
+      );
+
     expect(
-      displayedIsCharged,
-      'REVIEW ORDER IS SHOWING A PER-UNIT DEVICE PROTECTION FIGURE, NOT THE CHARGED TOTAL\n\n' +
-        displayedIsCharged
-          .map(
-            (r) =>
-              `  ${r.line} (${r.bpid}): vas_price ₹${r.vasPrice} vs vas_amount ₹${r.lineVasAmount}`
-          )
-          .join('\n') +
-        '\n\nName the field, not the symptom: the page renders vas_price where vas_amount is ' +
-        'what will be charged.'
+      sumFaults,
+      "A LINE'S vas_amount DOES NOT EQUAL THE SUM OF ITS OWN VAS ROWS\n\n" +
+        sumFaults.join('\n') +
+        '\n\nName the field, not the symptom: vas_amount is the per-line total of vas_price ' +
+        'across that line\'s vas_items. A line charging more than its rows itemise is an ' +
+        'add-on the shopper is paying for and cannot see.'
     ).toEqual([]);
 
     // Say so when the check could not distinguish, rather than claiming a result.
-    const indistinguishable = reviewVasRecords.filter((r) => r.vasPrice === r.lineVasAmount);
-    if (indistinguishable.length === reviewVasRecords.length && reviewVasRecords.length) {
+    // With one row on a line, sum == that row's price == vas_amount, so the
+    // assertion above is satisfied by coincidence and separates nothing.
+    const singleRowLines = [...byLine.values()].filter((l) => l.rows.length === 1);
+    if (singleRowLines.length === byLine.size && byLine.size) {
       console.log(
-        '  NOTE: vas_price == vas_amount on every protected line in this basket, so the ' +
-        'assertion above cannot tell the two fields apart. It proves nothing until a cart ' +
-        'holds a line where they differ.'
+        '  NOTE: every protected line in this basket carries exactly one VAS row, so its ' +
+        'sum is trivially its own vas_price and the assertion above cannot tell a per-row ' +
+        'field from a per-line total. It proves nothing until a line holds two rows.'
       );
     }
 

@@ -36,8 +36,14 @@ It was previously recorded here as the feature's blocker and six tests were
 written to fail until it was "fixed". Product has confirmed there is nothing
 to fix on web. Do not re-report it.
 
-Content is live. As of 11 Aug 2026, **35 of 186 products have a video**
-(`tests/data/video-products.json`, from `discover-video-products.spec.js`).
+Content is live, and it has grown a lot. Measured 2 Sep 2026 by reading
+`product.videos[]` off every product the live listing serves: **94 of 217
+products have a video**.
+
+`tests/data/video-products.json` still records the 11 Aug 2026 scrape — 35 of
+186 — so it is **stale by roughly a factor of three** and any spec that picks a
+video-enabled product from it is sampling a quarter of the real population.
+Re-run `scripts/discover-video-products.spec.js` before any video work.
 The API side passes in full: VID-24, VID-25 and VID-26 are green.
 
 What the web PDP does, measured on four video-enabled products:

@@ -174,8 +174,26 @@ test.describe('Checkout flow (stops before payment)', () => {
       await expect(page.getByText(/order summary/i).first()).toBeVisible();
       await expect(page.getByText(/total amount/i).first()).toBeVisible();
 
-      // Product detail: a line item with a quantity, and a price on the page.
-      await expect(page.getByText(/qty:\s*\d+/i).first()).toBeVisible();
+      // Product detail: a line item count, and a price on the page.
+      //
+      // This used to assert `Qty: N`. Measured 23 Sep 2026: that copy renders
+      // NOWHERE any more — not on Review Order and not on the cart. A scan of
+      // both pages for /qty/i and /quantity/i returns zero matches. The count
+      // is now carried only by the Order Summary's "Price (N Item)" line, which
+      // is the same line step 2 reads on the cart.
+      //
+      // Asserting the count rather than merely that the text exists keeps this
+      // non-vacuous: a review page that rendered its summary but lost its line
+      // items would report 0 and still fail.
+      const reviewCount = await page
+        .getByText(/price\s*\(\s*\d+\s*items?\s*\)/i)
+        .first()
+        .innerText();
+      expect(
+        Number(reviewCount.match(/\(\s*(\d+)/)[1]),
+        'Review Order reported zero items'
+      ).toBeGreaterThan(0);
+
       await expect(page.getByText(/₹\s?[\d,]+/).first()).toBeVisible();
 
       // The delivery promise, which is what this site shows instead of a

@@ -213,6 +213,157 @@ test.describe('Catalogue integrity', () => {
       );
 
     expect(mismatched, 'listing tile and variant-pricing disagree on price/MRP').toEqual([]);
+
+    // THE OTHER TWO FIGURES ON THE TILE. Added 2 Sep 2026 — the listing row
+    // carries a whole price block, not just a price:
+    //
+    //   price: { mrp: 186999, mop: 178999, minEmi: 8369, discount: 4 }
+    //
+    // mop and mrp are checked above. discount is the "% off" badge and minEmi
+    // is the "EMI from ₹X/mo" line, and both were unverified against anything —
+    // a tile could advertise a 40% saving or a ₹99/mo plan that no pricing
+    // record supports and the whole suite passed.
+    //
+    // Where each comes from, measured across 30 products, exact on every one:
+    //
+    //   price.discount -> upfront.off_on_amount
+    //   price.minEmi   -> the emi ladder, NOT cc.emi_amount
+    //
+    // CORRECTED 16 Sep 2026. This used to compare `minEmi` against
+    // `cc.emi_amount` and reported five flagships as mismatched:
+    //
+    //   Galaxy Z Fold8 Ultra  tile ₹8661  cc ₹8754
+    //   Galaxy Z Flip8 5G     tile ₹5355  cc ₹5402
+    //   Galaxy Z Fold8 5G     tile ₹7730  cc ₹7823
+    //   Phone (4b)            tile ₹1769  cc ₹1770
+    //   Galaxy Z Fold7        tile ₹7683  cc ₹7684
+    //
+    // All five were FALSE POSITIVES. Re-measured across 45 sampled products:
+    //
+    //   minEmi === emi.emi_option[].installment_amount   45 of 45
+    //   minEmi === cc.emi_amount                          4 of 45
+    //
+    // `ccOnly` was 0 and `neither` was 0 — the four agreements are the cases
+    // where the two figures simply coincide. `cc.emi_amount` is a
+    // bank-specific quote (note `cc.pickedFrom.bank`), while the tile quotes
+    // the cheapest rung of the ladder, which is what the PDP renders too. So
+    // the tile was right on all five and this check was asking the wrong
+    // question.
+    //
+    // Compare against the ladder instead, and accept either the longest tenure
+    // or the minimum instalment — they are the same rung on every product
+    // measured, and naming both means a re-ordered ladder is not a failure.
+    //
+    // Reported in one list rather than two tests: both are read off the same
+    // sweep, and a tile that has drifted has usually drifted in both.
+    const badgeMismatch = [];
+    for (const r of results) {
+      const listed = r.product.price || {};
+      const upfront = r.data.upfront || {};
+      const cc = r.data.cc || {};
+      const where = `${r.product.slug}/${r.product.variant.bpid}`;
+
+      if (listed.discount !== undefined && listed.discount !== upfront.off_on_amount) {
+        badgeMismatch.push(
+          `${r.product.name} | tile badge ${listed.discount}% off vs ` +
+            `upfront.off_on_amount ${upfront.off_on_amount} | ${where}`
+        );
+      }
+
+      // Only where the product actually has an EMI ladder. It is empty on
+      // products with no EMI offer, and comparing against nothing would report
+      // every one of them.
+      const rungs = (r.data.emi && r.data.emi.emi_option) || [];
+      if (listed.minEmi !== undefined && rungs.length) {
+        const longest = rungs[rungs.length - 1].installment_amount;
+        const cheapest = Math.min(...rungs.map((o) => o.installment_amount));
+        if (listed.minEmi !== longest && listed.minEmi !== cheapest) {
+          badgeMismatch.push(
+            `${r.product.name} | tile "EMI from ₹${listed.minEmi}/mo" vs ladder ` +
+              `longest ₹${longest} / cheapest ₹${cheapest} (cc.emi_amount ₹${cc.emi_amount}) | ${where}`
+          );
+        }
+      }
+    }
+
+    expect(
+      badgeMismatch,
+      'the listing tile advertises a discount or an EMI-from figure its own pricing record ' +
+        'does not support'
+    ).toEqual([]);
+  });
+
+  // THE LISTING NOW ADVERTISES BUNDLED ADD-ONS, and it is a second copy of a
+  // list that lives somewhere else. Added 2 Sep 2026, when the field appeared:
+  //
+  //   listing row   vas: ["12 mo Device Protection", "Free Wireless Charger"]
+  //   GET /api/apps/product-vas/:slug/:bpid   the records the PDP renders
+  //
+  // 30 of 217 rows carry one. A stale copy here advertises a free charger on
+  // the tile that the product page then does not offer, which is the kind of
+  // difference a shopper notices and nothing else in the suite looks at —
+  // pricing-consistency reads the VAS API for the saving arithmetic, never for
+  // what the tile claims.
+  //
+  // Names only. The tile shows no prices for these rows, so vas_mrp/vas_price
+  // are out of scope here; the money is checked in pricing-consistency.
+  test('the add-ons the listing advertises are the add-ons the product serves', async () => {
+    test.setTimeout(300000);
+
+    const advertised = catalogue.filter((p) => Array.isArray(p.vas) && p.vas.length > 0);
+
+    // Non-vacuity, and the reason this is a sample rather than a sweep. If the
+    // field ever stops being populated, `advertised` empties and every
+    // comparison below passes without comparing anything.
+    expect(
+      advertised.length,
+      'no listing row advertises an add-on. Either the catalogue stopped bundling them — in ' +
+        'which case pricing-consistency\'s saving arithmetic has lost its largest term — or ' +
+        'the listing dropped the field and this check is now inert.'
+    ).toBeGreaterThan(0);
+
+    // A control group: rows claiming NO add-ons are checked too, on a sample.
+    // Otherwise a listing that under-reports (says nothing, product bundles a
+    // freebie) is invisible here, and that is the direction that costs the
+    // shopper a benefit they were entitled to.
+    const silent = catalogue.filter((p) => !Array.isArray(p.vas) || p.vas.length === 0).slice(0, 15);
+
+    const checked = [...advertised, ...silent];
+    const results = await mapWithPool(checked, SWEEP_CONCURRENCY, async (product) => {
+      const res = await getWithRetry(
+        api,
+        `apps/product-vas/${product.slug}/${product.variant.bpid}`,
+        { failOnStatusCode: false, timeout: 30000 }
+      );
+      const body = await res.json().catch(() => null);
+      return { product, status: res.status(), body };
+    });
+
+    const unreadable = results
+      .filter((r) => r.status !== 200 || !r.body || !r.body.data)
+      .map((r) => `${r.product.name} -> product-vas ${r.status}`);
+    expect(unreadable, 'the VAS endpoint did not answer for these products').toEqual([]);
+
+    const sorted = (names) => [...names].sort().join(', ') || '(none)';
+
+    const mismatched = results
+      .map((r) => {
+        const listed = (r.product.vas || []).filter((n) => typeof n === 'string' && n.trim());
+        const served = ((r.body.data.vas || []) || [])
+          .map((row) => row.vas_name)
+          .filter((n) => typeof n === 'string' && n.trim());
+        if (sorted(listed) === sorted(served)) return null;
+        return (
+          `${r.product.name} | tile advertises [${sorted(listed)}] but the product serves ` +
+          `[${sorted(served)}] | ${r.product.slug}/${r.product.variant.bpid}`
+        );
+      })
+      .filter(Boolean);
+
+    expect(
+      mismatched,
+      'the listing tile and the VAS record disagree about which add-ons come with the product'
+    ).toEqual([]);
   });
 
   // IDENTITY. The SKU is what reaches create-order and what a warehouse packs
@@ -238,13 +389,38 @@ test.describe('Catalogue integrity', () => {
       // same defect twice under the wrong heading.
       const deDuped = own.replace(/-\d+$/, '');
 
+      // How many leading hyphen-separated tokens two names share. A SKU belongs
+      // to whichever product name it agrees with FURTHEST, not merely to any
+      // name it happens to start with.
+      const sharedDepth = (a, b) => {
+        const x = a.split('-');
+        const y = b.split('-');
+        let n = 0;
+        while (n < x.length && n < y.length && x[n] === y[n]) n++;
+        return n;
+      };
+
       const matches = slugs
         .filter((slug) => sku === slug || sku.startsWith(`${slug}-`))
         .sort((a, b) => b.length - a.length);
 
-      if (matches.length && matches[0] !== own && matches[0] !== deDuped) {
+      // A SHORT, GENERIC SLUG IS NOT EVIDENCE OF A CROSSED SKU. Added
+      // 16 Sep 2026. "iPad Mini (A17 Pro)" (slug ipad-mini-a17-pro) ships
+      // IPAD-MINI-SPACE-GREY-WI-FI-128GB, and a different product is slugged
+      // plain "ipad" — so the prefix test matched `ipad-` and reported the Mini
+      // as carrying the iPad's SKU. It does not: the SKU agrees with its own
+      // product for two tokens (ipad, mini) and with "ipad" for only one.
+      //
+      // Comparing depth instead of mere prefix keeps the real case. Pixel 11
+      // Pro Fold's PIXEL-11-PRO-XL-* SKU still agrees with the XL name more
+      // deeply than with its own, so it is still flagged and still relies on
+      // the allowlist below.
+      const ownDepth = Math.max(sharedDepth(sku, own), sharedDepth(sku, deDuped));
+      const crossedDeeper = matches.filter((slug) => sharedDepth(sku, slug) > ownDepth);
+
+      if (crossedDeeper.length && matches[0] !== own && matches[0] !== deDuped) {
         crossed.push(
-          `${product.name} | slug ${own} | sku ${product.variant.sku} | SKU names "${matches[0]}"`
+          `${product.name} | slug ${own} | sku ${product.variant.sku} | SKU names "${crossedDeeper[0]}"`
         );
       }
     }
@@ -275,8 +451,58 @@ test.describe('Catalogue integrity', () => {
   // apart. Measured after the brand prefix was stripped from product names:
   // Motorola's "Buds 2 Plus" (5399) and Nothing's (3199) became the same string.
   test('no two products are displayed under the same name', () => {
-    const byName = new Map();
+    // DEDUPE BY IDENTITY FIRST. Added 21 Aug 2026.
+    //
+    // On the 21 Aug run this reported 244 collisions and every one of them was
+    // a product colliding with ITSELF — same slug, same brand, same price on
+    // both sides:
+    //
+    //   "Pixel 11 Pro Fold" -> google pixel-11-pro-fold @ 178999
+    //                        | google pixel-11-pro-fold @ 178999
+    //
+    // The paged sweep in beforeAll had returned the whole catalogue twice, in
+    // page-1 order. It did not reproduce on retry, and a direct probe of
+    // ?page=1..3 immediately after returned 244 rows / 244 unique slugs with
+    // zero overlap — so it is an intermittent listing anomaly, not a naming
+    // one.
+    //
+    // Grouping raw rows by name turned that into "two products share a name",
+    // which is the wrong culprit for the wrong team — exactly the failure mode
+    // the diagnostic order in CLAUDE.md exists to prevent. Step 1 is "is it the
+    // SAME product?", and here it plainly was.
+    //
+    // So: collapse identical identities before grouping, and report the
+    // duplication separately below as what it is.
+    const seen = new Map();
     for (const product of catalogue) {
+      const id = `${product.slug}::${(product.variant && product.variant.bpid) || ''}`;
+      if (!seen.has(id)) seen.set(id, { product, count: 0 });
+      seen.get(id).count += 1;
+    }
+
+    const repeated = [...seen.values()]
+      .filter((e) => e.count > 1)
+      .map((e) => `${e.product.name} (${e.product.slug}) appeared ${e.count}x`);
+
+    // Non-fatal on purpose: a repeated row is a listing/paging fault, not a
+    // catalogue naming fault, and this test is about names. Failing here would
+    // put the wrong label on it again.
+    //
+    // Logged on EVERY run, not only when it trips, so the shape of the sweep is
+    // always on the record — 488 rows resolving to 244 products is the signature
+    // of the 21 Aug anomaly, and it is invisible if the line only prints on
+    // failure.
+    console.log(
+      `paged sweep: ${catalogue.length} rows -> ${seen.size} unique products, ` +
+        `${repeated.length} returned more than once. A repeated row is a ` +
+        'listing/pagination fault, not a name collision; the check below dedupes them.'
+    );
+    console.log(repeated.slice(0, 10).map((r) => `  repeated: ${r}`).join('\n'));
+
+    const unique = [...seen.values()].map((e) => e.product);
+
+    const byName = new Map();
+    for (const product of unique) {
       const key = String(product.name || '').trim().toLowerCase();
       if (!key) continue;
       if (!byName.has(key)) byName.set(key, []);

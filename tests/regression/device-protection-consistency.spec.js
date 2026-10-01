@@ -35,7 +35,9 @@ const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL, URLS, TIMEOUTS } = require('../data/constants');
 const { assertFreshSession } = require('../utils/session');
 const { writesAllowed, writeSkipReason } = require('../utils/writes');
+const { watchCreateOrder, readCreateOrder, createOrderFailure } = require('../utils/createOrder');
 const { openCart, dismissExchangeDialog } = require('../utils/cartNav');
+const { ProductPage } = require('../pages/productPage');
 const {
   parsePricingBreakdown,
   expectedTotalOf,
@@ -56,6 +58,44 @@ const {
 test.beforeAll(() => assertFreshSession());
 
 const FLOW_TIMEOUT = 300000;
+
+// PICK THE SUBSCRIPTION SUBJECT FROM THE LIVE CATALOGUE, NOT FROM A LITERAL.
+//
+// This file used to hardcode `phone-4b/NOTSMMOBK25WT5` in two places. On
+// 23 Sep 2026 Phone (4b) flipped `prodPaymentMode` from BOTH to UPFRONT — one
+// of 13 products that did — so it stopped offering a subscription at all, and
+// both tests failed with "expected exactly one visible Subscribe control,
+// found 0". That reads like a broken control; the product had simply left the
+// subscription programme.
+//
+// Only 22 of 281 products are BOTH now, so which one to use is not a constant
+// worth pinning. Ask the catalogue.
+async function pickSubscriptionTarget(page) {
+  for (let p = 1; p <= 25; p++) {
+    const res = await page.request
+      .get(`${BASE_URL}/api/product-service/apps/products?page=${p}&limit=12`, {
+        headers: { accept: 'application/json' },
+        failOnStatusCode: false,
+        timeout: 30000,
+      })
+      .catch(() => null);
+    if (!res || !res.ok()) break;
+
+    const items = (await res.json())?.data?.items || [];
+    if (!items.length) break;
+
+    const hit = items.find(
+      (i) =>
+        i?.prodPaymentMode === 'BOTH' &&
+        i?.slug &&
+        i?.variant?.bpid &&
+        i?.variant?.available !== false &&
+        !((i?.variant?.tags) || []).some((t) => /pre-?book/i.test(t?.name || ''))
+    );
+    if (hit) return { slug: hit.slug, bpid: hit.variant.bpid, name: hit.name };
+  }
+  return null;
+}
 
 // ---- Evidence ----------------------------------------------------------
 //
@@ -533,7 +573,13 @@ test.describe('Device Protection pricing consistency through checkout', () => {
   }, testInfo) => {
     test.setTimeout(FLOW_TIMEOUT);
 
-    const target = { slug: 'phone-4b', bpid: 'NOTSMMOBK25WT5' };
+    const target = await pickSubscriptionTarget(page);
+    test.skip(
+      !target,
+      'no subscription-capable (BOTH) product in the live catalogue, so there is ' +
+        'no subscription Review Order to read'
+    );
+    console.log(`subscription subject: ${target.name} (${target.slug}/${target.bpid})`);
 
     await page.goto(`${BASE_URL}/pd/${target.slug}/${target.bpid}`, {
       waitUntil: 'domcontentloaded',
@@ -544,13 +590,12 @@ test.describe('Device Protection pricing consistency through checkout', () => {
       .first()
       .waitFor({ state: 'visible', timeout: TIMEOUTS.nav });
 
-    const subscribe = page.getByRole('button', { name: /^subscribe$/i }).filter({ visible: true });
-    expect(
-      await subscribe.count(),
-      `${target.slug}: expected exactly one visible Subscribe control`
-    ).toBe(1);
-
-    await subscribe.first().click({ timeout: TIMEOUTS.action });
+    // There is no "Subscribe" button since the 23 Sep 2026 PDP redesign — the
+    // plan is picked from an inline card and committed with Buy Now, which
+    // lands on /review/subscribe. ProductPage.clickSubscribe() encapsulates
+    // that; the control-count assertion it replaced can no longer pass on any
+    // product, because the control it counted does not exist.
+    await new ProductPage(page).clickSubscribe();
     await page.waitForURL(/\/review\//, { timeout: 60000 });
     await dismissExchangeDialog(page);
 
@@ -659,7 +704,16 @@ test.describe('Device Protection pricing consistency through checkout', () => {
       const proceed = await checkoutContinueButton(page);
       console.log(`review total ₹${review.total}, DP ₹${review.deviceProtection} — ` +
         'pressing Continue now MINTS A REAL ORDER');
+
+      // Armed before the click: create-order can answer before the click promise
+      // resolves, and its verdict is the only place a refusal is stated.
+      const created = watchCreateOrder(page);
       await proceed.click({ timeout: TIMEOUTS.action });
+      const verdict = await readCreateOrder(created);
+      console.log(
+        `create-order: ${verdict.sent ? `${verdict.status} — ${verdict.message}` : 'never sent'}`
+      );
+      expect(verdict.ok, createOrderFailure(verdict)).toBe(true);
 
       // Step 6 — wait for Payment Summary to be priced, not merely loaded.
       await page.waitForURL(new RegExp(URLS.orderSummary), { timeout: 90000 });
@@ -833,7 +887,7 @@ test.describe('Device Protection pricing consistency through checkout', () => {
       const configured = process.env.BYTEPE_DP_PRODUCT;
       const target = configured
         ? { slug: configured.split('/')[0], bpid: configured.split('/')[1] }
-        : { slug: 'phone-4b', bpid: 'NOTSMMOBK25WT5' };
+        : await pickSubscriptionTarget(page);
 
       expect(
         target.slug && target.bpid,
@@ -850,16 +904,11 @@ test.describe('Device Protection pricing consistency through checkout', () => {
         .first()
         .waitFor({ state: 'visible', timeout: TIMEOUTS.nav });
 
-      // Scoped and unambiguous. Subscribe is the control that both places the
-      // line in the subscription basket and navigates to its review page.
-      const subscribe = page.getByRole('button', { name: /^subscribe$/i }).filter({ visible: true });
-      const subscribeCount = await subscribe.count();
-      expect(
-        subscribeCount,
-        `${target.slug}: expected exactly one visible Subscribe control, found ${subscribeCount}`
-      ).toBe(1);
-
-      await subscribe.first().click({ timeout: TIMEOUTS.action });
+      // Picks the plan card then presses Buy Now — see ProductPage.clickSubscribe.
+      // The dedicated "Subscribe" button this used to count was removed in the
+      // 23 Sep 2026 redesign, so asserting there is exactly one of them failed
+      // on every product rather than on a broken one.
+      await new ProductPage(page).clickSubscribe();
       await page.waitForURL(/\/review\//, { timeout: 60000 });
       await dismissExchangeDialog(page);
 
@@ -917,7 +966,13 @@ test.describe('Device Protection pricing consistency through checkout', () => {
         `review shows Device Protection ₹${review.deviceProtection}, total ₹${review.total} — ` +
           'pressing Continue now MINTS A REAL ORDER'
       );
+      const createdSub = watchCreateOrder(page);
       await proceed.click({ timeout: TIMEOUTS.action });
+      const subVerdict = await readCreateOrder(createdSub);
+      console.log(
+        `create-order: ${subVerdict.sent ? `${subVerdict.status} — ${subVerdict.message}` : 'never sent'}`
+      );
+      expect(subVerdict.ok, createOrderFailure(subVerdict)).toBe(true);
 
       await page.waitForURL(new RegExp(URLS.orderSummary), { timeout: 90000 });
       const payment = await readPricing(page, 'payment summary (subscription)');

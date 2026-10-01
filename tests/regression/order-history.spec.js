@@ -170,10 +170,38 @@ test.describe('Order history', () => {
     const body = (await page.locator('body').innerText()).replace(/\s+/g, ' ');
     expect(body.length, 'the page rendered nothing at all').toBeGreaterThan(50);
 
-    // A real order always carries an id and a total. A fabricated one must show
-    // neither — an error, an empty state or a redirect are all acceptable.
-    const inventedOrder =
-      /Order\s*Id\s*:?\s*[A-Z0-9]{6,}/i.test(body) && /total amount/i.test(body);
-    expect(inventedOrder, 'a non-existent order id rendered a complete order').toBe(false);
+    // A real order always carries an id VALUE and a total VALUE. A fabricated
+    // one must show neither — an error, an empty state or a redirect are all
+    // acceptable.
+    //
+    // THE LABELS ARE NOT THE VALUES, corrected 16 Sep 2026. This used to match
+    // /Order\s*Id\s*:?\s*[A-Z0-9]{6,}/ against whitespace-collapsed body text,
+    // and on a bad id the page renders the order-detail scaffold with every
+    // field EMPTY:
+    //
+    //   "... Order Id: Shipping To Contact Support Payment Information ..."
+    //
+    // so the pattern matched the next LABEL — "Shipping" — as though it were an
+    // order id, and the test reported "a non-existent order id rendered a
+    // complete order". It had not. The API is correct: /api/customer-order/
+    // order-details/<fake> returns 401 then 404, and no order data reaches the
+    // page. Requiring a digit rules the labels out, since every real order id
+    // on this site carries one and no label does.
+    //
+    // WHAT IS ACTUALLY WRONG HERE, and is still worth raising: for an unknown
+    // order the page renders the full scaffold — the "Order Confirmed ->
+    // Shipped -> Out for Delivery -> Delivered" tracker, "Order Id:",
+    // "Total Amount", "Payment Plan" — all blank, rather than a not-found
+    // state. A shopper following a stale link sees what reads as a real order
+    // page. That is a rendering bug, not a data leak, and it is deliberately
+    // NOT what this assertion fails on, because the two would need different
+    // fixes.
+    const idValue = /Order\s*Id\s*:?\s*(?=[A-Z0-9-]*\d)[A-Z0-9-]{6,}/i;
+    const totalValue = /total\s*amount\s*:?\s*₹?\s*[\d,]+/i;
+    const inventedOrder = idValue.test(body) && totalValue.test(body);
+    expect(
+      inventedOrder,
+      'a non-existent order id rendered real order data (an id with digits AND a total figure)'
+    ).toBe(false);
   });
 });

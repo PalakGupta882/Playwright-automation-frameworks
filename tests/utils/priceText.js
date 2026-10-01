@@ -87,20 +87,43 @@ function parsePlpTile(tileText) {
 function parsePdpHeader(bodyText) {
   const flat = flatten(bodyText);
 
-  // The header runs from the first price-shaped run to "Choose your plan".
-  const end = flat.search(/Choose your plan/i);
+  // BOUNDARY, measured 23 Sep 2026. The plan box used to be headed "Choose your
+  // plan"; the PDP now collapses plans behind a "See Plans" disclosure and that
+  // copy is gone from every layout. This search returned -1, so the "header"
+  // became the WHOLE page — which brings the plan ladder and the buyback
+  // slider's rupee figures into range of the price regexes below. "See Plans"
+  // sits immediately after the per-month line on all three layouts measured;
+  // "Fulfilled by" is the fallback for a layout that renders no disclosure. The
+  // old copy is kept as a third alternative so this survives if it returns.
+  const end = flat.search(/See Plans|Fulfilled by|Choose your plan/i);
   const region = end > 0 ? flat.slice(0, end) : flat;
+
+  // Hoisted above BOTH branches. It used to be read only inside the discounted
+  // branch, so an undiscounted product reported perMonth null even with the
+  // figure on screen — iPhone 17 Pro Max shows "₹1,49,900 From ₹6,975/mo" and
+  // carries no % off badge, so it took the no-discount branch below and lost
+  // its EMI figure entirely.
+  //
+  // The label is OPTIONAL. Measured 23 Sep 2026: an UPFRONT product reads
+  // "EMI From ₹1,722/mo", but a BOTH product reads a bare "From ₹6,975/mo" —
+  // so requiring EMI|Subscription made perMonth null on every BOTH product.
+  const perMonthMatch = region.match(/(EMI|Subscription)?\s*From\s*₹\s?([\d,]+)\s*\/?\s*mo/i);
+  const perMonth = perMonthMatch
+    ? toRupees(perMonthMatch[0].slice(perMonthMatch[0].indexOf('₹')))
+    : null;
+  // `|| null` because the label group is optional now and an unmatched group is
+  // `undefined`, which reads as "not parsed" rather than "no label rendered".
+  const perMonthLabel = perMonthMatch ? perMonthMatch[1] || null : null;
 
   const priced = region.match(/₹\s?[\d,]+\s+₹\s?[\d,]+\s+(\d+)\s*%\s*off/i);
   if (priced) {
     const amounts = (priced[0].match(/₹\s?[\d,]+/g) || []).map(toRupees);
-    const perMonth = region.match(/(EMI|Subscription)\s+from\s*₹\s?([\d,]+)\s*\/?\s*mo/i);
     return {
       price: amounts[0],
       mrp: amounts[1],
       percentOff: Number(priced[1]),
-      perMonth: perMonth ? toRupees(perMonth[0].slice(perMonth[0].indexOf('₹'))) : null,
-      perMonthLabel: perMonth ? perMonth[1] : null,
+      perMonth,
+      perMonthLabel,
       region,
     };
   }
@@ -112,8 +135,8 @@ function parsePdpHeader(bodyText) {
     price: toRupees(single[0]),
     mrp: null,
     percentOff: null,
-    perMonth: null,
-    perMonthLabel: null,
+    perMonth,
+    perMonthLabel,
     region,
   };
 }
@@ -141,7 +164,21 @@ function parsePdpHeader(bodyText) {
 // explicit must never be asserted. Callers assert on what is present.
 function parsePlanBox(bodyText) {
   const flat = flatten(bodyText);
-  const start = flat.search(/Choose your plan/i);
+  // ANCHOR, measured 23 Sep 2026. "Choose your plan" no longer appears on any
+  // layout. The panel is revealed by "See Plans" (see utils/planPanel.js) and
+  // its own opening lines differ by payment mode, measured logged out:
+  //
+  //   BOTH     "Recommended Subscription Own it from Day 1 ..."
+  //   UPFRONT  "EMI plans Own it from Day 1. protection and buyback included"
+  //
+  // so "Own it from Day 1" is the phrase common to both, with "EMI plans" as a
+  // second anchor for the UPFRONT heading. The old copy stays as a third
+  // alternative so this survives if it returns.
+  //
+  // Still returns null when the panel has not been opened — that is the honest
+  // answer, and callers already treat null as "no plan box", rather than this
+  // half-parsing a region that is not the panel.
+  const start = flat.search(/Choose your plan|EMI plans|Own it from Day ?1/i);
   if (start < 0) return null;
 
   // Ends at the buy controls; on subscription products the section continues

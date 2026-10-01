@@ -294,6 +294,183 @@ two amounts, the second no larger" also describes the PDP header (price then
 struck MRP) and every adjacent pair in the buyback slider, and the block carries
 no heading, role, test id or stable class to scope a search to.
 
+### /all-products drops whole pages of the catalogue — OPEN DEFECT (2 Sep 2026)
+
+**This one is not confirmed-expected. It is a live, shopper-visible bug**, and
+unlike the two rulings below it has not been raised with anyone yet.
+
+The listing lazy-loads at `?page=N&limit=12`. Measured on a quiet origin, one
+worker, five consecutive loads of `/all-products`:
+
+| Rendered | Missing |
+|---|---|
+| 217 / 217 | — |
+| 217 / 217 | — |
+| 205 / 217 | API page 12 |
+| 193 / 217 | API pages 5 and 13 |
+| 180 / 217 | API pages 3, 5, 12 and the 1-item tail page 19 |
+
+The shortfall is always a **whole page of 12**, never a scattering of tiles.
+
+**The API was ruled out first, and it is clean.** Pages 1–19 at `limit=12` serve
+217 unique products, zero duplicates, stable ordering across repeat calls, and
+the client is observed *requesting every one of those pages* on every load. The
+response arrives and the render discards it — a lost state update in the
+infinite scroll, not a missing fetch and not rate limiting.
+
+The 12 products lost on one measured load were `iPhone 17 Pro Max`,
+`iPhone 17 Pro`, `iPhone Air`, `iPhone 17`, `iPhone 15`, `Galaxy Z Fold7`,
+`Galaxy Z Flip7`, `Pixel 10`, `iPad (A16) 11th Gen`, `AirPods Pro 3rd Gen`,
+`AirPods 4 (ANC)`, `AirPods 4` — one page of flagships, unreachable by browsing.
+They still resolve by direct URL and by search, which is why nothing else in the
+suite can see it: every other spec reaches a product through the API or a known
+slug.
+
+`regression/listing-completeness.spec.js` owns it. Three loads per run, failing
+if any of them is short, and it groups the misses **by API page** because a
+dropped page and a scattering of tiles are different defects with different
+fixes. `retries: 0` on purpose — a retry re-rolls the dice and reports the flaky
+pass.
+
+**Do not read `pricing-consistency`'s `SHORTFALL_TOLERANCE = 0.85` as evidence
+that 89% is healthy.** That constant answers a different question — "is this
+scrape complete enough for the sweeps below to mean anything?" — and it exists so
+a partial scrape does not fail six pricing tests for a reason that is not
+pricing. Reading it as a statement about the site is how this went unnoticed for
+a week. Leave it where it is and do not widen it.
+
+### Sold Out: a variant can be listed, priced, and unbuyable
+
+`data.variant.stock` and `data.variant.available` are on the PDP payload and
+were unread by anything in this repo until 2 Sep 2026. On that date 2 of 217
+listed products came back unavailable — `edge-70-fusion/MOTSMMOBH1YG73` and
+`the-aisle-trunk-cabin/MOKLULUGW1IWON`, both `stock: 0, available: false`.
+
+Both are still linked from the live listing, still priced, and still render a
+full plan box. The only thing between a shopper and an order for stock that does
+not exist is the state of one button.
+
+The page gets it right, and the behaviour is a **substitution, not an overlay**:
+
+| | Buy row |
+|---|---|
+| in stock | `Add to Cart` (enabled) and `Buy Now` (enabled) |
+| sold out | the same slots hold a **disabled** button labelled `Sold Out` |
+
+An upfront product swaps both buttons; a subscription product swaps its single
+Subscribe control. Everything else on the page — price, plan box, EMI ladder,
+buyback slider — renders exactly as it does in stock.
+
+`regression/stock-availability.spec.js` holds it, and **anchors on `Buy Now`,
+not on `Add to Cart`**, for the reason in the cart section below: the
+recommended-products carousel further down the PDP has its own `Add to Cart` and
+once put a ₹1,24,999 phone in the live cart. Carousel tiles carry no `Buy Now`.
+It carries a control case — an available product must render an enabled
+`Buy Now` — so "no buy control here" cannot pass on a page that failed to render.
+
+Availability is transient. The spec finds unavailable variants from the live API
+rather than hardcoding those two bpids, and **skips with a reason** when the
+whole catalogue is in stock. That skip is not a pass.
+
+### The listing row carries a whole price block, and a copy of the add-on list
+
+Both appeared on `GET /product-service/apps/products?page=N&limit=M` and were
+unverified against anything until 2 Sep 2026:
+
+```
+price: { mrp: 186999, mop: 178999, minEmi: 8369, discount: 4 }
+vas:   ["12 mo Device Protection", "Free Wireless Charger"]
+```
+
+**The catalogue is 241 products as of 16 Sep 2026**, up from the 217 recorded
+here on 2 Sep. Two more row fields have appeared since, neither asserted by
+anything yet:
+
+| Field | Seen on | Shape |
+|---|---|---|
+| `rating` | 33 / 241 rows | a number, `4` … `5` (e.g. `4.4`, `4.5`) |
+| `variant.tags[]` | 8 / 241 rows | `{id, name, bgHexColor, textHexColor, priority}` |
+
+`variant.tags[]` currently carries exactly one tag, `Pre-booking` — see the
+pre-booking section below, which `regression/prebooking.spec.js` does cover.
+`rating` is uncovered: nothing checks that the stars on a tile match the stars on
+the PDP, and 208 of 241 rows carry no rating at all.
+
+The listing endpoint returns its rows under **`data.items`**, not `data.products`.
+
+Measured exact across the sampled catalogue — do not re-derive:
+
+| Listing field | Comes from |
+|---|---|
+| `price.mop` / `price.mrp` | `upfront.price` / `upfront.cut_price` |
+| `price.discount` (the "% off" badge) | `upfront.off_on_amount` |
+| `price.minEmi` (the "EMI from ₹X/mo" line) | `cc.emi_amount` **when `cc` is populated** — see below |
+| `vas[]` | the `vas_name`s from `GET /api/apps/product-vas/:slug/:bpid` |
+
+**`cc` is frequently a block of zeroes, and `minEmi` does NOT come from it then.**
+Corrected 16 Sep 2026 — the row above used to say `minEmi` is `cc.emi_amount`
+"identical to top-level `emi_price`" with no qualification, and that is wrong for
+a large part of the catalogue. On Watch Ultra 4 the whole `cc` object reads
+`{emi_amount: 0, MOP: 0, MRP: 0, emi_option: []}` and `emi_price` is `0`, while
+the listing tile says **₹5,816/mo** — which is exactly
+`emi.emi_option[last].installment_amount` (24 mo). The **PDP renders ₹5,816 too**,
+under the "Credit Card EMI / All major cards" label, so the page falls back to the
+`emi` ladder and tile and PDP agree.
+
+So the real rule is: **`minEmi` is `cc.emi_amount` when `cc` is populated, and the
+longest-tenure `emi.emi_option[].installment_amount` when it is not.** This is not
+pre-booking-specific — ordinary products (the Yonex racquets, for instance) have a
+zeroed `cc` too.
+
+Do not report a zeroed `cc` alongside a non-zero tile as a pricing mismatch. It
+was chased as one on 16 Sep 2026 and the answer was step 4 of the diagnostic
+order — which field the UI is displaying — not arithmetic.
+
+`vas[]` is a **second copy** of a list that lives in the VAS record — 30 of 217
+rows carry one. A stale copy advertises a free charger on the tile that the
+product page then does not offer. `catalogue-integrity.spec.js` compares all
+four, and checks a sample of rows claiming *no* add-ons as well: a listing that
+under-reports is the direction that costs the shopper a benefit they were
+entitled to, and it is invisible if you only check the rows that claim one.
+
+### Pre-booking — LIVE since 16 Sep 2026, and now covered
+
+This section previously read "**No product enables it** — 0 of 217 on 2 Sep
+2026 ... find a product first." **That is out of date.** The catalogue produces
+the state now: **8 of 241** products are pre-booking, all Apple, all with
+`launchDate` 2026-09-18.
+
+The feature spans three payloads and adds a new key to each:
+
+```
+listing row   variant.tags[]  {name:"Pre-booking", bgHexColor:"#FF5722",
+                               textHexColor:"#FFFFFF", priority:1}
+PDP payload   product.isPrebookingAllow  = true
+              product.launchDate         = "2026-09-18T00:00:00.000Z"
+              product.normalOrderAccess  = "pre_booked_only"
+variant-      data.prebooking            = { amount: 99 }
+  pricing     data.normal_order_access   = "pre_booked_only"
+              data.can_place_normal_order = false
+```
+
+**`can_place_normal_order: false` is the business rule.** These are unreleased
+devices, so only a ₹99 reservation may be placed against them. The PDP enforces
+it the same way Sold Out does — by **substituting the buy row**: one
+`Pre-book Now` button plus a "Pre-booking Price ₹99" line, and **no
+`Add to Cart` or `Buy Now` at all**. Verified identical logged in and logged
+out; only the "Already pre-booked? Sign in to buy now" prompt differs.
+
+`regression/prebooking.spec.js` owns it, read-only — **it never clicks
+`Pre-book Now`**, which takes ₹99 and mints a real pre-booking. It anchors the
+absence assertion on `Buy Now` for the carousel reason above, and carries a
+control case so "no buy control here" cannot pass on a page that failed to
+render. `retries: 0`.
+
+**The ₹99 renders about a second AFTER `Pre-book Now` does.** Measured: at the
+instant the button is visible the body contains no `99` at all. Reading the page
+text the moment the button resolves reports every product as quoting nothing —
+that is the test being early, not the page being wrong. Poll for the amount.
+
 ### BytePe Exchange dismisses itself, or nothing else on the page is clickable
 
 Device trade-in shipped between 20 and 26 Aug 2026. On cart and Review Order it
@@ -326,6 +503,67 @@ removed, and `api/pricing-api.spec.js` now carries an explicit "do not re-add a
 guard here" note at that spot. The per-fixture `test.skip(!best, ...)` calls are
 the intended behaviour. Nothing in the checkout pricing suite reads `best_price`,
 and it must never fail a run or be reported as a pricing defect.
+
+### A PDP that cannot price shows ₹0 and proceeds — CONFIRMED EXPECTED (27 Aug 2026)
+
+**Do not re-file this as a blocker.** It was raised as one and DevOps have ruled
+on it, and the ruling is now measured to be correct.
+
+When `variant-pricing` does not return a usable body, an **upfront** PDP renders
+no headline price, `EMI From /mo` with no amount, and
+
+```
+₹0 x undefinedmo
+```
+
+in the pre-selected plan, with **Add to Cart and Buy Now still enabled**. All of
+that is intended: the fallback is ₹0 and the flow is meant to go ahead, because
+nothing downstream trusts the PDP for price.
+
+**The zero does not carry, and that is the whole basis of the ruling.** Measured
+end to end with the pricing call blocked for the *entire* journey and the cart
+API left alone (Odyssey Large Hard Luggage 110L, true `upfront.price` ₹6,399;
+re-confirmed on Rover Pro Cabin Hard Luggage at ₹5,899):
+
+| Hop | What it shows |
+|---|---|
+| PDP | `₹0 x undefinedmo`, no price, buy controls live |
+| `POST /api/cart` | 200, `purchase_mode: CC_EMI` |
+| cart API line | `MOP` ₹6,399 — **correct** |
+| cart page total | moved by exactly ₹6,399 |
+| Review Order | identical to cart, no placeholder anywhere |
+
+Cart and Review Order re-price **server-side from `/api/cart`** and never call
+`variant-pricing` — it stayed blocked throughout and neither page needed it.
+
+Four failure modes reproduce it identically — 429, 500, a network abort, and a
+clean **200 with `data: {}`**. That last one is why "it is just rate limiting" is
+wrong: the client has no unpriced state at all and formats whatever it got.
+
+Scope is **upfront-layout products only** — 16 of 16 sampled. Subscription-layout
+products still price and render no placeholder. Do not report it as
+catalogue-wide.
+
+`regression/pdp-pricing-failure.spec.js` holds the guard that keeps this
+non-blocking: *the price the PDP could not show is still the price cart and
+Review Order ask for*. **If that test ever fails, this stops being cosmetic.**
+Nothing else in the suite proves it — every other pricing spec compares surfaces
+that were all priced normally. It adds one real cart line per run and pins
+`retries: 0` so a retry cannot add a second.
+
+**The literal `undefined` in the tenure is accepted too**, ruled the same day.
+Nothing asserts its absence. What the suite still holds the page to is that an
+unpriced plan box quotes **zero and never a number** — ₹0 is acceptable because
+it is visibly empty, whereas a stale or invented instalment (`₹276 x 24mo` on a
+page whose pricing call just died) is a figure the shopper was quoted that
+nothing substantiates, and that would be a defect under the same reasoning that
+cleared the ₹0.
+
+Two assertions were written here and removed, both because they argued with a
+decision that had been taken. Do **not** re-add either:
+
+- that the buy controls must be disabled while the page is unpriced
+- that no `undefined` may reach the copy
 
 ### Device Protection: ₹1 vs ₹2,001 — CONFIRMED EXPECTED (20 Aug 2026)
 
@@ -435,6 +673,58 @@ mis-parsing quietly. Expect to name real labels in `COMPONENT_PATTERNS` in
 checkout pricing suite reads it, and it must never fail a run or be reported as
 a pricing defect.
 
+### The PDP buy row was redesigned — "Add to Cart" is now an icon (16 Sep 2026)
+
+**Confirmed intentional.** Not a defect — but it broke every spec that added a
+product, so the measured contract is recorded here. Helpers: `utils/buyRow.js`.
+
+The buy row is a bar holding the selected plan's figure and, on the right, up to
+two controls:
+
+```
+[ EMI  ₹1,770 x 24mo ]                     [ 🛒 ]  [ Buy Now ]
+```
+
+The cart control is **icon-only** — 44×44, no text at all:
+
+```html
+<button aria-label="Add to cart"><svg data-testid="AddShoppingCartIcon"></button>
+```
+
+So every `getByRole('button', { name: 'Add to Cart' })` in this repo stopped
+matching, and the failures all read as a timeout on a control that is plainly on
+screen. Note the lower-case **c** in `Add to cart` — the old title-case name
+matches nothing now, so asserting its ABSENCE passes vacuously on every product.
+
+**Which products carry it.** Measured across the catalogue, logged out:
+
+| `prodPaymentMode` | pre-booking | Add to cart | Buy Now | Pre-book Now |
+|---|---|---|---|---|
+| `UPFRONT` | no | **1** | 1 | 0 |
+| `BOTH` | no | **0** | 1 | 0 |
+| `UPFRONT` | yes | 0 | 0 | 1 |
+
+The cart icon is an **UPFRONT-only** affordance. A subscription-capable (`BOTH`)
+product offers Buy Now alone, and a pre-booking product offers neither. So
+**"the first product on `/all-products`" is no longer addable** — the listing
+now sorts pre-booking Apple devices to the front. Pick by payment mode from the
+API instead: `rowOffersAddToCart(row)` in `utils/buyRow.js`.
+
+**Keep the structural anchor.** `clickAddToCart(page)` takes the cart control
+that appears BEFORE `Buy Now` in document order, not the first match by name.
+The aria-label looked unique on every product sampled, but those pages had no
+recommended-products carousel mounted (`a[href*="/pd/"]` count 0 at the bottom),
+so that is **not** evidence the name is unique in general — and CLAUDE.md
+already records what a carousel mis-match cost: a ₹1,24,999 phone in a live cart.
+
+Why `aria-label` over `svg[data-testid="AddShoppingCartIcon"]`: the testid is
+MUI's own and tied to the glyph, so swapping the icon silently breaks it. The
+aria-label is the name published to assistive technology.
+
+Do not confuse it with the **header** cart control, which is a different button
+carrying the text `Cart` and a `ShoppingCartOutlinedIcon`. `getByRole('button',
+{ name: /cart/i })` matches both.
+
 ### Cart facts that cost a run each
 
 - **"Price (N Items)" is a sum of MRPs, not selling prices.** Adding a ₹1,575
@@ -457,6 +747,62 @@ a pricing defect.
   site's own verdict; a label can flip for reasons unrelated to your click, and
   an early click is silently inert because the button renders before its handler
   is bound.
+
+### The header renders twice on Sub Home routes — OPEN DEFECT (16 Sep 2026)
+
+**Not confirmed-expected. Not raised with anyone yet.** It broke `npm run auth`
+outright, which is how it was found.
+
+Measured logged out, five routes:
+
+| Route | `<header>` | `<nav>` | header buttons |
+|---|---|---|---|
+| `/` | **2** | **2** | **12** |
+| `/home/subscription` | **2** | **2** | **12** |
+| `/home/emi-store` | **2** | **2** | **12** |
+| `/all-products` | 1 | 0 | 5 |
+| `/about-us` | 1 | 1 | 6 |
+| `/pd/<slug>/<bpid>` | 1 | 0 | 5 |
+
+It is the three **Sub Home** routes, the ones carrying the CMS tab strip. Both
+copies are real and reachable: same parent, `position: fixed`, `z-index: 1100`,
+identical `0,0 1280x77` rects, identical text, **neither `aria-hidden` nor
+`inert`**, both `pointer-events: auto`. The accessibility tree exposes **2 banner
+landmarks and 2 navigation landmarks**.
+
+Visually they stack exactly, so a sighted shopper sees one header and their click
+lands on the copy on top. The cost falls on assistive technology — the whole
+primary navigation is announced twice — and on anything driving the page.
+
+**This is why `homePage.loginLink` is `.last()` and not `.first()`.** `.first()`
+resolves the copy UNDERNEATH, and every click on it is swallowed by its own twin:
+Playwright reports `<span>Login</span> ... subtree intercepts pointer events` on
+an element the screenshot plainly shows. **`force: true` does not fix it** — it
+skips the actionability check, not the browser's hit-testing, so the click still
+lands on the copy above. `.last()` stays correct once the duplication is gone,
+because it is then the only match.
+
+`regression/header-duplication.spec.js` owns it. It asserts the **correct**
+behaviour and therefore **fails today** — that is deliberate, not a broken test.
+It proves each route rendered a header at all before checking there is only one,
+so it cannot pass on a page that failed to load. `retries: 0`.
+
+### Login is a right-anchored Drawer, not a Dialog
+
+Changed by 16 Sep 2026. `getByRole('dialog')` finds **nothing** — the panel is a
+`MuiDrawer-paperAnchorRight` and carries no `dialog` role. Its contents:
+
+```
+Enter mobile number to continue / Pay Less, Flex more!
+[ +91 ] [ Mobile Number* ]        <- maxlength 10, inputmode numeric
+By continuing, I agree to the Terms of Use & Privacy Policy
+[ CONTINUE ]                      <- type=submit, inside a <form>
+```
+
+The field **does** have a proper `<label for>`, so
+`getByRole('textbox', { name: 'Mobile Number*' })` still resolves it and needed no
+change. When that locator times out, the drawer never opened — look at the click,
+not the field.
 
 ### Session lifetime
 

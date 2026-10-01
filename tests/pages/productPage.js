@@ -111,8 +111,46 @@ class ProductPage {
       .click();
   }
 
+  // REWRITTEN 23 Sep 2026 — there is no "Subscribe" button any more.
+  //
+  // The PDP redesign removed it. A subscription-capable (BOTH) product now
+  // renders ONE purchase control, "Buy Now", and the plan is chosen first from
+  // an inline card that reads:
+  //
+  //     Subscription
+  //     Own it from Day 1
+  //
+  // Measured on iphone-17-pro-max, logged in: selecting that card and then
+  // pressing Buy Now lands on
+  //
+  //     /review/subscribe?payment_type=subscribe&...&plan=CC_EMI_SUBS&source=pdp
+  //
+  // i.e. the subscription Review Order — the same destination the old Subscribe
+  // button reached. So the flow survives; only the controls moved.
+  //
+  // NO PLAN CLICK IS NEEDED, and adding one broke this.
+  //
+  // On a BOTH product the Subscription plan is the pre-selected "Recommended"
+  // one, so Buy Now IS the subscribe control. Measured twice on
+  // iphone-17-pro-max: pressing Buy Now with nothing else clicked lands on
+  //
+  //     /review/subscribe?...&pay_via=SUBSCRIPTION_CC&plan=CC_EMI_SUBS&source=pdp
+  //
+  // A first version of this clicked the inline "Subscription" card first, on the
+  // assumption the plan had to be chosen. That is unnecessary, and there are TWO
+  // visible `^Subscription$` nodes on the page — the header nav link to
+  // /home/subscription and the plan card — so the extra click was a coin flip
+  // that cost both coupon specs a run, timing out on a Buy Now that was no
+  // longer reachable.
+  //
+  // The caller asserts the destination (both coupon specs wait for Review
+  // Order), so a product that is NOT subscription-first fails there, loudly,
+  // rather than being silently reviewed as an upfront purchase here.
   async clickSubscribe() {
-    await this.subscribeButton.click({ timeout: 15000 });
+    await this.page
+      .getByRole('button', { name: /^buy now$/i })
+      .first()
+      .click({ timeout: 20000 });
   }
 
   async enterMobileNumberAndSendOtp(mobileNumber) {

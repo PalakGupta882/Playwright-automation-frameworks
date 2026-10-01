@@ -1,0 +1,71 @@
+{
+  "product": {
+    "tests": [
+      "tests/regression/data-driven-products.spec.js",
+      "tests/regression/product-search.spec.js",
+      "tests/regression/product-pricing.spec.js",
+      "tests/regression/listing-completeness.spec.js"
+    ]
+  },
+
+  "pricing": {
+    "tests": [
+      "tests/regression/product-pricing.spec.js",
+      "tests/regression/pricing-consistency.spec.js",
+      "tests/regression/pdp-pricing-failure.spec.js",
+      "tests/regression/pincode-based-pricing.spec.js"
+    ]
+  },
+
+  "checkout": {
+    "tests": [
+      "tests/regression/checkout-flow.spec.js",
+      "tests/regression/emi-checkout-flow.spec.js",
+      "tests/regression/pricing-checkout-consistency.spec.js"
+    ]
+  },
+
+  "emi": {
+    "tests": [
+      "tests/regression/cardless-emi.spec.js",
+      "tests/regression/emi-checkout-flow.spec.js",
+      "tests/regression/emi-plan-config.spec.js",
+      "tests/regression/emi-store-flow.spec.js"
+    ]
+  },
+
+  "cart": {
+    "tests": [
+      "tests/regression/cart.spec.js"
+    ]
+  },
+
+  "coupon": {
+    "tests": [
+      "tests/regression/coupon-valid.spec.js",
+      "tests/regression/coupon-invalid.spec.js"
+    ]
+  },
+
+  "account": {
+    "tests": [
+      "tests/regression/account.spec.js",
+      "tests/regression/address-management.spec.js",
+      "tests/regression/order-history.spec.js"
+    ]
+  },
+
+  "search": {
+    "tests": [
+      "tests/regression/search.spec.js",
+      "tests/regression/product-search.spec.js"
+    ]
+  },
+
+  "device-protection": {
+    "tests": [
+      "tests/regression/device-protection-consistency.spec.js",
+      "tests/regression/device-protection-multi-product.spec.js"
+    ]
+  }
+}

@@ -159,6 +159,40 @@ test.describe('Sub home page tab strip', () => {
 
       expect(off, `the ${width} strip is off its design spec`).toEqual([]);
     });
+
+    // TCB-006/007 read tiles[0] only, because the spec is one set of numbers.
+    // So a strip where ONE tile is the wrong size passes them — and a wrong-size
+    // tile is the likelier real-world fault of the two: a long label wraps, or
+    // one icon loads at its natural dimensions because its styled width did not
+    // apply. Added 27 Aug 2026 alongside the desktop drift recorded in
+    // tests/data/subHomeFeature.js; it is a separate case on purpose, so the two
+    // failures never get read as one.
+    //
+    // Non-vacuous: it asserts there is more than one tile before comparing them,
+    // since "all tiles agree" is trivially true of a strip with one.
+    test(`TCB-00${width === 'mobile' ? 6 : 7}b: every tile is the same size at ${width}`, async ({
+      subHomeTabsPage,
+    }) => {
+      await subHomeTabsPage.useViewport(width);
+      await subHomeTabsPage.open('/');
+      const tiles = await subHomeTabsPage.tileMetrics();
+
+      expect(tiles.length, `the ${width} strip rendered nothing to compare`).toBeGreaterThan(1);
+
+      const key = (t) => `${t.w}x${t.h} icon ${t.iconW}x${t.iconH} label ${t.fontSize}`;
+      const reference = key(tiles[0]);
+      const odd = tiles
+        .filter((t) => key(t) !== reference)
+        .map((t) => `${t.label}: ${key(t)}`);
+
+      console.log(`${width}: ${tiles.length} tiles, reference ${reference}`);
+      expect(
+        odd,
+        `these ${width} tiles do not match the rest of the strip (reference "${reference}"). ` +
+          'One tile at a different size is a visual break the design-spec cases cannot see, ' +
+          'because they only ever measure the first tile.'
+      ).toEqual([]);
+    });
   }
 
   // ---- Data binding & ordering (TCB-008..015) -------------------------

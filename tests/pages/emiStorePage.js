@@ -42,12 +42,28 @@ class EmiStorePage {
       .getByRole('button', { name: /^(buy now|subscribe)$/i })
       .first();
 
-    // "Choose your plan" box. Text locators, not roles: the plan rows are MUI
-    // boxes with hashed class names (see productsListPage.selectBuyUpfrontPlan,
-    // which has to reach for `.MuiBox-root.mui-1eub90p` and dispatchEvent),
-    // so there is no stable role or test id to anchor to. The wording below is
-    // what docs/cardless-emi.md recorded off the live page on 4 Aug 2026.
-    this.planBoxHeading = page.getByText(/choose your plan/i).first();
+    // The plan box. Text locators, not roles: the plan rows are MUI boxes with
+    // hashed class names (see productsListPage.selectBuyUpfrontPlan, which has
+    // to reach for `.MuiBox-root.mui-1eub90p` and dispatchEvent), so there is
+    // no stable role or test id to anchor to.
+    //
+    // "CHOOSE YOUR PLAN" IS GONE, 16 Sep 2026. The heading recorded off the
+    // live page on 4 Aug 2026 no longer renders on any product — measured on
+    // UPFRONT and BOTH products alike — so this matched nothing and every
+    // caller failed waiting on a box that was fully rendered.
+    //
+    // Anchored on "Pay in Full" instead, paired with its own subtitle "All
+    // payment modes". That is the CLAUDE.md invariant — Pay in Full / Buy
+    // Upfront appear on EVERY product, whatever its payment mode — and it is
+    // the "amount and its label together" pattern the price parsers already
+    // use. Present on 4 of 4 products sampled across both modes.
+    //
+    // Not anchored on "Subscription": that string is also the header nav link,
+    // so it matches on every page including ones with no plan box at all.
+    this.planBoxHeading = page
+      .getByText(/pay in full/i)
+      .filter({ visible: true })
+      .first();
 
     // One alternation rather than three locators: which EMI plans a product
     // shows depends on its emi_option types (NCEMI / LCEMI / EMI), and every

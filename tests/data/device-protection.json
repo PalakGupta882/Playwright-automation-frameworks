@@ -2,46 +2,70 @@
   "generatedFrom": "PDP \"BytePe Secure ₹list ₹paid\" text + by-slug prodPaymentMode",
   "note": "Device Protection is priced per product and is NOT in the pricing API — upfront.vas_amount is 0 even where the PDP advertises a charge.",
   "sampled": 24,
-  "withProtection": 2,
+  "withProtection": 1,
   "distinctPaidPrices": [
-    1
+    999
   ],
   "products": [
     {
-      "slug": "nomad-ii-smallest-100w-gan-charger",
-      "bpid": "STUACACCB8QP4G",
+      "slug": "oblique-pro-cabin-hard-luggage-54l-20-inch",
+      "bpid": "ASSLULUGZOW1QE",
       "prodPaymentMode": "UPFRONT",
-      "price": 3499,
+      "price": 5899,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     },
     {
-      "slug": "roam-10000mah-compact-powerbank-with-20w-type-c-output",
-      "bpid": "STUACACCQ9DAQI",
+      "slug": "rover-pro-cabin-hard-luggage-50l-20-inch-55cm",
+      "bpid": "ASSLULUGXUVTVS",
       "prodPaymentMode": "UPFRONT",
-      "price": 1200,
+      "price": 5899,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     },
     {
-      "slug": "galaxy-magnetic-wireless-battery-pack",
-      "bpid": "SAMACACC13UO7X",
+      "slug": "rover-laptop-backpack-24l-156-inch",
+      "bpid": "ASSLULUG3ME63I",
+      "prodPaymentMode": "UPFRONT",
+      "price": 2899,
+      "deviceProtectionList": null,
+      "deviceProtectionPaid": null
+    },
+    {
+      "slug": "roam-20000mah-compact-powerbank-with-20w-type-c-output",
+      "bpid": "STUACACC1KMJUB",
+      "prodPaymentMode": "UPFRONT",
+      "price": 1575,
+      "deviceProtectionList": null,
+      "deviceProtectionPaid": null
+    },
+    {
+      "slug": "watch-ultra-3-with-alpine-loop",
+      "bpid": "APPSMSMAW3WACM",
+      "prodPaymentMode": "UPFRONT",
+      "price": 83900,
+      "deviceProtectionList": null,
+      "deviceProtectionPaid": null
+    },
+    {
+      "slug": "galaxy-z-flip8-5g",
+      "bpid": "SAMSAMOBU4UI0G",
+      "prodPaymentMode": "BOTH",
+      "price": 124999,
+      "deviceProtectionList": 12499,
+      "deviceProtectionPaid": 999
+    },
+    {
+      "slug": "2-in-1-hand-held-vacuum-cleaner-13500-pa-powerful-suction",
+      "bpid": "EURHOAPPU7TVA8",
       "prodPaymentMode": "UPFRONT",
       "price": 2999,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     },
     {
-      "slug": "galaxy-buds4",
-      "bpid": "SAMWIWIRM6T0P9",
-      "prodPaymentMode": "UPFRONT",
-      "price": 11999,
-      "deviceProtectionList": null,
-      "deviceProtectionPaid": null
-    },
-    {
-      "slug": "note-15-se",
-      "bpid": "XIASMMOB7XSCQS",
+      "slug": "sense-2-health-and-fitness-watch",
+      "bpid": "FITSMSMAWF4ME4",
       "prodPaymentMode": "UPFRONT",
       "price": 22999,
       "deviceProtectionList": null,
@@ -56,50 +80,42 @@
       "deviceProtectionPaid": null
     },
     {
-      "slug": "phone-4b",
-      "bpid": "NOTSMMOBK25WT5",
-      "prodPaymentMode": "BOTH",
-      "price": 31999,
-      "deviceProtectionList": 8000,
-      "deviceProtectionPaid": 1
-    },
-    {
-      "slug": "swift-brew-coffee-machine",
-      "bpid": "WONHOAPP4EFR5U",
+      "slug": "monitor-iii-active-noise-canceling-over-ear-bluetooth-headphones",
+      "bpid": "MARAUAUDAJGS1K",
       "prodPaymentMode": "UPFRONT",
-      "price": 1399,
+      "price": 28499,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     },
     {
-      "slug": "cmf-by-nothing-buds-pro",
-      "bpid": "NOTWIWIRN4D7OB",
+      "slug": "classic-hot-air-fryer-4l-1300-w",
+      "bpid": "KENHOAPPQUMCQU",
       "prodPaymentMode": "UPFRONT",
       "price": 2899,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     },
     {
-      "slug": "cmf-by-nothing-33w-type-c-power-fast-charger-adapter",
-      "bpid": "NOTACACCDWH2EV",
+      "slug": "cmf-by-nothing-100-w-power-gan-5-a-3-port-mobile-charger-with-detachable-cable",
+      "bpid": "NOTACACC4QAVJ9",
       "prodPaymentMode": "UPFRONT",
-      "price": 1199,
+      "price": 3899,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     },
     {
-      "slug": "aisle-trunk-check-in-luggage-trolley-bag-65cm-70l",
-      "bpid": "MOKLULUGKS79IQ",
+      "slug": "aisle-trunk-set-of-3-luggage-trolley-bag",
+      "bpid": "MOKLULUGNXXE51",
       "prodPaymentMode": "UPFRONT",
-      "price": 5899,
+      "price": 14799,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     },
     {
-      "slug": "the-transit-cabin-pro",
-      "bpid": "MOKLULUGN9TTHN",
+      "slug": "galaxy-watch-8",
+      "bpid": "SAMSMSMAAUGA9Z",
       "prodPaymentMode": "UPFRONT",
-      "price": 6499,
+      "price": 36999,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     },
@@ -112,90 +128,74 @@
       "deviceProtectionPaid": null
     },
     {
-      "slug": "airwrap-multi-styler-and-dryer-in-vinca-blue-and-topaz",
-      "bpid": "DYSPEPERZVER53",
+      "slug": "cy-23-big-ball-bagless-dry-vacuum-cleaner",
+      "bpid": "DYSHOHOMAR6LLI",
       "prodPaymentMode": "UPFRONT",
-      "price": 45900,
+      "price": 25900,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     },
     {
-      "slug": "15x-5g",
-      "bpid": "REASMMOB3YERK7",
+      "slug": "c83-5g",
+      "bpid": "REASMMOBWJ0D1Q",
       "prodPaymentMode": "UPFRONT",
-      "price": 24999,
+      "price": 16499,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     },
     {
-      "slug": "stanmore-iii-80w-bluetooth-speaker",
-      "bpid": "MARAUAUD959C58",
-      "prodPaymentMode": "UPFRONT",
-      "price": 31499,
-      "deviceProtectionList": null,
-      "deviceProtectionPaid": null
-    },
-    {
-      "slug": "v70-fe-5g",
-      "bpid": "VIVSMMOBSVY3GP",
-      "prodPaymentMode": "UPFRONT",
-      "price": 40999,
-      "deviceProtectionList": null,
-      "deviceProtectionPaid": null
-    },
-    {
-      "slug": "luma-pureglas-air-fryer",
-      "bpid": "EDTHOHOM51QZCI",
-      "prodPaymentMode": "UPFRONT",
-      "price": 11999,
-      "deviceProtectionList": null,
-      "deviceProtectionPaid": null
-    },
-    {
-      "slug": "oppo-find-x9-5g",
-      "bpid": "OPPSMMOBS8V0BR",
-      "prodPaymentMode": "UPFRONT",
-      "price": 73499,
-      "deviceProtectionList": null,
-      "deviceProtectionPaid": null
-    },
-    {
-      "slug": "apple-pencil-usb-c",
-      "bpid": "APPACMOBXE7OMR",
-      "prodPaymentMode": "UPFRONT",
-      "price": 7500,
-      "deviceProtectionList": null,
-      "deviceProtectionPaid": null
-    },
-    {
-      "slug": "20w-usb-c-power-adapter",
-      "bpid": "APPACMOBK1OGHY",
-      "prodPaymentMode": "UPFRONT",
-      "price": 1890,
-      "deviceProtectionList": null,
-      "deviceProtectionPaid": null
-    },
-    {
-      "slug": "iphone-17e",
-      "bpid": "APPSMMOBQKQG2P",
+      "slug": "phone-4a-pro-5g",
+      "bpid": "NOTSMMOB07ED6M",
       "prodPaymentMode": "BOTH",
-      "price": 59900,
-      "deviceProtectionList": 8000,
-      "deviceProtectionPaid": 1
-    },
-    {
-      "slug": "3-in-1-led-face-mask",
-      "bpid": "PROPEPER06G267",
-      "prodPaymentMode": "UPFRONT",
-      "price": 2199,
+      "price": 47499,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     },
     {
-      "slug": "earpods-usb-c",
-      "bpid": "APPACMOBUK4GAM",
+      "slug": "ipad-air-m4",
+      "bpid": "APPTATABPHRZTF",
       "prodPaymentMode": "UPFRONT",
-      "price": 1800,
+      "price": 83500,
+      "deviceProtectionList": null,
+      "deviceProtectionPaid": null
+    },
+    {
+      "slug": "airpods-max-2",
+      "bpid": "APPWIWIRVJP094",
+      "prodPaymentMode": "UPFRONT",
+      "price": 66900,
+      "deviceProtectionList": null,
+      "deviceProtectionPaid": null
+    },
+    {
+      "slug": "macbook-pro-m5-pro",
+      "bpid": "APPLALAPOB2RJV",
+      "prodPaymentMode": "UPFRONT",
+      "price": 284900,
+      "deviceProtectionList": null,
+      "deviceProtectionPaid": null
+    },
+    {
+      "slug": "reno15-pro-mini-5g",
+      "bpid": "OPPSMMOB8OG5IH",
+      "prodPaymentMode": "UPFRONT",
+      "price": 58499,
+      "deviceProtectionList": null,
+      "deviceProtectionPaid": null
+    },
+    {
+      "slug": "marshall-emberton-iii",
+      "bpid": "MARAUAUDQXFDP3",
+      "prodPaymentMode": "UPFRONT",
+      "price": 17099,
+      "deviceProtectionList": null,
+      "deviceProtectionPaid": null
+    },
+    {
+      "slug": "airpods-4-with-anc",
+      "bpid": "APPWIWIRVLTBNE",
+      "prodPaymentMode": "UPFRONT",
+      "price": 16900,
       "deviceProtectionList": null,
       "deviceProtectionPaid": null
     }
