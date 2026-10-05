@@ -33,7 +33,7 @@ const { BASE_URL, URLS, TIMEOUTS } = require('../data/constants');
 const { assertFreshSession } = require('../utils/session');
 const { writesAllowed, writeSkipReason } = require('../utils/writes');
 const { watchCreateOrder, readCreateOrder, createOrderFailure } = require('../utils/createOrder');
-const { orderContinueButton } = require('../utils/orderContinue');
+const { orderContinueButton, cartContinueButton } = require('../utils/orderContinue');
 const { openCart, dismissExchangeDialog } = require('../utils/cartNav');
 const { ProductsListPage } = require('../pages/productsListPage');
 const { parsePdpHeader, parseOrderSummary, toRupees } = require('../utils/priceText');
@@ -606,10 +606,7 @@ test.describe('Pricing consistency through checkout', () => {
     // true, and there is no add-to-cart endpoint to seed one from here.
     expect(cart.itemCount, 'the cart is empty, so there is nothing to carry into review').toBeGreaterThan(0);
 
-    await page
-      .getByRole('button', { name: /^continue$/i })
-      .first()
-      .click({ timeout: TIMEOUTS.action });
+    await (await cartContinueButton(page)).click({ timeout: TIMEOUTS.action });
     await page.waitForURL(new RegExp(URLS.review), { timeout: 60000 });
     await dismissExchangeDialog(page);
 
@@ -682,10 +679,7 @@ test.describe('Pricing consistency through checkout', () => {
       const cart = await readSummary(page, 'cart');
       expect(cart.itemCount, 'the cart is empty — nothing to check out').toBeGreaterThan(0);
 
-      await page
-        .getByRole('button', { name: /^continue$/i })
-        .first()
-        .click({ timeout: TIMEOUTS.action });
+      await (await cartContinueButton(page)).click({ timeout: TIMEOUTS.action });
       await page.waitForURL(new RegExp(URLS.review), { timeout: 60000 });
       await dismissExchangeDialog(page);
 

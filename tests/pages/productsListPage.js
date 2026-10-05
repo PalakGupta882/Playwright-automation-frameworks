@@ -130,8 +130,12 @@ class ProductsListPage {
     return clickAddToCart(this.page);
   }
 
+  // No .first(): strict mode fails loudly on two matches instead of clicking
+  // whichever comes first. Only demos/full-demo-flow calls this. Since the 16 Sep
+  // buy-row redesign the cart control is an icon (utils/buyRow.js) and the
+  // transient "Go to Cart" label may no longer render at all — unmeasured.
   async clickGoToCart() {
-    await this.page.getByRole('button', { name: 'Go to Cart' }).first().click({ timeout: 15000 });
+    await this.page.getByRole('button', { name: 'Go to Cart' }).click({ timeout: 15000 });
   }
 }
 

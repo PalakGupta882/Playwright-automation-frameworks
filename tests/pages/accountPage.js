@@ -69,7 +69,11 @@ class AccountPage {
       state: page.getByPlaceholder('State'),
     };
 
-    this.saveButton = page.getByRole('button', { name: /save\s*&\s*proceed/i }).first();
+    // No .first(): measured 5 Oct 2026, the add form renders exactly one
+    // SAVE & PROCEED (1 total, 1 visible). Playwright's strict mode then fails
+    // loudly if a second ever appears, instead of .first() silently saving
+    // through whichever comes first in the DOM.
+    this.saveButton = page.getByRole('button', { name: /save\s*&\s*proceed/i });
 
     // Per-card controls. See the header note for why these key off the icon's
     // data-testid rather than an accessible name.

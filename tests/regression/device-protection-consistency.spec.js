@@ -37,7 +37,7 @@ const { assertFreshSession } = require('../utils/session');
 const { writesAllowed, writeSkipReason } = require('../utils/writes');
 const { watchCreateOrder, readCreateOrder, createOrderFailure } = require('../utils/createOrder');
 const { openCart, dismissExchangeDialog } = require('../utils/cartNav');
-const { orderContinueButton } = require('../utils/orderContinue');
+const { orderContinueButton, cartContinueButton } = require('../utils/orderContinue');
 const { ProductPage } = require('../pages/productPage');
 const {
   parsePricingBreakdown,
@@ -249,8 +249,8 @@ test.describe('Device Protection pricing consistency through checkout', () => {
     assertAddsUp(cart, testInfo);
 
     // Step 2 — Review Order.
-    const continueFromCart = page.getByRole('button', { name: /^continue$/i }).filter({ visible: true });
-    await continueFromCart.first().click({ timeout: TIMEOUTS.action });
+    const continueFromCart = await cartContinueButton(page);
+    await continueFromCart.click({ timeout: TIMEOUTS.action });
     await page.waitForURL(new RegExp(URLS.review), { timeout: 60000 });
     await dismissExchangeDialog(page);
 
@@ -351,11 +351,7 @@ test.describe('Device Protection pricing consistency through checkout', () => {
     await openCart(page);
     await dismissExchangeDialog(page);
 
-    await page
-      .getByRole('button', { name: /^continue$/i })
-      .filter({ visible: true })
-      .first()
-      .click({ timeout: TIMEOUTS.action });
+    await (await cartContinueButton(page)).click({ timeout: TIMEOUTS.action });
     await page.waitForURL(new RegExp(URLS.review), { timeout: 60000 });
     await dismissExchangeDialog(page);
 
@@ -664,11 +660,7 @@ test.describe('Device Protection pricing consistency through checkout', () => {
       const cart = await readPricing(page, 'cart');
       expect(cart.itemCount, 'the cart is empty — nothing to check out').toBeGreaterThan(0);
 
-      await page
-        .getByRole('button', { name: /^continue$/i })
-        .filter({ visible: true })
-        .first()
-        .click({ timeout: TIMEOUTS.action });
+      await (await cartContinueButton(page)).click({ timeout: TIMEOUTS.action });
       await page.waitForURL(new RegExp(URLS.review), { timeout: 60000 });
       await dismissExchangeDialog(page);
 

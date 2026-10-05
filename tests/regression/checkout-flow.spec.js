@@ -33,6 +33,7 @@
 //    free, and is deliberately out of scope here — see the note at the end.
 
 const { test, expect } = require('../fixtures/pageFixtures');
+const { cartContinueButton } = require('../utils/orderContinue');
 const { CartPage } = require('../pages/cartPage');
 const { BASE_URL, URLS, TIMEOUTS } = require('../data/constants');
 const { assertFreshSession } = require('../utils/session');
@@ -177,10 +178,7 @@ test.describe('Checkout flow (stops before payment)', () => {
 
     await test.step('3. Continue moves from cart to Review Order', async () => {
       await dismissExchangeDialog(page);
-      await page
-        .getByRole('button', { name: /^continue$/i })
-        .first()
-        .click({ timeout: TIMEOUTS.action });
+      await (await cartContinueButton(page)).click({ timeout: TIMEOUTS.action });
 
       await page.waitForURL(new RegExp(URLS.review), { timeout: 60000 });
       await dismissExchangeDialog(page);

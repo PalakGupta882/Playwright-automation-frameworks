@@ -29,6 +29,7 @@
 // best_price is not read anywhere here. It is intentionally disabled.
 
 const { test, expect } = require('../fixtures/pageFixtures');
+const { cartContinueButton } = require('../utils/orderContinue');
 const { BASE_URL, URLS, TIMEOUTS } = require('../data/constants');
 const { assertFreshSession } = require('../utils/session');
 const { openCart, dismissExchangeDialog } = require('../utils/cartNav');
@@ -576,11 +577,7 @@ test.describe('Device Protection is charged per product', () => {
         `  lines: ${JSON.stringify(protectedLines, null, 1)}`
     ).toBe(summedVas);
 
-    await page
-      .getByRole('button', { name: /^continue$/i })
-      .filter({ visible: true })
-      .first()
-      .click({ timeout: TIMEOUTS.action });
+    await (await cartContinueButton(page)).click({ timeout: TIMEOUTS.action });
     await page.waitForURL(new RegExp(URLS.review), { timeout: 60000 });
     await dismissExchangeDialog(page);
 

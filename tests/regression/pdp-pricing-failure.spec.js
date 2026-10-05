@@ -69,6 +69,7 @@
 // decision that has been taken.
 
 const { test, expect } = require('../fixtures/pageFixtures');
+const { cartContinueButton } = require('../utils/orderContinue');
 const { BASE_URL, BASE_API_URL, URLS, TIMEOUTS } = require('../data/constants');
 const { getWithRetry } = require('../utils/apiRetry');
 const { assertFreshSession } = require('../utils/session');
@@ -471,10 +472,7 @@ test.describe('a PDP that could not price still charges the right amount', () =>
       `adding a ₹${truePrice} product moved the cart total by ₹${cart.total - totalBefore}`
     ).toBe(truePrice);
 
-    await page
-      .getByRole('button', { name: /^continue$/i })
-      .first()
-      .click({ timeout: TIMEOUTS.action });
+    await (await cartContinueButton(page)).click({ timeout: TIMEOUTS.action });
     await page.waitForURL(new RegExp(URLS.review), { timeout: 60000 });
     await dismissExchangeDialog(page);
     await page
