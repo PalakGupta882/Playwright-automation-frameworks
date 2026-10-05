@@ -123,10 +123,46 @@ test('product pages render the buy row their state calls for', async ({ page, re
 
       const shown = await anyControl.innerText({ timeout: 2000 }).catch(() => '<none>');
       console.log(`${label} ${row.name}: buy row shows "${shown.trim()}"`);
-      await contracts[shape]();
+      await runContract({ shape, row, shown: shown.trim(), request, contracts, testInfo });
     });
   }
 });
+
+// Stock can move between pickShapes() and the page load. Measured 5 Oct 2026 in
+// CI: iPhone 18 Pro Max was picked as in-stock BOTH, sold out moments later, and
+// the page — correctly — rendered Sold Out, failing "Buy Now: element(s) not
+// found" three times over. So when the page shows the OTHER stock state from
+// the one the shape was picked for, re-read stock before judging:
+//   - stock really moved   -> annotated, contract not run: the page was right
+//   - stock did not move   -> a soft failure naming the mismatch: API and page
+//                             disagree, which is a real defect
+// Kept out of the test body so the test has no branching of its own.
+const IN_STOCK_SHAPES = new Set(['upfront', 'both']);
+
+async function runContract({ shape, row, shown, request, contracts, testInfo }) {
+  const pageSoldOut = /^sold out$/i.test(shown);
+  const pickedInStock = IN_STOCK_SHAPES.has(shape);
+  const flipped = (pickedInStock && pageSoldOut) || (shape === 'soldOut' && !pageSoldOut && shown !== '<none>');
+  if (!flipped) {
+    await contracts[shape]();
+    return;
+  }
+
+  const inStockNow = await variantInStock(request, row);
+  const ref = `${row.slug}/${row.variant.bpid}`;
+  if (inStockNow === !pageSoldOut) {
+    const note = `${ref} ${pageSoldOut ? 'sold out' : 'came back in stock'} between the stock check and the page ` +
+      `load — the page correctly shows "${shown}", so the ${shape} contract was not run`;
+    console.log(note);
+    testInfo.annotations.push({ type: 'skip', description: note });
+    return;
+  }
+
+  expect.soft(
+    shown,
+    `${ref}: the PDP API says ${inStockNow ? 'in stock' : 'out of stock'} but the page shows "${shown}"`
+  ).toBe(inStockNow ? 'Buy Now' : 'Sold Out');
+}
 
 // Shape samples first, then the head of the listing (shape 'listing' asserts
 // only that some buy row rendered). Kept out of the test body so the test has
