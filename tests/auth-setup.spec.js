@@ -102,7 +102,15 @@ test('one-time login and save session', async ({ page }) => {
     // times out when the shell is half-authenticated, which is exactly the
     // state we are in here. clearCookies always works and needs no control to
     // be present.
-    console.log('No access_token after a refresh attempt — clearing the session and logging in.');
+    // Usually NOT an expired 7-day token. The refresh_token is single-use: any
+    // browser that loaded auth.json after the access_token expired let the app
+    // refresh, consumed it, and — before the page fixture started writing the
+    // rotated session back — left a revoked token here. See saveRotatedSession
+    // in tests/utils/session.js.
+    console.log(
+      'No access_token after a refresh attempt — the saved refresh_token was most likely ' +
+        'already used by another browser session (it is single-use). Clearing the session and logging in.'
+    );
     await page.context().clearCookies();
     await home.goto();
   }

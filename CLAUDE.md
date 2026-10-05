@@ -849,9 +849,34 @@ than inherit `auth.json`; a login-gated one has `assertFreshSession()`.
 
 ### Session lifetime
 
-`access_token` lasts **15 minutes**; `refresh_token` lasts 7 days. `npm run auth`
-reuses the refresh token silently and only prompts for an OTP when that has also
-expired. It now refuses to short-circuit on a token with under 5 minutes left —
+`access_token` lasts **15 minutes**; `refresh_token` lasts 7 days **but is
+single-use**. Measured 5 Oct 2026: every `POST /api/auth/refresh-tokens` returns
+a new `refresh_token`, and replaying the old one gets a 401.
+
+**A page loaded with an expired session revokes it.** The listing, PDP and cart
+pages consume the refresh_token when loaded with an expired access_token, yet no
+`refresh-tokens` call is seen from the browser and no new token reaches its
+cookies — most likely refreshed server-side, replacement never returned. Not
+proven at the response-header level; if confirmed it is a site defect (a shopper
+whose access token lapses is logged out by their next page load). Three
+`npm run auth` runs in one day needed an OTP for this reason alone, and
+`auth-setup` itself loaded the homepage before `/my-profile`, spending the token
+before it could refresh.
+
+So the suite never sends an expired session to the site:
+
+| Where | What |
+|---|---|
+| `globalSetup` (`tests/utils/globalSetup.js`) | before any worker, if the access token has < 5 min left, refresh headless via `/my-profile` with the expired access token removed — the one path measured to return the new token. Inert in CI. |
+| `storageState` fixture (`pageFixtures.js`) | a test starting after expiry (a run > 15 min) gets a logged-out context instead of the stale session |
+| `page` fixture teardown | writes a rotated session back if the app refreshed client-side mid-test |
+
+Helpers: `refreshSavedSession`, `usableStorageState`, `saveRotatedSession` in
+`tests/utils/session.js`. A context built outside the fixtures
+(`browser.newContext` with `auth.json`) is not covered — do not load an expired
+`auth.json` that way. `npm run auth` runs the same global setup, so it reuses the
+refresh token silently and only prompts for an OTP when that has expired or been
+consumed. It now refuses to short-circuit on a token with under 5 minutes left —
 it used to save one seconds from expiry and report success, and the next command
 failed `assertFreshSession()`. `BYTEPE_OTP_WAIT_MS` widens the manual OTP window
 (default 120000); the spec timeout derives from it.

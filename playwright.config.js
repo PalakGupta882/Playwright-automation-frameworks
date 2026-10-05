@@ -71,6 +71,11 @@ export default defineConfig({
     '**/api/apiHelper.js',
     ...(includeScripts ? [] : ['**/scripts/**']),
   ],
+  // Refreshes auth.json before any worker starts when its 15-minute access_token
+  // is about to lapse. The refresh_token is single-use and a page loaded with an
+  // expired session revokes it, so this is what keeps `npm run auth` from asking
+  // for an OTP every day. Inert in CI (empty auth.json). See tests/utils/session.js.
+  globalSetup: './tests/utils/globalSetup.js',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
