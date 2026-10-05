@@ -37,3 +37,7 @@ tests/data/har/*.har
 # Stage-environment session (tests/data/env.js names it from BASE_URL).
 # Same rule as auth.dev.json: never commit, never mix with production.
 auth.stage.json
+
+# JMeter API summary from scripts/har-to-jmeter.js. Masks phone, OTP and tokens
+# only; user_id, address_id and real order ids pass through unmasked.
+har/
