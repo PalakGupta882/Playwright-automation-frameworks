@@ -36,6 +36,11 @@ const { test, expect } = require('../fixtures/pageFixtures');
 const { CartPage } = require('../pages/cartPage');
 const { BASE_URL, URLS, TIMEOUTS } = require('../data/constants');
 const { assertFreshSession } = require('../utils/session');
+const { readBasketIdentities } = require('../utils/catalogue');
+
+// Each run now adds a product the basket did NOT already hold — a real new
+// line — so a retry would add a second one. Same reason as cart.spec.js.
+test.describe.configure({ retries: 0 });
 
 test.beforeAll(() => assertFreshSession());
 
@@ -137,8 +142,22 @@ test.describe('Checkout flow (stops before payment)', () => {
       // Reuses the page object rather than reimplementing it: this already
       // handles subscription-first products, which lead with "Subscribe" and
       // only expose Add to Cart once a plan is picked.
-      await cart.addFirstProductToCart();
+      //
+      // Excluding what the basket already holds: re-adding an item is a 200
+      // no-op, so without this the step "passed" on the second run by re-adding
+      // the same product and proving nothing. Then the bpid itself is checked,
+      // not just arrival on /cart — same contract as cart.spec.js.
+      const before = await readBasketIdentities(page.request, 'UPFRONT');
+      const held = new Set(before.map((i) => i.bpid).filter(Boolean));
+      const added = await cart.addFirstProductToCart({ exclude: held });
+      console.log(`added ${added.name} (${added.slug}/${added.bpid}), POST /api/cart -> ${added.postStatus}`);
       await expect(page).toHaveURL(new RegExp(URLS.cart), { timeout: TIMEOUTS.nav });
+
+      const after = await readBasketIdentities(page.request, 'UPFRONT');
+      expect(
+        after.map((i) => i.bpid),
+        `the UPFRONT basket does not hold the bpid that was added (${added.bpid})`
+      ).toContain(added.bpid);
       await shot('01-cart');
     });
 
