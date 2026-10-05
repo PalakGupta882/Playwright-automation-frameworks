@@ -1,7 +1,7 @@
-const { BASE_URL, BASE_API_URL } = require('../data/constants');
-const { clickAddToCart, addToCartControl, rowOffersAddToCart } = require('../utils/buyRow');
+const { BASE_URL } = require('../data/constants');
+const { clickAddToCart, addToCartControl } = require('../utils/buyRow');
 const { openPlanPanel } = require('../utils/planPanel');
-const { getWithRetry } = require('../utils/apiRetry');
+const { pickProduct } = require('../utils/catalogue');
 
 class CartPage {
   constructor(page) {
@@ -23,8 +23,13 @@ class CartPage {
   //    Buy Now with no cart control either. The cart icon is an UPFRONT-only
   //    affordance. So the product is chosen from the API by payment mode
   //    instead of by listing position.
-  async addFirstProductToCart() {
-    const product = await this.pickAddableProduct();
+  //
+  // Returns what was added (slug, bpid, POST status) so the caller can check the
+  // basket holds THAT bpid. `exclude` is a Set of bpids to skip: re-adding an
+  // item already in the cart is a 200 no-op, so proving an add needs a product
+  // the basket does not hold.
+  async addFirstProductToCart({ exclude } = {}) {
+    const product = await this.pickAddableProduct({ exclude });
     if (!product) throw new Error('no in-stock UPFRONT, non-pre-booking product to add to the cart');
 
     await this.page.goto(`${BASE_URL}/pd/${product.slug}/${product.variant.bpid}`, {
@@ -58,6 +63,12 @@ class CartPage {
     if (!posted) throw new Error(`${product.slug}: clicking add-to-cart sent no POST /api/cart`);
 
     await this.page.goto(`${BASE_URL}/cart`, { waitUntil: 'domcontentloaded' });
+    return {
+      slug: product.slug,
+      bpid: product.variant.bpid,
+      name: product.name,
+      postStatus: posted.status(),
+    };
   }
 
   // Straight from the live listing API — see the note above on why listing
@@ -70,23 +81,11 @@ class CartPage {
   // - The listing does not say whether the linked variant is in stock. The
   //   first UPFRONT row that day (Nord CE 6 Lite) was Sold Out, which renders a
   //   disabled cart icon. Stock is read from the PDP payload before choosing.
-  async pickAddableProduct() {
-    const api = BASE_API_URL.replace(/\/+$/, '');
-    const res = await getWithRetry(this.page.request, `${api}/product-service/apps/products?page=1&limit=100`, {
-      failOnStatusCode: false,
-    });
-    if (!res.ok()) throw new Error(`listing API returned ${res.status()} — cannot choose a product to add`);
-    const items = (await res.json())?.data?.items || [];
-    const candidates = items.filter((p) => p?.slug && p?.variant?.bpid && rowOffersAddToCart(p));
-
-    for (const p of candidates.slice(0, 15)) {
-      const pd = await getWithRetry(this.page.request, `${api}/product-service/apps/products/by-slug/${p.slug}/${p.variant.bpid}`, {
-        failOnStatusCode: false,
-      });
-      const variant = pd.ok() ? (await pd.json())?.data?.variant : null;
-      if (variant && variant.available && variant.stock > 0) return p;
-    }
-    return null;
+  //
+  // The listing walk and stock check now live in utils/catalogue.js, shared with
+  // the coupon and subscription specs.
+  async pickAddableProduct({ exclude } = {}) {
+    return pickProduct(this.page.request, { mode: 'UPFRONT', exclude });
   }
 
   // Mirrors ProductsListPage.selectBuyUpfrontPlan. Rewritten 23 Sep 2026 for the

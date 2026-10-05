@@ -46,6 +46,7 @@ A spec belongs there only if it passes logged out. `cardless-emi` and `emi-plan-
 - **Import `test`/`expect` from `../fixtures/pageFixtures`**, not `@playwright/test`. That fixture supplies the page objects (`homePage`, `productPage`, `productsListPage`, `reviewOrderPage`, `emiStorePage`) as test arguments.
 - **There is no `baseURL`** in the Playwright config. Navigate through a page object's `goto()` (`BasePage` prefixes the host) or use an absolute URL — `page.goto('/cart')` will not work.
 - Put shared URLs, messages, and timeouts in `tests/data/constants.js` rather than inlining them.
+- **Choose products from the live listing API, never by name or from `products.json`.** `tests/utils/catalogue.js`: `fetchListingRows` (whole catalogue, throws if short of `data.count`), `pickProduct({ mode: 'UPFRONT' | 'BOTH', exclude })` (in stock, not pre-booking), `readBasketIdentities`. Not the `/all-products` UI — it drops whole pages.
 - `testMatch` is `**/*.js`, so anything under `tests/` is a spec unless `testIgnore` excludes it. Helper directories (`pages/`, `data/`, `fixtures/`, `utils/`, `wip/`) are excluded. Put new helpers in one of those — a helper elsewhere gets collected as a spec, and a spec importing it fails with `test file X should not import test file Y`.
 - Specs set their own `test.setTimeout(...)` when a flow is slow; there is no global test timeout override.
 - Assertions should be non-vacuous: before asserting that something is absent (e.g. `toHaveCount(0)`), first prove the element renders at all. See `tests/regression/product-search.spec.js`.
@@ -391,7 +392,12 @@ anything yet:
 | `rating` | 33 / 241 rows | a number, `4` … `5` (e.g. `4.4`, `4.5`) |
 | `variant.tags[]` | 8 / 241 rows | `{id, name, bgHexColor, textHexColor, priority}` |
 
-`variant.tags[]` currently carries exactly one tag, `Pre-booking` — see the
+**Re-measured 5 Oct 2026: 300 products**, and the tag set has changed. 24 of 300
+rows carry a tag, and **none is `Pre-booking`** — the tags are now `New Launch`
+(priority 2, same `#FF5722` badge) and `sale price live`. Treat the 241/8 figures
+in this file as history. Read the count from `data.count`, never from here.
+
+`variant.tags[]` carried exactly one tag, `Pre-booking`, on 16 Sep — see the
 pre-booking section below, which `regression/prebooking.spec.js` does cover.
 `rating` is uncovered: nothing checks that the stars on a tile match the stars on
 the PDP, and 208 of 241 rows carry no rating at all.
@@ -434,6 +440,13 @@ under-reports is the direction that costs the shopper a benefit they were
 entitled to, and it is invisible if you only check the rows that claim one.
 
 ### Pre-booking — LIVE since 16 Sep 2026, and now covered
+
+**Status 5 Oct 2026: no product is pre-booking.** The devices launched; iPhone
+18 Pro Max now reads `isPrebookingAllow: false`, `normalOrderAccess: "all"`,
+`can_place_normal_order: true`, tagged `New Launch`. Expect
+`prebooking.spec.js` to skip and `data-driven-products` to annotate "no
+preBooking product" — that skip is not a pass. The contract below stands for the
+next pre-booking launch.
 
 This section previously read "**No product enables it** — 0 of 217 on 2 Sep
 2026 ... find a product first." **That is out of date.** The catalogue produces
@@ -803,6 +816,15 @@ The field **does** have a proper `<label for>`, so
 `getByRole('textbox', { name: 'Mobile Number*' })` still resolves it and needed no
 change. When that locator times out, the drawer never opened — look at the click,
 not the field.
+
+**It also opens by itself on a stale session** — measured 5 Oct 2026 on PDPs
+loaded with an expired `auth.json` (header reads `Login`). Not on every load,
+and not on a clean logged-out context. The Drawer is modal: the rest of the page
+leaves the accessibility tree, so every `getByRole` fails with `element(s) not
+found` on a control the screenshot plainly shows, and which product fails moves
+between runs. Read `error-context.md` — the snapshot is just the drawer. A public
+spec must set `test.use({ storageState: { cookies: [], origins: [] } })` rather
+than inherit `auth.json`; a login-gated one has `assertFreshSession()`.
 
 ### Session lifetime
 
