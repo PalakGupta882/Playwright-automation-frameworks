@@ -1,8 +1,10 @@
 // tests/scripts/discover-video-products.spec.js
 //
 // Not a regression test — a discovery utility, like discover-products.spec.js.
-// Walks every product in tests/data/products.json against the public PDP API
-// and records which ones expose a non-empty product.videos[].
+// Walks every product in the LIVE listing API against the public PDP API and
+// records which ones expose a non-empty product.videos[]. It read
+// tests/data/products.json until 5 Oct 2026, which passed that scrape's
+// staleness (241 rows against 335 live) straight into this file.
 //
 // The output file is what tests/regression/video-pdp-*.spec.js drive off, so
 // re-run this after the content team publishes a video:
@@ -15,20 +17,21 @@ const { test } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
 const { pdpApiPath, videosFromPdpPayload } = require('../data/videoFeature');
-const catalog = require('../data/products.json');
+const { fetchListingRows } = require('../utils/catalogue');
+const { getWithRetry } = require('../utils/apiRetry');
 
 const OUT_PATH = path.join(__dirname, '..', 'data', 'video-products.json');
-const CONCURRENCY = 8;
+// 4, not 8 — the limit site-health and discover-cardless-emi settled on.
+const CONCURRENCY = 4;
 
 test('discover which products have a live video', async ({ request }) => {
   test.setTimeout(600000);
 
-  const items = catalog.products
-    .map((p) => {
-      const m = p.url.match(/^\/pd\/([^/]+)\/([^/?]+)/);
-      return m ? { name: p.name, slug: m[1], bpid: m[2] } : null;
-    })
-    .filter(Boolean);
+  const items = (await fetchListingRows(request)).map((r) => ({
+    name: r.name,
+    slug: r.slug,
+    bpid: r.variant.bpid,
+  }));
 
   const withVideo = [];
   const unreachable = [];
@@ -37,7 +40,8 @@ test('discover which products have a live video', async ({ request }) => {
   async function worker() {
     while (cursor < items.length) {
       const item = items[cursor++];
-      const res = await request.get(pdpApiPath(item.slug, item.bpid), {
+      // getWithRetry: a 429 is not an unreachable product.
+      const res = await getWithRetry(request, pdpApiPath(item.slug, item.bpid), {
         headers: { accept: 'application/json' },
         failOnStatusCode: false,
       });

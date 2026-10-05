@@ -40,9 +40,12 @@ Content is live, and it has grown a lot. Measured 2 Sep 2026 by reading
 `product.videos[]` off every product the live listing serves: **94 of 217
 products have a video**.
 
-`tests/data/video-products.json` still records the 11 Aug 2026 scrape — 35 of
-186 — so it is **stale by roughly a factor of three** and any spec that picks a
-video-enabled product from it is sampling a quarter of the real population.
+`tests/data/video-products.json` was regenerated on 5 Oct 2026 from the live
+listing: **100 of 336 products have a video**. It previously held the 11 Aug
+scrape (35 of 186), because the discovery script read `products.json`; it now
+reads the listing API directly. Products that are stock 0 and delisted drop out
+even though their video is still served (`vivo-v70-5g`, `galaxy-s25-fe`,
+`iphone-16` on that date) — that is the listing, not the video feature.
 Re-run `scripts/discover-video-products.spec.js` before any video work.
 The API side passes in full: VID-24, VID-25 and VID-26 are green.
 
