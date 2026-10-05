@@ -230,9 +230,17 @@ test.describe('Checkout flow (stops before payment)', () => {
     // present, because its absence means the flow is broken rather than that we
     // stopped safely — and it must not be pressed. Nothing below touches it.
     await test.step('6. stopped at review order, before any order is created', async () => {
+      //
+      // Exactly one, not .first(): "Continue is present" must mean THE Continue,
+      // not any button with that name. Count before visibility — toBeVisible on
+      // two matches throws a bare strict-mode error.
+      const continueButton = page.getByRole('button', { name: /^continue$/i });
       await expect(
-        page.getByRole('button', { name: /^continue$/i }).first()
-      ).toBeVisible({ timeout: TIMEOUTS.nav });
+        continueButton,
+        'Review Order must render exactly one "Continue" — 0 means the page never loaded, ' +
+          '2+ means scope the locator before anything clicks it'
+      ).toHaveCount(1, { timeout: TIMEOUTS.nav });
+      await expect(continueButton).toBeVisible();
 
       await expect(page).toHaveURL(new RegExp(URLS.review));
       expect(page.url()).not.toMatch(/payment-summary|razorpay|payment_id/i);

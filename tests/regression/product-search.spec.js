@@ -1,6 +1,10 @@
 const { test, expect } = require('../fixtures/pageFixtures');
 const { URLS } = require('../data/constants');
 
+// Public search, and in the CI list — logged out explicitly. An expired
+// auth.json opens the modal login Drawer by itself on some loads (CLAUDE.md, Login).
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe('product search', () => {
   test('searching a known product suggests it and opens its product page', async ({ page, productsListPage }) => {
     test.setTimeout(90000);

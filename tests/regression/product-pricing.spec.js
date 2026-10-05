@@ -1,6 +1,10 @@
 const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL } = require('../data/constants');
 
+// Product configuration, and in the CI list — logged out explicitly. An expired
+// auth.json opens the modal login Drawer by itself on some loads (CLAUDE.md, Login).
+test.use({ storageState: { cookies: [], origins: [] } });
+
 // Turn "₹32,299" into 32299 so we can compare numbers
 function toNumber(text) {
   return Number(text.replace(/[^0-9]/g, ''));

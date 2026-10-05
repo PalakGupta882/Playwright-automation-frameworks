@@ -642,9 +642,15 @@ test.describe('Pricing consistency through checkout', () => {
 
     // The stop line. Continue is present — its absence would mean the flow is
     // broken rather than that we stopped safely — and it is not pressed.
+    // Exactly one, not .first(); count before visibility so two matches fail
+    // with this message rather than a bare strict-mode error.
+    const continueButton = page.getByRole('button', { name: /^continue$/i });
     await expect(
-      page.getByRole('button', { name: /^continue$/i }).first()
-    ).toBeVisible({ timeout: TIMEOUTS.nav });
+      continueButton,
+      'Review Order must render exactly one "Continue" — 0 means the page never loaded, ' +
+        '2+ means scope the locator before anything clicks it'
+    ).toHaveCount(1, { timeout: TIMEOUTS.nav });
+    await expect(continueButton).toBeVisible();
     expect(page.url()).not.toMatch(/payment-summary|razorpay|payment_id/i);
     console.log('stopped at Review Order without pressing Continue:', page.url());
   });
