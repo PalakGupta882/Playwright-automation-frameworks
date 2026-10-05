@@ -26,10 +26,13 @@ const {
   creditCardEmiFrom,
   cardEmiOptionsFrom,
 } = require('../data/emiApi');
-const catalog = require('../data/products.json');
+const { fetchListingRows } = require('../utils/catalogue');
+const { getWithRetry } = require('../utils/apiRetry');
 
 const OUT_PATH = path.join(__dirname, '..', 'data', 'cardless-emi.json');
-const CONCURRENCY = 8;
+// 4, not 8: two calls per product across ~300 products earns 429s at 8 — the
+// same limit site-health settled on.
+const CONCURRENCY = 4;
 
 const CATEGORY = {
   SMMOB: 'Smartphone', WIWIR: 'Wireless audio', AUAUD: 'Audio', ACACC: 'Accessory',
@@ -48,12 +51,14 @@ const BRAND = {
 test('discover which products offer cardless EMI', async ({ request }) => {
   test.setTimeout(900000);
 
-  const items = catalog.products
-    .map((p) => {
-      const m = p.url.match(/^\/pd\/([^/]+)\/([^/?]+)/);
-      return m ? { name: p.name, slug: m[1], bpid: m[2] } : null;
-    })
-    .filter(Boolean);
+  // The live listing API, not tests/data/products.json. On 5 Oct 2026 that file
+  // held 241 rows against a live catalogue of 300, so a baseline built from it
+  // silently left 60 products out and kept 38 that had moved.
+  const items = (await fetchListingRows(request)).map((r) => ({
+    name: r.name,
+    slug: r.slug,
+    bpid: r.variant.bpid,
+  }));
 
   const found = [];
   const unreachable = [];
@@ -63,7 +68,9 @@ test('discover which products offer cardless EMI', async ({ request }) => {
     while (cursor < items.length) {
       const item = items[cursor++];
 
-      const pdpRes = await request.get(pdpApiPath(item.slug, item.bpid), {
+      // getWithRetry: a 429 is not an unreachable product, and recording it as
+      // one would drop the product from the baseline.
+      const pdpRes = await getWithRetry(request, pdpApiPath(item.slug, item.bpid), {
         headers: { accept: 'application/json' },
         failOnStatusCode: false,
       });
@@ -73,7 +80,8 @@ test('discover which products offer cardless EMI', async ({ request }) => {
       }
       const pdp = await pdpRes.json();
 
-      const priceRes = await request.get(
+      const priceRes = await getWithRetry(
+        request,
         variantPricingPath(item.slug, pdp.data.variant.id),
         { headers: { accept: 'application/json' }, failOnStatusCode: false }
       );

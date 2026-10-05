@@ -73,6 +73,20 @@ Funding options inside an EMI or subscription plan:
 **Cardless EMI is offered on BOTH upfront EMI and subscription.** It is not
 subscription-only. Do not report it as missing on an `UPFRONT` product.
 
+**Ten products moved from `BOTH` to `UPFRONT` — CONFIRMED EXPECTED (5 Oct 2026).**
+`x300-fe-5g`, `pixel-10`, `pixel-10a`, `signature`, `phone-4a-pro-5g`,
+`phone-4a-5g`, `phone-4b`, `edge-70-pro-plus`, `edge-70-pro`, `edge-70-fusion`
+are no longer sold on subscription: `prodPaymentMode: "UPFRONT"`, `nbfc` absent
+(null, not zero), `cc` zeroed. They lost the pre-priced subscription plan, not
+cardless EMI — upfront cardless is still per-shopper. Do not re-report it.
+`tests/data/cardless-emi.json` was regenerated from the live listing for it.
+
+Confirmed expected in the same regeneration: `galaxy-s26-plus-5g` and
+`iphone-15` left the baseline (still `BOTH` and pre-priced, but stock 0 and
+delisted), and `rover-medium-hard-luggage-70l-24-inch-65cm` joined it — the
+first non-electronics product with a pre-priced subscription cardless plan
+(₹327/mo on ₹6,399).
+
 **Cardless EMI eligibility is per shopper, not per product.** The row has four
 states, all expected:
 
