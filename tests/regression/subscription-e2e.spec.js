@@ -16,14 +16,29 @@
 const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL, URLS, TIMEOUTS } = require('../data/constants');
 const { assertFreshSession } = require('../utils/session');
+const { writesAllowed, writeSkipReason } = require('../utils/writes');
+const { pickProduct, pdpUrl } = require('../utils/catalogue');
+const { buyNowControl } = require('../utils/buyRow');
+
+// Opt-in only. A passing run of this spec mints a real order — see the header.
+// Declared before the session guard on purpose: when writes are not permitted
+// there is no reason to care whether the session is fresh, and a skip is a
+// clearer report than a session failure that was never going to run anyway.
+test.skip(
+  !writesAllowed(),
+  writeSkipReason('This spec creates a real order')
+);
 
 // Subscribe only goes straight to Review Order while logged in; logged out it
 // diverts to an OTP screen and every assertion below would fail for the wrong
 // reason.
 test.beforeAll(() => assertFreshSession());
 
-// The subscription listing tiles carry the product name as image alt text.
-const PRODUCT = 'apple iPhone 17 pro max';
+// The product is chosen from the listing API, not by image alt text on the
+// subscription listing: a hardcoded name drifts (renames, pre-booking, Sold
+// Out), and the iPhone it used to name sits in a page /all-products drops.
+// BOTH = subscription-capable; pickProduct also skips pre-booking and checks
+// stock on the PDP payload.
 
 // Hosts BytePe hands off to for payment. Landing on one means the flow went a
 // step further than this test is allowed to go.
@@ -32,8 +47,13 @@ const PAYMENT_GATEWAY_HOSTS = /razorpay|payu|billdesk|ccavenue|cashfree|paytm|ph
 // The hand-off control on Order Summary. By role and anchored name, not a bare
 // /pay/i text match — the page is dense with "Pay full Amount", "Payment" and
 // "Pay Now" strings, and a loose match would resolve to whichever came first.
-const payNowButton = (page) =>
-  page.getByRole('button', { name: /^pay now$/i }).first();
+//
+// No .first(). Order Summary's DOM has never been measured (reaching it mints
+// an order), so whether this name is unique there is unknown. Step 5 asserts
+// exactly one match instead: a second "Pay Now" — a duplicated header, a
+// carousel, a hidden mobile copy — fails loudly rather than letting .first()
+// silently choose the control next to a payment hand-off.
+const payNowButton = (page) => page.getByRole('button', { name: /^pay now$/i });
 
 test.describe('Subscription end-to-end (stops before payment)', () => {
   test('homepage through to order summary', async ({
@@ -66,15 +86,16 @@ test.describe('Subscription end-to-end (stops before payment)', () => {
       await shot('02-subscription-listing');
     });
 
-    await test.step(`3. open ${PRODUCT}`, async () => {
-      const tile = page.getByRole('img', { name: PRODUCT }).first();
-      // Wait for the tile rather than networkidle — this page keeps analytics
-      // requests going, so networkidle only ever ends by timing out.
-      await tile.waitFor({ state: 'visible', timeout: TIMEOUTS.nav });
-      await productPage.selectProductByImageName(PRODUCT);
+    await test.step('3. open an in-stock subscription product', async () => {
+      const product = await pickProduct(page.request, { mode: 'BOTH' });
+      expect(product, 'no in-stock, non-pre-booking BOTH-mode product in the listing').toBeTruthy();
+      console.log(`product: ${product.name} (${product.slug}/${product.variant.bpid})`);
 
-      await expect(page).toHaveURL(/\/pd\//, { timeout: TIMEOUTS.nav });
-      await expect(productPage.subscribeButton.first()).toBeVisible({ timeout: TIMEOUTS.nav });
+      await page.goto(pdpUrl(product), { waitUntil: 'domcontentloaded' });
+      await expect(page).toHaveURL(new RegExp(`/pd/${product.slug}/${product.variant.bpid}`));
+      // Buy Now, not "Subscribe": the 23 Sep redesign removed the Subscribe
+      // button, and on a BOTH product Buy Now is the subscribe control.
+      await expect(buyNowControl(page).first()).toBeVisible({ timeout: TIMEOUTS.nav });
       await shot('03-product-page');
     });
 
@@ -99,7 +120,14 @@ test.describe('Subscription end-to-end (stops before payment)', () => {
       // happened — the first version of this test passed against a page that
       // was still blank apart from the header and the Cart/Review/Payment
       // stepper. Wait for content that only a loaded summary has.
-      await expect(payNowButton(page)).toBeVisible({ timeout: TIMEOUTS.nav });
+      // Count before visibility: toBeVisible on two matches throws a bare
+      // strict-mode error, and this message says what it means.
+      await expect(
+        payNowButton(page),
+        'Order Summary must render exactly one "Pay Now" — 0 means the summary never loaded, ' +
+          '2+ means scope the locator before trusting it'
+      ).toHaveCount(1, { timeout: TIMEOUTS.nav });
+      await expect(payNowButton(page)).toBeVisible();
       await expect(page.getByText(/order total/i).first()).toBeVisible({
         timeout: TIMEOUTS.nav,
       });

@@ -84,8 +84,9 @@ test.describe('EMI Store flow (stops before payment)', () => {
     });
 
     await test.step('4. the plan box offers a priced EMI plan and a pay-in-full plan', async () => {
-      // Configuration, not eligibility. Every one of the 186 products in
-      // tests/data/cardless-emi.json exposes at least two card EMI tenures, and
+      // Configuration, not eligibility. Every product in
+      // tests/data/cardless-emi.json exposes at least two card EMI tenures (all
+      // 335 expose six, as of 5 Oct 2026), and
       // CLAUDE.md puts Pay in Full / Buy Upfront on every product, so both of
       // these must hold whichever product the listing happened to link.
       await expect(emiStorePage.planBoxHeading).toBeVisible({ timeout: TIMEOUTS.nav });

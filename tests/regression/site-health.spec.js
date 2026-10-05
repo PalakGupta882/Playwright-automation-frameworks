@@ -23,12 +23,17 @@
 // which is what stops that mistake shipping silently.
 //
 // Public, logged out — this is site availability, identical for everyone.
-// API-level, so the whole catalogue costs seconds rather than 186 page loads.
+// API-level, so the whole catalogue costs seconds rather than ~240 page loads.
+//
+// The product list comes from the listing API (utils/catalogue.js), not from
+// tests/data/products.json: that scrape drifts, so a stale slug read as a dead
+// page here. The /all-products UI is not used either — it drops whole pages
+// (listing-completeness.spec.js), which would hide pages from this sweep.
 
 const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL } = require('../data/constants');
 const { getWithRetry } = require('../utils/apiRetry');
-const catalogue = require('../data/products.json');
+const { fetchListingRows, pdpUrl } = require('../utils/catalogue');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -39,7 +44,7 @@ const titleOf = (html) => ((html.match(/<title>([^<]*)<\/title>/i) || [])[1] || 
 
 const CORE_PAGES = ['/', '/home/subscription', '/home/emi-store', '/all-products', '/about-us', '/cart'];
 
-// Fetch with a small worker pool: 186 sequential round trips is slow enough to
+// Fetch with a small worker pool: ~240 sequential round trips is slow enough to
 // push this past a sane timeout, and unbounded parallelism rate-limits the
 // origin (see tests/utils/apiRetry.js).
 async function fetchAll(request, urls, concurrency = 4) {
@@ -70,8 +75,6 @@ async function fetchAll(request, urls, concurrency = 4) {
   return results;
 }
 
-const productUrl = (p) => (p.url.startsWith('http') ? p.url : `${BASE_URL}${p.url}`);
-const products = catalogue.products || catalogue;
 
 test.describe('Site health', () => {
   // CONTROL — proves the detector can actually detect a dead page.
@@ -100,7 +103,8 @@ test.describe('Site health', () => {
   test('a known-good product URL is recognised as live', async ({ request }) => {
     test.setTimeout(60000);
 
-    const res = await request.get(productUrl(products[0]), { failOnStatusCode: false });
+    const [first] = await fetchListingRows(request);
+    const res = await request.get(pdpUrl(first), { failOnStatusCode: false });
     expect(res.status()).toBe(200);
     expect(titleOf(await res.text())).not.toMatch(GENERIC_TITLE);
   });
@@ -119,11 +123,13 @@ test.describe('Site health', () => {
   test('every product page in the catalogue is alive', async ({ request }) => {
     test.setTimeout(300000);
 
-    // Guards the guard: an empty catalogue file would make the assertion below
-    // pass against nothing at all.
-    expect(products.length, 'products.json is empty — nothing was checked').toBeGreaterThan(50);
+    // fetchListingRows throws when the rows read fall short of the API's own
+    // count. This floor guards the other way: a listing that reports a tiny
+    // count would make the assertion below pass against almost nothing.
+    const products = await fetchListingRows(request);
+    expect(products.length, 'the listing API served almost nothing — nothing was checked').toBeGreaterThan(50);
 
-    const results = await fetchAll(request, products.map(productUrl));
+    const results = await fetchAll(request, products.map(pdpUrl));
 
     const dead = results
       .map((r, i) => ({ ...r, name: products[i].name }))
@@ -134,9 +140,9 @@ test.describe('Site health', () => {
 
     expect(
       dead,
-      'these product pages resolve to the generic shell rather than a product. ' +
-        'Usually catalogue drift, not an outage — re-run npm run discover and ' +
-        'confirm before reporting a bug'
+      'these product pages are linked by the LIVE listing API yet resolve to the ' +
+        'generic shell rather than a product. This is not fixture drift — the ' +
+        'catalogue is advertising a page that does not exist'
     ).toEqual([]);
   });
 });

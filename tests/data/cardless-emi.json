@@ -1,150 +1,11 @@
 {
   "rule": "Offered = the pre-priced subscription cardless plan: prodPaymentMode===\"BOTH\" AND nbfc.emi_amount>0. NOT a measure of cardless EMI availability — see CLAUDE.md.",
   "generatedFrom": "by-slug prodPaymentMode + variant-pricing data.nbfc",
-  "scannedProducts": 186,
+  "scannedProducts": 335,
   "unreachable": [],
-  "offeredCount": 29,
-  "notOfferedCount": 157,
-  "anomalies": [
-    {
-      "name": "Galaxy Watch9 (40mm, Bluetooth)",
-      "slug": "galaxy-watch9-40mm-bluetooth",
-      "bpid": "SAMSMSMA4TJQOF",
-      "isMaster": true,
-      "brand": "Samsung",
-      "category": "Smartwatch",
-      "mop": 37999,
-      "prodPaymentMode": "UPFRONT",
-      "cardlessEmi": {
-        "monthly": 1784,
-        "tenureMonths": 24,
-        "downpayment": 1784,
-        "interest": 9695,
-        "total": 34905
-      },
-      "creditCardEmi": {
-        "monthly": 1709,
-        "total": 34905
-      },
-      "cardEmiTenures": 6,
-      "cardEmiTypes": "NCEMI/LCEMI"
-    },
-    {
-      "name": "Galaxy Watch9 (44mm, LTE)",
-      "slug": "galaxy-watch9-44mm-lte",
-      "bpid": "SAMSMSMAHOR1IY",
-      "isMaster": true,
-      "brand": "Samsung",
-      "category": "Smartwatch",
-      "mop": 44999,
-      "prodPaymentMode": "UPFRONT",
-      "cardlessEmi": {
-        "monthly": 2113,
-        "tenureMonths": 24,
-        "downpayment": 2113,
-        "interest": 11494,
-        "total": 41331
-      },
-      "creditCardEmi": {
-        "monthly": 2024,
-        "total": 41331
-      },
-      "cardEmiTenures": 6,
-      "cardEmiTypes": "NCEMI/LCEMI"
-    },
-    {
-      "name": "Galaxy Watch9 (40mm, LTE)",
-      "slug": "galaxy-watch9-40mm-lte",
-      "bpid": "SAMSMSMARTLU5N",
-      "isMaster": true,
-      "brand": "Samsung",
-      "category": "Smartwatch",
-      "mop": 41999,
-      "prodPaymentMode": "UPFRONT",
-      "cardlessEmi": {
-        "monthly": 1972,
-        "tenureMonths": 24,
-        "downpayment": 1972,
-        "interest": 10724,
-        "total": 38576
-      },
-      "creditCardEmi": {
-        "monthly": 1889,
-        "total": 38576
-      },
-      "cardEmiTenures": 6,
-      "cardEmiTypes": "NCEMI/LCEMI"
-    },
-    {
-      "name": "Galaxy Watch9 (44mm, Bluetooth)",
-      "slug": "galaxy-watch9-44mm-bluetooth",
-      "bpid": "SAMSMSMA1Q44DG",
-      "isMaster": true,
-      "brand": "Samsung",
-      "category": "Smartwatch",
-      "mop": 40999,
-      "prodPaymentMode": "UPFRONT",
-      "cardlessEmi": {
-        "monthly": 1925,
-        "tenureMonths": 24,
-        "downpayment": 1925,
-        "interest": 10464,
-        "total": 37661
-      },
-      "creditCardEmi": {
-        "monthly": 1844,
-        "total": 37661
-      },
-      "cardEmiTenures": 6,
-      "cardEmiTypes": "NCEMI/LCEMI"
-    },
-    {
-      "name": "Galaxy Watch Ultra2 (47mm, LTE)",
-      "slug": "galaxy-watch-ultra2-47mm-lte",
-      "bpid": "SAMSMSMAZNY17W",
-      "isMaster": true,
-      "brand": "Samsung",
-      "category": "Smartwatch",
-      "mop": 64999,
-      "prodPaymentMode": "UPFRONT",
-      "cardlessEmi": {
-        "monthly": 3052,
-        "tenureMonths": 24,
-        "downpayment": 3052,
-        "interest": 16596,
-        "total": 59704
-      },
-      "creditCardEmi": {
-        "monthly": 2923,
-        "total": 59704
-      },
-      "cardEmiTenures": 6,
-      "cardEmiTypes": "NCEMI/LCEMI"
-    },
-    {
-      "name": "Macbook Pro M5 Pro",
-      "slug": "macbook-pro-m5-pro",
-      "bpid": "APPLALAPOB2RJV",
-      "isMaster": true,
-      "brand": "Apple",
-      "category": "Laptop",
-      "mop": 284900,
-      "prodPaymentMode": "UPFRONT",
-      "cardlessEmi": {
-        "monthly": 14012,
-        "tenureMonths": 24,
-        "downpayment": 14011,
-        "interest": 76210,
-        "total": 274089
-      },
-      "creditCardEmi": {
-        "monthly": 13321,
-        "total": 272062
-      },
-      "cardEmiTenures": 6,
-      "cardEmiTypes": "NCEMI/LCEMI"
-    }
-  ],
+  "offeredCount": 23,
+  "notOfferedCount": 312,
+  "anomalies": [],
   "products": {
     "offered": [
       {
@@ -154,21 +15,44 @@
         "isMaster": true,
         "brand": "Apple",
         "category": "Laptop",
-        "mop": 227900,
+        "mop": 225900,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 11236,
+          "monthly": 11548,
           "tenureMonths": 24,
-          "downpayment": 11236,
-          "interest": 61107,
-          "total": 219793
+          "downpayment": 11543,
+          "interest": 62804,
+          "total": 225900
         },
         "creditCardEmi": {
-          "monthly": 10656,
-          "total": 217630
+          "monthly": 10740,
+          "total": 225900
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Pixel 11 Pro Fold",
+        "slug": "pixel-11-pro-fold",
+        "bpid": "GOOSAMOBESY6NH",
+        "isMaster": true,
+        "brand": "Google",
+        "category": "SAMOB",
+        "mop": 180999,
+        "prodPaymentMode": "BOTH",
+        "cardlessEmi": {
+          "monthly": 9253,
+          "tenureMonths": 24,
+          "downpayment": 9249,
+          "interest": 50321,
+          "total": 180999
+        },
+        "creditCardEmi": {
+          "monthly": 8605,
+          "total": 180999
+        },
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy Z Fold8 Ultra",
@@ -177,44 +61,44 @@
         "isMaster": true,
         "brand": "Samsung",
         "category": "SAMOB",
-        "mop": 199999,
+        "mop": 180999,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 9391,
+          "monthly": 9253,
           "tenureMonths": 24,
-          "downpayment": 9391,
-          "interest": 51078,
-          "total": 183697
+          "downpayment": 9249,
+          "interest": 50321,
+          "total": 180999
         },
         "creditCardEmi": {
-          "monthly": 8994,
-          "total": 183697
+          "monthly": 8605,
+          "total": 180999
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Galaxy Z Fold8 5G",
-        "slug": "galaxy-z-fold8-5g",
-        "bpid": "SAMSAMOBQAAFGN",
+        "name": "iPhone 18 Pro Max",
+        "slug": "iphone-18-pro-max",
+        "bpid": "APPSAMOBM8GMTK",
         "isMaster": true,
-        "brand": "Samsung",
+        "brand": "Apple",
         "category": "SAMOB",
-        "mop": 179999,
+        "mop": 179900,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 8451,
+          "monthly": 9197,
           "tenureMonths": 24,
-          "downpayment": 8451,
-          "interest": 45951,
-          "total": 165324
+          "downpayment": 9193,
+          "interest": 50015,
+          "total": 179900
         },
         "creditCardEmi": {
-          "monthly": 8095,
-          "total": 165324
+          "monthly": 8553,
+          "total": 179900
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy Z Fold7",
@@ -223,21 +107,113 @@
         "isMaster": true,
         "brand": "Samsung",
         "category": "Smartphone",
-        "mop": 158999,
+        "mop": 164999,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 8128,
+          "monthly": 8435,
           "tenureMonths": 24,
-          "downpayment": 8128,
-          "interest": 44201,
-          "total": 158999
+          "downpayment": 8431,
+          "interest": 45873,
+          "total": 164999
         },
         "creditCardEmi": {
-          "monthly": 7785,
-          "total": 158999
+          "monthly": 7844,
+          "total": 164999
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Galaxy Z Fold8 5G",
+        "slug": "galaxy-z-fold8-5g",
+        "bpid": "SAMSAMOBQAAFGN",
+        "isMaster": true,
+        "brand": "Samsung",
+        "category": "SAMOB",
+        "mop": 159999,
+        "prodPaymentMode": "BOTH",
+        "cardlessEmi": {
+          "monthly": 8179,
+          "tenureMonths": 24,
+          "downpayment": 8176,
+          "interest": 44483,
+          "total": 159999
+        },
+        "creditCardEmi": {
+          "monthly": 7607,
+          "total": 159999
+        },
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "iPhone 18 Pro",
+        "slug": "iphone-18-pro",
+        "bpid": "APPSAMOB6S7QGR",
+        "isMaster": true,
+        "brand": "Apple",
+        "category": "SAMOB",
+        "mop": 158900,
+        "prodPaymentMode": "BOTH",
+        "cardlessEmi": {
+          "monthly": 8123,
+          "tenureMonths": 24,
+          "downpayment": 8120,
+          "interest": 44177,
+          "total": 158900
+        },
+        "creditCardEmi": {
+          "monthly": 7554,
+          "total": 158900
+        },
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "X300 Ultra",
+        "slug": "x300-ultra",
+        "bpid": "VIVSMMOB4MNCSY",
+        "isMaster": true,
+        "brand": "Vivo",
+        "category": "Smartphone",
+        "mop": 149999,
+        "prodPaymentMode": "BOTH",
+        "cardlessEmi": {
+          "monthly": 7668,
+          "tenureMonths": 24,
+          "downpayment": 7665,
+          "interest": 41702,
+          "total": 149999
+        },
+        "creditCardEmi": {
+          "monthly": 7131,
+          "total": 149999
+        },
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "iPhone Air",
+        "slug": "iphone-air",
+        "bpid": "APPSMMOBTFDX4S",
+        "isMaster": true,
+        "brand": "Apple",
+        "category": "Smartphone",
+        "mop": 149900,
+        "prodPaymentMode": "BOTH",
+        "cardlessEmi": {
+          "monthly": 7663,
+          "tenureMonths": 24,
+          "downpayment": 7660,
+          "interest": 41675,
+          "total": 149900
+        },
+        "creditCardEmi": {
+          "monthly": 7127,
+          "total": 149900
+        },
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "iPhone 17 pro max",
@@ -246,21 +222,21 @@
         "isMaster": true,
         "brand": "Apple",
         "category": "Smartphone",
-        "mop": 136900,
+        "mop": 142900,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 6998,
+          "monthly": 7305,
           "tenureMonths": 24,
-          "downpayment": 6998,
-          "interest": 38050,
-          "total": 136900
+          "downpayment": 7302,
+          "interest": 39729,
+          "total": 142900
         },
         "creditCardEmi": {
-          "monthly": 6703,
-          "total": 136900
+          "monthly": 6794,
+          "total": 142900
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "MacBook Air M5",
@@ -269,44 +245,21 @@
         "isMaster": true,
         "brand": "Apple",
         "category": "Laptop",
-        "mop": 128900,
+        "mop": 138900,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 7152,
+          "monthly": 7101,
           "tenureMonths": 24,
-          "downpayment": 7152,
-          "interest": 38900,
-          "total": 139900
+          "downpayment": 7098,
+          "interest": 38617,
+          "total": 138900
         },
         "creditCardEmi": {
-          "monthly": 6311,
-          "total": 128900
+          "monthly": 6604,
+          "total": 138900
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
-      },
-      {
-        "name": "Galaxy Z Flip8 5G",
-        "slug": "galaxy-z-flip8-5g",
-        "bpid": "SAMSAMOBU4UI0G",
-        "isMaster": true,
-        "brand": "Samsung",
-        "category": "SAMOB",
-        "mop": 124999,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 5869,
-          "tenureMonths": 24,
-          "downpayment": 5869,
-          "interest": 31913,
-          "total": 114812
-        },
-        "creditCardEmi": {
-          "monthly": 5622,
-          "total": 114812
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy S26 Ultra",
@@ -315,21 +268,21 @@
         "isMaster": true,
         "brand": "Samsung",
         "category": "Smartphone",
-        "mop": 122999,
+        "mop": 134999,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 6288,
+          "monthly": 6901,
           "tenureMonths": 24,
-          "downpayment": 6288,
-          "interest": 34201,
-          "total": 122999
+          "downpayment": 6898,
+          "interest": 37532,
+          "total": 134999
         },
         "creditCardEmi": {
-          "monthly": 6022,
-          "total": 122999
+          "monthly": 6418,
+          "total": 134999
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "iPhone 17 Pro",
@@ -338,44 +291,90 @@
         "isMaster": true,
         "brand": "Apple",
         "category": "Smartphone",
-        "mop": 121900,
+        "mop": 134900,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 6232,
+          "monthly": 6896,
           "tenureMonths": 24,
-          "downpayment": 6232,
-          "interest": 33900,
-          "total": 121900
+          "downpayment": 6893,
+          "interest": 37505,
+          "total": 134900
         },
         "creditCardEmi": {
-          "monthly": 5969,
-          "total": 121900
+          "monthly": 6413,
+          "total": 134900
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Galaxy S26 Plus 5G",
-        "slug": "galaxy-s26-plus-5g",
-        "bpid": "SAMSMMOBQRYQ06",
+        "name": "Pixel 11 Pro XL",
+        "slug": "pixel-11-pro-xl",
+        "bpid": "GOOSAMOBJ5MVX1",
         "isMaster": true,
-        "brand": "Samsung",
-        "category": "Smartphone",
-        "mop": 110999,
+        "brand": "Google",
+        "category": "SAMOB",
+        "mop": 128999,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 5711,
+          "monthly": 6595,
           "tenureMonths": 24,
-          "downpayment": 0,
-          "interest": 31065,
-          "total": 105999
+          "downpayment": 6592,
+          "interest": 35864,
+          "total": 128999
         },
         "creditCardEmi": {
-          "monthly": 5190,
-          "total": 105999
+          "monthly": 6133,
+          "total": 128999
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Pixel 11 Pro",
+        "slug": "pixel-11-pro",
+        "bpid": "GOOSAMOBM4WN43",
+        "isMaster": true,
+        "brand": "Google",
+        "category": "SAMOB",
+        "mop": 112499,
+        "prodPaymentMode": "BOTH",
+        "cardlessEmi": {
+          "monthly": 5751,
+          "tenureMonths": 24,
+          "downpayment": 5749,
+          "interest": 31277,
+          "total": 112499
+        },
+        "creditCardEmi": {
+          "monthly": 5348,
+          "total": 112499
+        },
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Galaxy Z Flip8 5G",
+        "slug": "galaxy-z-flip8-5g",
+        "bpid": "SAMSAMOBU4UI0G",
+        "isMaster": true,
+        "brand": "Samsung",
+        "category": "SAMOB",
+        "mop": 106999,
+        "prodPaymentMode": "BOTH",
+        "cardlessEmi": {
+          "monthly": 5470,
+          "tenureMonths": 24,
+          "downpayment": 5468,
+          "interest": 29748,
+          "total": 106999
+        },
+        "creditCardEmi": {
+          "monthly": 5087,
+          "total": 106999
+        },
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy Z Flip7",
@@ -387,41 +386,18 @@
         "mop": 100999,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 4933,
+          "monthly": 5163,
           "tenureMonths": 24,
-          "downpayment": 4933,
-          "interest": 26829,
-          "total": 96496
+          "downpayment": 5161,
+          "interest": 28080,
+          "total": 100999
         },
         "creditCardEmi": {
-          "monthly": 4722,
-          "total": 96447
+          "monthly": 4802,
+          "total": 100999
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "iPhone Air",
-        "slug": "iphone-air",
-        "bpid": "APPSMMOBTFDX4S",
-        "isMaster": true,
-        "brand": "Apple",
-        "category": "Smartphone",
-        "mop": 99900,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 4954,
-          "tenureMonths": 24,
-          "downpayment": 4954,
-          "interest": 26950,
-          "total": 96900
-        },
-        "creditCardEmi": {
-          "monthly": 4696,
-          "total": 95900
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "iPhone 17",
@@ -430,44 +406,21 @@
         "isMaster": true,
         "brand": "Apple",
         "category": "Smartphone",
-        "mop": 82900,
+        "mop": 95900,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 4238,
+          "monthly": 4903,
           "tenureMonths": 24,
-          "downpayment": 4238,
-          "interest": 23050,
-          "total": 82900
+          "downpayment": 4900,
+          "interest": 26662,
+          "total": 95900
         },
         "creditCardEmi": {
-          "monthly": 4059,
-          "total": 82900
+          "monthly": 4559,
+          "total": 95900
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
-      },
-      {
-        "name": "X300 FE 5G",
-        "slug": "x300-fe-5g",
-        "bpid": "VIVSMMOBSNUBLW",
-        "isMaster": true,
-        "brand": "Vivo",
-        "category": "Smartphone",
-        "mop": 79999,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 4090,
-          "tenureMonths": 24,
-          "downpayment": 4090,
-          "interest": 22251,
-          "total": 79999
-        },
-        "creditCardEmi": {
-          "monthly": 3740,
-          "total": 76394
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy S26 5G",
@@ -476,90 +429,44 @@
         "isMaster": true,
         "brand": "Samsung",
         "category": "Smartphone",
-        "mop": 73999,
+        "mop": 93999,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 3783,
+          "monthly": 4805,
           "tenureMonths": 24,
-          "downpayment": 3783,
-          "interest": 20576,
-          "total": 73999
+          "downpayment": 4803,
+          "interest": 26134,
+          "total": 93999
         },
         "creditCardEmi": {
-          "monthly": 3623,
-          "total": 73999
+          "monthly": 4469,
+          "total": 93999
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Pixel 10",
-        "slug": "pixel-10",
-        "bpid": "GOOSMMOBGV3OMK",
+        "name": "Pixel 11",
+        "slug": "pixel-11",
+        "bpid": "GOOSAMOBXQE25Q",
         "isMaster": true,
         "brand": "Google",
-        "category": "Smartphone",
-        "mop": 68999,
+        "category": "SAMOB",
+        "mop": 79999,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 3417,
+          "monthly": 4090,
           "tenureMonths": 24,
-          "downpayment": 3417,
-          "interest": 18577,
-          "total": 66848
+          "downpayment": 4088,
+          "interest": 22241,
+          "total": 79999
         },
         "creditCardEmi": {
-          "monthly": 3378,
-          "total": 68999
+          "monthly": 3803,
+          "total": 79999
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
-      },
-      {
-        "name": "MacBook Neo",
-        "slug": "macbook-neo",
-        "bpid": "APPLALAPO9YFQD",
-        "isMaster": true,
-        "brand": "Apple",
-        "category": "Laptop",
-        "mop": 68900,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 3368,
-          "tenureMonths": 24,
-          "downpayment": 3368,
-          "interest": 18314,
-          "total": 65886
-        },
-        "creditCardEmi": {
-          "monthly": 3374,
-          "total": 68900
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
-      },
-      {
-        "name": "iPhone 16",
-        "slug": "iphone-16",
-        "bpid": "APPSMMOB1GW3EQ",
-        "isMaster": true,
-        "brand": "Apple",
-        "category": "Smartphone",
-        "mop": 66900,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 3471,
-          "tenureMonths": 24,
-          "downpayment": 3471,
-          "interest": 18875,
-          "total": 67900
-        },
-        "creditCardEmi": {
-          "monthly": 3276,
-          "total": 66900
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "iPhone 17e",
@@ -568,251 +475,67 @@
         "isMaster": true,
         "brand": "Apple",
         "category": "Smartphone",
-        "mop": 59900,
+        "mop": 79900,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 3062,
+          "monthly": 4085,
           "tenureMonths": 24,
-          "downpayment": 3062,
-          "interest": 16650,
-          "total": 59900
+          "downpayment": 4083,
+          "interest": 22214,
+          "total": 79900
         },
         "creditCardEmi": {
-          "monthly": 2801,
-          "total": 57199
+          "monthly": 3799,
+          "total": 79900
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "iPhone 15",
-        "slug": "iphone-15",
-        "bpid": "APPSMMOBGQ4731",
+        "name": "MacBook Neo",
+        "slug": "macbook-neo",
+        "bpid": "APPLALAPO9YFQD",
         "isMaster": true,
         "brand": "Apple",
-        "category": "Smartphone",
-        "mop": 59900,
+        "category": "Laptop",
+        "mop": 69900,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 2933,
+          "monthly": 3573,
           "tenureMonths": 24,
-          "downpayment": 2933,
-          "interest": 15942,
-          "total": 57383
+          "downpayment": 3572,
+          "interest": 19433,
+          "total": 69900
         },
         "creditCardEmi": {
-          "monthly": 2933,
-          "total": 59900
+          "monthly": 3323,
+          "total": 69900
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "signature",
-        "slug": "signature",
-        "bpid": "MOTSMMOBB46DVA",
+        "name": "Rover Medium Hard Luggage 70L (24 Inch, 65cm)",
+        "slug": "rover-medium-hard-luggage-70l-24-inch-65cm",
+        "bpid": "ASSLULUG92IF39",
         "isMaster": true,
-        "brand": "Motorola",
-        "category": "Smartphone",
-        "mop": 54999,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 6399,
         "prodPaymentMode": "BOTH",
         "cardlessEmi": {
-          "monthly": 2812,
+          "monthly": 327,
           "tenureMonths": 24,
-          "downpayment": 2812,
-          "interest": 15301,
-          "total": 54999
+          "downpayment": 327,
+          "interest": 1779,
+          "total": 6399
         },
         "creditCardEmi": {
-          "monthly": 2572,
-          "total": 52524
+          "monthly": 304,
+          "total": 6399
         },
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Pixel 10a",
-        "slug": "pixel-10a",
-        "bpid": "GOOSMMOBDQUT3M",
-        "isMaster": true,
-        "brand": "Google",
-        "category": "Smartphone",
-        "mop": 52999,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 2709,
-          "tenureMonths": 24,
-          "downpayment": 2709,
-          "interest": 14726,
-          "total": 52999
-        },
-        "creditCardEmi": {
-          "monthly": 2595,
-          "total": 52999
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
-      },
-      {
-        "name": "Phone 4a Pro 5G",
-        "slug": "phone-4a-pro-5g",
-        "bpid": "NOTSMMOB07ED6M",
-        "isMaster": true,
-        "brand": "Nothing",
-        "category": "Smartphone",
-        "mop": 47499,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 2428,
-          "tenureMonths": 24,
-          "downpayment": 2428,
-          "interest": 13201,
-          "total": 47499
-        },
-        "creditCardEmi": {
-          "monthly": 2221,
-          "total": 45362
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Edge 70 Pro Plus",
-        "slug": "edge-70-pro-plus",
-        "bpid": "MOTSMMOB3G07JI",
-        "isMaster": true,
-        "brand": "Motorola",
-        "category": "Smartphone",
-        "mop": 46999,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 2403,
-          "tenureMonths": 24,
-          "downpayment": 2403,
-          "interest": 13076,
-          "total": 46999
-        },
-        "creditCardEmi": {
-          "monthly": 2197,
-          "total": 44880
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Edge 70 Pro",
-        "slug": "edge-70-pro",
-        "bpid": "MOTSMMOBUP2I1F",
-        "isMaster": true,
-        "brand": "Motorola",
-        "category": "Smartphone",
-        "mop": 42999,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 2198,
-          "tenureMonths": 24,
-          "downpayment": 2198,
-          "interest": 11951,
-          "total": 42999
-        },
-        "creditCardEmi": {
-          "monthly": 2011,
-          "total": 41065
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Phone 4a 5G",
-        "slug": "phone-4a-5g",
-        "bpid": "NOTSMMOB755IM9",
-        "isMaster": true,
-        "brand": "Nothing",
-        "category": "Smartphone",
-        "mop": 41999,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 2147,
-          "tenureMonths": 24,
-          "downpayment": 2147,
-          "interest": 11676,
-          "total": 41999
-        },
-        "creditCardEmi": {
-          "monthly": 1964,
-          "total": 40108
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Phone (4b)",
-        "slug": "phone-4b",
-        "bpid": "NOTSMMOBK25WT5",
-        "isMaster": true,
-        "brand": "Nothing",
-        "category": "Smartphone",
-        "mop": 32299,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 1651,
-          "tenureMonths": 24,
-          "downpayment": 1651,
-          "interest": 8976,
-          "total": 32299
-        },
-        "creditCardEmi": {
-          "monthly": 1510,
-          "total": 30843
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Edge 70 Fusion",
-        "slug": "edge-70-fusion",
-        "bpid": "MOTSMMOBH1YG73",
-        "isMaster": true,
-        "brand": "Motorola",
-        "category": "Smartphone",
-        "mop": 29999,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 1534,
-          "tenureMonths": 24,
-          "downpayment": 1534,
-          "interest": 8351,
-          "total": 29999
-        },
-        "creditCardEmi": {
-          "monthly": 1403,
-          "total": 28648
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Edge 70",
-        "slug": "edge-70-1",
-        "bpid": "MOTSMMOB7676P7",
-        "isMaster": true,
-        "brand": "Motorola",
-        "category": "Smartphone",
-        "mop": 28999,
-        "prodPaymentMode": "BOTH",
-        "cardlessEmi": {
-          "monthly": 1482,
-          "tenureMonths": 24,
-          "downpayment": 1482,
-          "interest": 8051,
-          "total": 28999
-        },
-        "creditCardEmi": {
-          "monthly": 1356,
-          "total": 27691
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       }
     ],
     "notOffered": [
@@ -823,35 +546,12 @@
         "isMaster": true,
         "brand": "Apple",
         "category": "Laptop",
-        "mop": 284900,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": {
-          "monthly": 14012,
-          "tenureMonths": 24,
-          "downpayment": 14011,
-          "interest": 76210,
-          "total": 274089
-        },
-        "creditCardEmi": {
-          "monthly": 13321,
-          "total": 272062
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "X300 Ultra",
-        "slug": "x300-ultra",
-        "bpid": "VIVSMMOB4MNCSY",
-        "isMaster": true,
-        "brand": "Vivo",
-        "category": "Smartphone",
-        "mop": 144999,
+        "mop": 282900,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "EMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "17 Ultra",
@@ -865,7 +565,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "iPad Pro M5",
@@ -874,40 +574,82 @@
         "isMaster": true,
         "brand": "Apple",
         "category": "Tablet",
-        "mop": 131500,
+        "mop": 130900,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Find X9 Pro 5G",
-        "slug": "find-x9-pro-5g",
-        "bpid": "OPPSMMOBLJAHHO",
+        "name": "Watch Ultra 4",
+        "slug": "watch-ultra-4",
+        "bpid": "APPSMSMA5WNTNY",
         "isMaster": true,
-        "brand": "Oppo",
-        "category": "Smartphone",
-        "mop": 108499,
+        "brand": "Apple",
+        "category": "Smartwatch",
+        "mop": 124900,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Find X8 Pro 5G",
-        "slug": "oppo-find-x8-pro-5g",
-        "bpid": "OPPSMMOBM2QUZ3",
+        "name": "Watch Series 12 Ceramic",
+        "slug": "watch-series-12-ceramic-2",
+        "bpid": "APPSMSMAQJYPNC",
         "isMaster": true,
-        "brand": "Oppo",
-        "category": "Smartphone",
-        "mop": 98499,
+        "brand": "Apple",
+        "category": "Smartwatch",
+        "mop": 124900,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Watch Series 12 Titanium",
+        "slug": "watch-series-12-titanium-2",
+        "bpid": "APPSMSMAO8KICD",
+        "isMaster": true,
+        "brand": "Apple",
+        "category": "Smartwatch",
+        "mop": 99900,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Mac mini (M6)",
+        "slug": "mac-mini-m6",
+        "bpid": "APPACCOMMEB4WV",
+        "isMaster": true,
+        "brand": "Apple",
+        "category": "ACCOM",
+        "mop": 94900,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "17",
+        "slug": "17",
+        "bpid": "XIASAMOB8XYI0V",
+        "isMaster": true,
+        "brand": "Xiaomi",
+        "category": "SAMOB",
+        "mop": 87999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "iPad Air M4",
@@ -916,40 +658,26 @@
         "isMaster": true,
         "brand": "Apple",
         "category": "Tablet",
-        "mop": 84500,
+        "mop": 82900,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Find X9 5G",
-        "slug": "oppo-find-x9-5g",
-        "bpid": "OPPSMMOBS8V0BR",
+        "name": "Galaxy S26 FE",
+        "slug": "galaxy-s26-fe",
+        "bpid": "SAMSAMOBLI0WOH",
         "isMaster": true,
-        "brand": "Oppo",
-        "category": "Smartphone",
-        "mop": 73499,
+        "brand": "Samsung",
+        "category": "SAMOB",
+        "mop": 76999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Find X8 5G",
-        "slug": "oppo-find-x8-5g",
-        "bpid": "OPPSMMOBUB7GD6",
-        "isMaster": true,
-        "brand": "Oppo",
-        "category": "Smartphone",
-        "mop": 68499,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "AirPods Max 2",
@@ -958,12 +686,40 @@
         "isMaster": true,
         "brand": "Apple",
         "category": "Wireless audio",
-        "mop": 66900,
+        "mop": 73900,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
-        "cardEmiTenures": 4,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Pixel 10",
+        "slug": "pixel-10",
+        "bpid": "GOOSMMOBGV3OMK",
+        "isMaster": true,
+        "brand": "Google",
+        "category": "Smartphone",
+        "mop": 68999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "15, Intel Core 13th Gen i5-1334U, FHD, 15.6\"/39.62cm, Windows 11",
+        "slug": "15-intel-core-13th-gen-i5-1334u-fhd-1563962cm-windows-11",
+        "bpid": "DELLALAPNN01ZV",
+        "isMaster": true,
+        "brand": "DEL",
+        "category": "Laptop",
+        "mop": 68990,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Reno15Pro 5G",
@@ -977,7 +733,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "V15 Detect 240W Cordless Dry Vacuum Cleaner with Anti-tangle Technology",
@@ -991,44 +747,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "iPad Mini (A17 Pro)",
-        "slug": "ipad-mini",
-        "bpid": "APPTATAB7JV525",
-        "isMaster": true,
-        "brand": "Apple",
-        "category": "Tablet",
-        "mop": 65700,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Galaxy Watch Ultra2 (47mm, LTE)",
-        "slug": "galaxy-watch-ultra2-47mm-lte",
-        "bpid": "SAMSMSMAZNY17W",
-        "isMaster": true,
-        "brand": "Samsung",
-        "category": "Smartwatch",
-        "mop": 64999,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": {
-          "monthly": 3052,
-          "tenureMonths": 24,
-          "downpayment": 3052,
-          "interest": 16596,
-          "total": 59704
-        },
-        "creditCardEmi": {
-          "monthly": 2923,
-          "total": 59704
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "WashG1 Cordless Wet Floor Cleaner with Powerful Rotation",
@@ -1042,7 +761,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "iPad Mini (A17 Pro)",
+        "slug": "ipad-mini-a17-pro",
+        "bpid": "APPTATAB7JV525",
+        "isMaster": true,
+        "brand": "Apple",
+        "category": "Tablet",
+        "mop": 64900,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "V12S Detect Slim Submarine 150W Cordless Wet & Dry Vacuum Cleaner",
@@ -1056,21 +789,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Galaxy S25 FE",
-        "slug": "galaxy-s25-fe",
-        "bpid": "SAMSMMOB942QTH",
+        "name": "Reno16 5G",
+        "slug": "reno16-5g",
+        "bpid": "OPPSMMOBVQT5ER",
         "isMaster": true,
-        "brand": "Samsung",
+        "brand": "Oppo",
         "category": "Smartphone",
-        "mop": 60999,
+        "mop": 59799,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Reno15 Pro Mini 5G",
@@ -1084,35 +817,49 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "17T",
-        "slug": "17t-1",
-        "bpid": "XIASMMOBH8K87O",
+        "name": "signature",
+        "slug": "signature",
+        "bpid": "MOTSMMOBB46DVA",
         "isMaster": true,
-        "brand": "Xiaomi",
+        "brand": "Motorola",
         "category": "Smartphone",
+        "mop": 57999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Galaxy Watch Ultra2 (47mm, LTE)",
+        "slug": "galaxy-watch-ultra2-47mm-lte",
+        "bpid": "SAMSMSMAZNY17W",
+        "isMaster": true,
+        "brand": "Samsung",
+        "category": "Smartwatch",
         "mop": 56999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "V70 Elite 5G",
-        "slug": "vivo-v70-elite-5g",
-        "bpid": "VIVSMMOBP71DBO",
+        "name": "Watch Series 12 Aluminium",
+        "slug": "watch-series-12-aluminium",
+        "bpid": "APPSMSMAHI6TX2",
         "isMaster": true,
-        "brand": "Vivo",
-        "category": "Smartphone",
-        "mop": 55999,
+        "brand": "Apple",
+        "category": "Smartwatch",
+        "mop": 56900,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Reno14 Pro 5G",
@@ -1126,7 +873,63 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Edge 70 Max",
+        "slug": "edge-70-max",
+        "bpid": "MOASAMOBOVNMR0",
+        "isMaster": true,
+        "brand": "MOA",
+        "category": "SAMOB",
+        "mop": 52999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Phone 4a Pro 5G",
+        "slug": "phone-4a-pro-5g",
+        "bpid": "NOTSMMOB07ED6M",
+        "isMaster": true,
+        "brand": "Nothing",
+        "category": "Smartphone",
+        "mop": 52999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Pixel 10a",
+        "slug": "pixel-10a",
+        "bpid": "GOOSMMOBDQUT3M",
+        "isMaster": true,
+        "brand": "Google",
+        "category": "Smartphone",
+        "mop": 52999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Woburn III 150W Portable Bluetooth Speaker",
+        "slug": "woburn-iii-150w-portable-bluetooth-speaker",
+        "bpid": "MARAUAUDK6Q328",
+        "isMaster": true,
+        "brand": "Marshall",
+        "category": "Audio",
+        "mop": 50999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy A57 5G",
@@ -1140,21 +943,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "V70 5G",
-        "slug": "vivo-v70-5g",
-        "bpid": "VIVSMMOB3T4LBN",
-        "isMaster": true,
-        "brand": "Vivo",
-        "category": "Smartphone",
-        "mop": 49999,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Airwrap id 6-in-1 Multi Styler & Dryer with Bluetooth Enabled (Conical Barrel)",
@@ -1168,7 +957,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "V12 Detect Slim Absolute 150W Cordless Dry Vacuum Cleaner with Laser & Dust Detect Technology",
@@ -1182,35 +971,63 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Woburn III 150W Portable Bluetooth Speaker",
-        "slug": "woburn-iii-150w-portable-bluetooth-speaker",
-        "bpid": "MARAUAUDK6Q328",
+        "name": "Redmi Note 17 Pro Max 5G",
+        "slug": "redmi-note-17-pro-max-5g",
+        "bpid": "XIASAMOB82ECNC",
         "isMaster": true,
-        "brand": "Marshall",
-        "category": "Audio",
-        "mop": 47999,
+        "brand": "Xiaomi",
+        "category": "SAMOB",
+        "mop": 47499,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Reno15 5G",
-        "slug": "oppo-reno15-5g",
-        "bpid": "OPPSMMOB0FOMZU",
+        "name": "Edge 70 Pro Plus",
+        "slug": "edge-70-pro-plus",
+        "bpid": "MOTSMMOB3G07JI",
+        "isMaster": true,
+        "brand": "Motorola",
+        "category": "Smartphone",
+        "mop": 46999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "iPad (A16) 11th Gen",
+        "slug": "ipad",
+        "bpid": "APPTATABCQSFLO",
+        "isMaster": true,
+        "brand": "Apple",
+        "category": "Tablet",
+        "mop": 46900,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Reno 16c",
+        "slug": "reno-16c",
+        "bpid": "OPPSMMOB8QXCQF",
         "isMaster": true,
         "brand": "Oppo",
         "category": "Smartphone",
-        "mop": 46499,
+        "mop": 45999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Airwrap Multi-Styler and Dryer",
@@ -1224,21 +1041,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "iPad (A16) 11th Gen",
-        "slug": "ipad",
-        "bpid": "APPTATABCQSFLO",
+        "name": "8th Generation EZONE 100 Tennis Racquet | 4 1/4\" (G2)",
+        "slug": "8th-generation-ezone-100-tennis-racquet-or-4-14-g2",
+        "bpid": "YXXSPTRXHLAT6G",
         "isMaster": true,
-        "brand": "Apple",
-        "category": "Tablet",
-        "mop": 45400,
+        "brand": "YXX",
+        "category": "SPTRX",
+        "mop": 45000,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy Watch9 (44mm, LTE)",
@@ -1249,33 +1066,24 @@
         "category": "Smartwatch",
         "mop": 44999,
         "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": {
-          "monthly": 2113,
-          "tenureMonths": 24,
-          "downpayment": 2113,
-          "interest": 11494,
-          "total": 41331
-        },
-        "creditCardEmi": {
-          "monthly": 2024,
-          "total": 41331
-        },
+        "cardlessEmi": null,
+        "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Watch Series 11",
-        "slug": "watch-series-11",
-        "bpid": "APPSMSMAGT4N70",
+        "name": "Phone 4a 5G",
+        "slug": "phone-4a-5g",
+        "bpid": "NOTSMMOB755IM9",
         "isMaster": true,
-        "brand": "Apple",
-        "category": "Smartwatch",
-        "mop": 42900,
+        "brand": "Nothing",
+        "category": "Smartphone",
+        "mop": 42999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy Watch9 (40mm, LTE)",
@@ -1286,33 +1094,24 @@
         "category": "Smartwatch",
         "mop": 41999,
         "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": {
-          "monthly": 1972,
-          "tenureMonths": 24,
-          "downpayment": 1972,
-          "interest": 10724,
-          "total": 38576
-        },
-        "creditCardEmi": {
-          "monthly": 1889,
-          "total": 38576
-        },
+        "cardlessEmi": null,
+        "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Reno15c 5G",
-        "slug": "oppo-reno15c-5g",
-        "bpid": "OPPSMMOBNSBA6K",
+        "name": "Pixel Watch 5",
+        "slug": "pixel-watch-5-2",
+        "bpid": "GOOSMSMAD1IEOV",
         "isMaster": true,
-        "brand": "Oppo",
-        "category": "Smartphone",
-        "mop": 41999,
+        "brand": "Google",
+        "category": "Smartwatch",
+        "mop": 41900,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Supersonic Nural Hair Dryer",
@@ -1326,7 +1125,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "S2",
+        "slug": "s2",
+        "bpid": "VIVSAMOBYPTIO0",
+        "isMaster": true,
+        "brand": "Vivo",
+        "category": "SAMOB",
+        "mop": 40999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy Watch9 (44mm, Bluetooth)",
@@ -1337,33 +1150,10 @@
         "category": "Smartwatch",
         "mop": 40999,
         "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": {
-          "monthly": 1925,
-          "tenureMonths": 24,
-          "downpayment": 1925,
-          "interest": 10464,
-          "total": 37661
-        },
-        "creditCardEmi": {
-          "monthly": 1844,
-          "total": 37661
-        },
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "V70 FE 5G",
-        "slug": "v70-fe-5g",
-        "bpid": "VIVSMMOBSVY3GP",
-        "isMaster": true,
-        "brand": "Vivo",
-        "category": "Smartphone",
-        "mop": 40999,
-        "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy A37 5G",
@@ -1377,7 +1167,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "V11 Absolute 185W Cordless Dry Vacuum Cleaner with De-tangling Technology",
@@ -1391,7 +1181,35 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Edge 70 Pro",
+        "slug": "edge-70-pro",
+        "bpid": "MOTSMMOBJZX2LJ",
+        "isMaster": true,
+        "brand": "Motorola",
+        "category": "Smartphone",
+        "mop": 38999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Tufton 80 Watt Wireless Bluetooth Portable Speaker",
+        "slug": "tufton-80-watt-wireless-bluetooth-portable-speaker",
+        "bpid": "MARAUAUDHIAF7F",
+        "isMaster": true,
+        "brand": "Marshall",
+        "category": "Audio",
+        "mop": 38999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy Watch9 (40mm, Bluetooth)",
@@ -1402,19 +1220,24 @@
         "category": "Smartwatch",
         "mop": 37999,
         "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": {
-          "monthly": 1784,
-          "tenureMonths": 24,
-          "downpayment": 1784,
-          "interest": 9695,
-          "total": 34905
-        },
-        "creditCardEmi": {
-          "monthly": 1709,
-          "total": 34905
-        },
+        "cardlessEmi": null,
+        "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "SmartClean with Auto Bin S2, 9000Pa High Suction Robotic Vacuum Cleaner",
+        "slug": "smartclean-with-auto-bin-s2-9000pa-high-suction-robotic-vacuum-cleaner",
+        "bpid": "EURHOAPPV0LKGZ",
+        "isMaster": true,
+        "brand": "EUR",
+        "category": "Home appliance",
+        "mop": 37999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy Watch Ultra 2025 (47mm, LTE)",
@@ -1428,7 +1251,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "HDB-630 Hi-Res Wireless Headphones",
+        "slug": "hdb-630-hi-res-wireless-headphones",
+        "bpid": "SENWIWIRDMVSTN",
+        "isMaster": true,
+        "brand": "SEN",
+        "category": "Wireless audio",
+        "mop": 36999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy Watch 8 (44mm, LTE)",
@@ -1442,7 +1279,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Airwrap Origin 3-in-1 Hair Styler with Quick & Easy Styling (Advanced Coanda Technology)",
@@ -1456,7 +1293,49 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Phone (4b)",
+        "slug": "phone-4b",
+        "bpid": "NOTSMMOBK25WT5",
+        "isMaster": true,
+        "brand": "Nothing",
+        "category": "Smartphone",
+        "mop": 35999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Stanmore III 80W Bluetooth Speaker",
+        "slug": "stanmore-iii-80w-bluetooth-speaker",
+        "bpid": "MARAUAUD959C58",
+        "isMaster": true,
+        "brand": "Marshall",
+        "category": "Audio",
+        "mop": 35999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Redmi Note 15 Pro+ 5G",
+        "slug": "redmi-note-15-pro-5g",
+        "bpid": "XIASMMOB38F585",
+        "isMaster": true,
+        "brand": "Xiaomi",
+        "category": "Smartphone",
+        "mop": 35999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Galaxy Watch 8 (44mm, Bluetooth)",
@@ -1470,7 +1349,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Redmi Note 17 Pro 5G",
+        "slug": "redmi-note-17-pro-5g",
+        "bpid": "XIASAMOB1THHDL",
+        "isMaster": true,
+        "brand": "Xiaomi",
+        "category": "SAMOB",
+        "mop": 34999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "16 5G",
@@ -1484,21 +1377,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Airstrait 2-in-1 Hair Styler",
-        "slug": "dyson-airstrait-2-in-1-hair-styler",
-        "bpid": "DYSPEPERBB4RDT",
-        "isMaster": true,
-        "brand": "Dyson",
-        "category": "Personal care",
-        "mop": 34900,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Airstrait 2-in-1 Hair Styler (No Heat Damage Technology)",
@@ -1512,35 +1391,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Stanmore III 80W Bluetooth Speaker",
-        "slug": "stanmore-iii-80w-bluetooth-speaker",
-        "bpid": "MARAUAUD959C58",
+        "name": "Airstrait 2-in-1 Hair Styler",
+        "slug": "dyson-airstrait-2-in-1-hair-styler",
+        "bpid": "DYSPEPERBB4RDT",
         "isMaster": true,
-        "brand": "Marshall",
-        "category": "Audio",
-        "mop": 33599,
+        "brand": "Dyson",
+        "category": "Personal care",
+        "mop": 34900,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Tufton 80 Watt Wireless Bluetooth Portable Speaker",
-        "slug": "tufton-80-watt-wireless-bluetooth-portable-speaker",
-        "bpid": "MARAUAUDHIAF7F",
-        "isMaster": true,
-        "brand": "Marshall",
-        "category": "Audio",
-        "mop": 33599,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Kilburn III Portable Bluetooth Speaker with 50+ Hours of Portable Playtime",
@@ -1549,12 +1414,68 @@
         "isMaster": true,
         "brand": "Marshall",
         "category": "Audio",
-        "mop": 32399,
+        "mop": 33999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Pad (12.2inch) 2.8K 2000Nits OLED, MediaTek D8300",
+        "slug": "pad-122inch-28k-2000nits-oled-mediatek-d8300",
+        "bpid": "ASUTATABQVR4SG",
+        "isMaster": true,
+        "brand": "ASU",
+        "category": "Tablet",
+        "mop": 32990,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Momentum 5 Wireless",
+        "slug": "momentum-5-wireless",
+        "bpid": "SENWIWIRSV791B",
+        "isMaster": true,
+        "brand": "SEN",
+        "category": "Wireless audio",
+        "mop": 32792,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Edge 70",
+        "slug": "edge-70-1",
+        "bpid": "MOTSMMOB7676P7",
+        "isMaster": true,
+        "brand": "Motorola",
+        "category": "Smartphone",
+        "mop": 30499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Edge 70 Fusion",
+        "slug": "edge-70-fusion",
+        "bpid": "MOTSMMOBH1YG73",
+        "isMaster": true,
+        "brand": "Motorola",
+        "category": "Smartphone",
+        "mop": 29999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "HushJet Purifier Compact-HJ10",
@@ -1568,7 +1489,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "V8 Absolute 115W Cordless Dry Vacuum Cleaner with De-tangling Technology",
@@ -1582,12 +1503,26 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Y400 5G",
-        "slug": "vivo-y400-5g",
-        "bpid": "VIVSMMOBC1OM6V",
+        "name": "Nord CE 6 Lite",
+        "slug": "nord-ce-6-lite",
+        "bpid": "ONESAMOBC78C0I",
+        "isMaster": true,
+        "brand": "OnePlus",
+        "category": "SAMOB",
+        "mop": 28999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "T5X 5G",
+        "slug": "vivo-t5x-5g",
+        "bpid": "VIVSMMOBA5DTBK",
         "isMaster": true,
         "brand": "Vivo",
         "category": "Smartphone",
@@ -1596,7 +1531,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Magic Keyboard for iPad Pro 11\" (M5)",
@@ -1610,7 +1545,35 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Galaxy M47 5G",
+        "slug": "galaxy-m47-5g",
+        "bpid": "SAMSAMOBW4IQZM",
+        "isMaster": true,
+        "brand": "Samsung",
+        "category": "SAMOB",
+        "mop": 27999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Monitor III Active Noise Canceling Over Ear Bluetooth Headphones",
+        "slug": "monitor-iii-active-noise-canceling-over-ear-bluetooth-headphones",
+        "bpid": "MARAUAUDAJGS1K",
+        "isMaster": true,
+        "brand": "Marshall",
+        "category": "Audio",
+        "mop": 27999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Y51 pro 5g",
@@ -1624,35 +1587,77 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Phone 3a Lite 5G",
-        "slug": "phone-3a-lite-5g",
-        "bpid": "NOTSMMOBBV53PM",
+        "name": "SmartClean with Auto Bin Turbo, 7000Pa Hyper Suction Robotic Vacuum Cleaner",
+        "slug": "smart-clean-with-auto-bin-turbo-7000pa-hyper-suction-robotic-vacuum-cleaner",
+        "bpid": "EURHOAPPR0VF0S",
         "isMaster": true,
-        "brand": "Nothing",
-        "category": "Smartphone",
+        "brand": "EUR",
+        "category": "Home appliance",
         "mop": 27499,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Monitor III Active Noise Canceling Over Ear Bluetooth Headphones",
-        "slug": "monitor-iii-active-noise-canceling-over-ear-bluetooth-headphones",
-        "bpid": "MARAUAUDAJGS1K",
+        "name": "Galaxy F70 Pro 5G",
+        "slug": "galaxy-f70-pro-5g",
+        "bpid": "SAMSAMOBT1OSBE",
         "isMaster": true,
-        "brand": "Marshall",
-        "category": "Audio",
+        "brand": "Samsung",
+        "category": "SAMOB",
         "mop": 26999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Airpods pro 3rd Gen",
+        "slug": "airpods-pro-3rd-gen-1",
+        "bpid": "APPWIWIRPY9HKE",
+        "isMaster": true,
+        "brand": "Apple",
+        "category": "Wireless audio",
+        "mop": 26900,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Redmi Note 17 5G",
+        "slug": "redmi-note-17-5g",
+        "bpid": "REDSAMOBGX0OHU",
+        "isMaster": true,
+        "brand": "RED",
+        "category": "SAMOB",
+        "mop": 26499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Acton III 60W Portable Bluetooth Speaker",
+        "slug": "action-iii-60w-portable-bluetooth-speaker",
+        "bpid": "MARAUAUDTKBVWQ",
+        "isMaster": true,
+        "brand": "Marshall",
+        "category": "Audio",
+        "mop": 25999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "CY 23 Big Ball Bagless Dry Vacuum Cleaner",
@@ -1666,11 +1671,11 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Apple Magic Keyboard for iPad Air 11-inch (M3)",
-        "slug": "apple-magic-keyboard-for-ipad-air-11-inch-m3",
+        "name": "Magic Keyboard for iPad Air 11-inch (M3)",
+        "slug": "magic-keyboard-for-ipad-air-11-inch-m3",
         "bpid": "APPACACCJSWHE6",
         "isMaster": true,
         "brand": "Apple",
@@ -1680,7 +1685,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Note 15 SE",
+        "slug": "note-15-se",
+        "bpid": "XIASMMOB7XSCQS",
+        "isMaster": true,
+        "brand": "Xiaomi",
+        "category": "Smartphone",
+        "mop": 24999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "15x 5G",
@@ -1694,7 +1713,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Supersonic Hair Dryer with 4 Heat Settings and Cool Shot (Air Multiplier Technology)",
@@ -1708,77 +1727,49 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "T5X 5G",
-        "slug": "vivo-t5x-5g",
-        "bpid": "VIVSMMOBA5DTBK",
+        "name": "Momentum True Wireless 5 Earbuds",
+        "slug": "momentum-true-wireless-5-earbuds",
+        "bpid": "SENWIWIRGAG8SK",
         "isMaster": true,
-        "brand": "Vivo",
-        "category": "Smartphone",
-        "mop": 24499,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Acton III 60W Portable Bluetooth Speaker",
-        "slug": "action-iii-60w-portable-bluetooth-speaker",
-        "bpid": "MARAUAUDTKBVWQ",
-        "isMaster": true,
-        "brand": "Marshall",
-        "category": "Audio",
-        "mop": 23999,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Airpods pro 3rd Gen",
-        "slug": "airpods-pro-3rd-gen-1",
-        "bpid": "APPWIWIRPY9HKE",
-        "isMaster": true,
-        "brand": "Apple",
+        "brand": "SEN",
         "category": "Wireless audio",
-        "mop": 23700,
+        "mop": 24592,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Note 15 SE",
-        "slug": "note-15-se",
-        "bpid": "XIASMMOB7XSCQS",
+        "name": "Redmi 17 5G",
+        "slug": "redmi-17-5g",
+        "bpid": "XIASAMOBGSLSZJ",
         "isMaster": true,
         "brand": "Xiaomi",
-        "category": "Smartphone",
+        "category": "SAMOB",
         "mop": 22999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Watch SE 3",
-        "slug": "watch-se-3",
-        "bpid": "APPSMSMAUI3D1A",
+        "name": "Galaxy Buds4 Pro",
+        "slug": "galaxy-buds4-pro",
+        "bpid": "SAMWIWIRMDQU5T",
         "isMaster": true,
-        "brand": "Apple",
-        "category": "Smartwatch",
-        "mop": 22900,
+        "brand": "Samsung",
+        "category": "Wireless audio",
+        "mop": 22999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Sense 2 Health & Fitness Watch",
@@ -1787,12 +1778,26 @@
         "isMaster": true,
         "brand": "FIT",
         "category": "Smartwatch",
-        "mop": 22499,
+        "mop": 22999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
-        "cardEmiTenures": 4,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Pixel Buds Pro 2 Bluetooth Headset",
+        "slug": "pixel-buds-pro-2-bluetooth-headset",
+        "bpid": "GOOSMSMAPG2EO8",
+        "isMaster": true,
+        "brand": "Google",
+        "category": "Smartwatch",
+        "mop": 22400,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Headphone (1) Hybrid Active Noise Cancelling Headphones",
@@ -1806,35 +1811,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Y31 5G",
-        "slug": "vivo-y31-5g",
-        "bpid": "VIVSMMOBQFSP0N",
+        "name": "Momentum True Wireless 4 Earbuds",
+        "slug": "momentum-true-wireless-4-earbuds",
+        "bpid": "SENWIWIRXPWAWI",
         "isMaster": true,
-        "brand": "Vivo",
-        "category": "Smartphone",
-        "mop": 19999,
+        "brand": "SEN",
+        "category": "Wireless audio",
+        "mop": 20990,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "C85",
-        "slug": "c85",
-        "bpid": "REASMMOBAPWA5X",
-        "isMaster": true,
-        "brand": "Realme",
-        "category": "Smartphone",
-        "mop": 19499,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Y21 5G",
@@ -1843,12 +1834,26 @@
         "isMaster": true,
         "brand": "Vivo",
         "category": "Smartphone",
-        "mop": 18999,
+        "mop": 20499,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Momentum 4 Wireless",
+        "slug": "momentum-4-wireless",
+        "bpid": "SENWIWIRVCOSL4",
+        "isMaster": true,
+        "brand": "SEN",
+        "category": "Wireless audio",
+        "mop": 20492,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Versa 4 Fitness Watch",
@@ -1857,12 +1862,40 @@
         "isMaster": true,
         "brand": "FIT",
         "category": "Smartwatch",
-        "mop": 18499,
+        "mop": 18999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
-        "cardEmiTenures": 4,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "LinkBuds Clip Open-Ear Truly Wireless Earbuds",
+        "slug": "linkbuds-clip-open-ear-truly-wireless-earbuds",
+        "bpid": "SOAWIWIRHCQJWC",
+        "isMaster": true,
+        "brand": "SOA",
+        "category": "Wireless audio",
+        "mop": 18990,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Wing Compact Baby Stroller",
+        "slug": "wing-compact-baby-stroller",
+        "bpid": "BXXKSSPMOOWBHH",
+        "isMaster": true,
+        "brand": "BXX",
+        "category": "KSSPM",
+        "mop": 17999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Milton A.N.C. Wireless On-Ear Headphones with Adaptive Active Noise Cancelling",
@@ -1876,21 +1909,35 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Motif II ANC - True Wireless Active Noise Cancelling Bluetooth Headphones",
-        "slug": "motif-ii-anc-true-wireless-active-noise-cancelling-bluetooth-headphones",
-        "bpid": "MARAUAUDQ6UVW5",
+        "name": "HT-S20R Real 5.1ch Dolby Digital Soundbar for TV with subwoofer",
+        "slug": "ht-s20r-real-51ch-dolby-digital-soundbar-for-tv-with-subwoofer",
+        "bpid": "SOAAUAUDV4SYE9",
         "isMaster": true,
-        "brand": "Marshall",
+        "brand": "SOA",
         "category": "Audio",
-        "mop": 17999,
+        "mop": 17990,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Galaxy Buds4",
+        "slug": "galaxy-buds4",
+        "bpid": "SAMWIWIRM6T0P9",
+        "isMaster": true,
+        "brand": "Samsung",
+        "category": "Wireless audio",
+        "mop": 16999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Airshot All in 1 Hair Multi Styler",
@@ -1904,12 +1951,12 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Airpods 4 (ANC)",
-        "slug": "airpods-4-with-anc",
-        "bpid": "APPWIWIRVLTBNE",
+        "name": "AirPods 5 with Wireless Charging Case",
+        "slug": "airpods-5-with-wireless-charging-case",
+        "bpid": "APPWIWIRG8ABBA",
         "isMaster": true,
         "brand": "Apple",
         "category": "Wireless audio",
@@ -1918,21 +1965,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "C83 5G",
-        "slug": "c83-5g",
-        "bpid": "REASMMOBWJ0D1Q",
+        "name": "REDMI 15A 5G",
+        "slug": "redmi-15a-5g",
+        "bpid": "XIASAMOBKSHM4P",
         "isMaster": true,
-        "brand": "Realme",
-        "category": "Smartphone",
-        "mop": 16499,
+        "brand": "Xiaomi",
+        "category": "SAMOB",
+        "mop": 15999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Emberton III",
@@ -1941,12 +1988,26 @@
         "isMaster": true,
         "brand": "Marshall",
         "category": "Audio",
-        "mop": 16199,
+        "mop": 15999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "VCORE PRO 97 Tennis Racquet G4 3/8",
+        "slug": "vcore-pro-97-tennis-racquet-g4-38",
+        "bpid": "YXXSPTRX58ZR8I",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPTRX",
+        "mop": 15491,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Transit Set of 3 Luggage Trolley Bag",
@@ -1955,12 +2016,40 @@
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
-        "mop": 15899,
+        "mop": 15398,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "AirPods 5",
+        "slug": "airpods-5",
+        "bpid": "APPWIWIRYJGK6E",
+        "isMaster": true,
+        "brand": "Apple",
+        "category": "Wireless audio",
+        "mop": 14900,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Redmi A7 Pro 5G",
+        "slug": "redmi-a7-pro-5g",
+        "bpid": "XIASAMOBMKC1BB",
+        "isMaster": true,
+        "brand": "Xiaomi",
+        "category": "SAMOB",
+        "mop": 14199,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Aisle Trunk Set of 3 Luggage Trolley Bag",
@@ -1969,26 +2058,54 @@
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
+        "mop": 14198,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Motif II ANC - True Wireless Active Noise Cancelling Bluetooth Headphones",
+        "slug": "motif-ii-anc-true-wireless-active-noise-cancelling-bluetooth-headphones",
+        "bpid": "MARAUAUDQ6UVW5",
+        "isMaster": true,
+        "brand": "Marshall",
+        "category": "Audio",
         "mop": 13999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Major V",
-        "slug": "marshall-major-v-1",
-        "bpid": "MARWIWIR1TKX0Y",
+        "name": "The Cabin Pro - 40L",
+        "slug": "the-cabin-pro",
+        "bpid": "MOKLULUGSD18VF",
         "isMaster": true,
-        "brand": "Marshall",
-        "category": "Wireless audio",
+        "brand": "Mokobara",
+        "category": "Luggage",
+        "mop": 13599,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Redmi A7 Pro",
+        "slug": "redmi-a7-pro",
+        "bpid": "XIASAMOB7DWHO3",
+        "isMaster": true,
+        "brand": "Xiaomi",
+        "category": "SAMOB",
         "mop": 13499,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Charge 6",
@@ -1997,26 +2114,12 @@
         "isMaster": true,
         "brand": "FIT",
         "category": "WEFIT",
-        "mop": 12999,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 4,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Flip 7 Wireless Portable Bluetooth Speaker",
-        "slug": "jbl-flip-7",
-        "bpid": "JBLAUAUD10QE32",
-        "isMaster": true,
-        "brand": "JBL",
-        "category": "Audio",
-        "mop": 12999,
+        "mop": 13499,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "AIR SLEEK WET-TO-DRY Hair Straightener",
@@ -2030,21 +2133,63 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "The Cabin Pro - 40L",
-        "slug": "the-cabin-pro",
-        "bpid": "MOKLULUGSD18VF",
+        "name": "FitBit Air",
+        "slug": "fitbit-air",
+        "bpid": "GOOSMSMAPNTF65",
         "isMaster": true,
-        "brand": "Mokobara",
-        "category": "Luggage",
-        "mop": 12599,
+        "brand": "Google",
+        "category": "Smartwatch",
+        "mop": 12899,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Redmi A7",
+        "slug": "redmi-a7",
+        "bpid": "XIASAMOBT5YILQ",
+        "isMaster": true,
+        "brand": "Xiaomi",
+        "category": "SAMOB",
+        "mop": 12499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Pixel Buds 2a Bluetooth Headset",
+        "slug": "pixel-buds-2a-bluetooth-headset",
+        "bpid": "GOOWIWIRF8VFDV",
+        "isMaster": true,
+        "brand": "Google",
+        "category": "Wireless audio",
+        "mop": 12499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "ACCENTUM Plus Wireless Over Ear Headphones",
+        "slug": "accentum-plus-wireless-over-ear-headphones",
+        "bpid": "SENWIWIRLMENPA",
+        "isMaster": true,
+        "brand": "SEN",
+        "category": "Wireless audio",
+        "mop": 12292,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Luma ZERO COATING Pure Glass Air Fryer Oven",
@@ -2058,21 +2203,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Airpods 4",
-        "slug": "aipods-4-without-noise-cancellation",
-        "bpid": "APPWIWIRNUDA7S",
-        "isMaster": true,
-        "brand": "Apple",
-        "category": "Wireless audio",
-        "mop": 11900,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Ear TWS Earbuds with Active Noise Cancellation",
@@ -2086,25 +2217,11 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Apple Pencil (2nd Generation)",
-        "slug": "apple-pencil-2nd-generation",
-        "bpid": "APPACACCD9Y3WA",
-        "isMaster": true,
-        "brand": "Apple",
-        "category": "Accessory",
-        "mop": 11300,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Apple Pencil Pro",
-        "slug": "apple-pencil-pro",
+        "name": "Pencil Pro",
+        "slug": "pencil-pro",
         "bpid": "APPACACCMPT84E",
         "isMaster": true,
         "brand": "Apple",
@@ -2114,49 +2231,91 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Inspire 3 Health & Fitness Tracker",
-        "slug": "inspire-3-health-and-fitness-tracker",
-        "bpid": "FITWEFIT74LF7U",
+        "name": "Pencil (2nd Generation)",
+        "slug": "pencil-2nd-generation",
+        "bpid": "APPACACCD9Y3WA",
         "isMaster": true,
-        "brand": "FIT",
-        "category": "WEFIT",
-        "mop": 10999,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 4,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Minor IV Wireless In-Ear Earbuds",
-        "slug": "minor-iv-wireless-in-ear-earbuds",
-        "bpid": "MARWIWIR9A2AG8",
-        "isMaster": true,
-        "brand": "Marshall",
-        "category": "Wireless audio",
-        "mop": 10799,
+        "brand": "Apple",
+        "category": "Accessory",
+        "mop": 11300,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Willen II 38W Portable Bluetooth Speaker",
-        "slug": "marshall-willen-ii",
-        "bpid": "MARAUAUDKX2SWG",
+        "name": "Flip 7 Wireless Portable Bluetooth Speaker",
+        "slug": "jbl-flip-7",
+        "bpid": "JBLAUAUD10QE32",
+        "isMaster": true,
+        "brand": "JBL",
+        "category": "Audio",
+        "mop": 10999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Accentum Headphone",
+        "slug": "accentum-headphone",
+        "bpid": "SENWIWIRXDO0N5",
+        "isMaster": true,
+        "brand": "SEN",
+        "category": "Wireless audio",
+        "mop": 10652,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Major V",
+        "slug": "marshall-major-v-1",
+        "bpid": "MARWIWIR1TKX0Y",
         "isMaster": true,
         "brand": "Marshall",
-        "category": "Audio",
+        "category": "Wireless audio",
         "mop": 9999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "HT-S100F 2.0 Ch Dolby Audio Soundbar",
+        "slug": "ht-s100f-20-ch-dolby-audio-soundbar",
+        "bpid": "SOAAUAUDUQRDXK",
+        "isMaster": true,
+        "brand": "SOA",
+        "category": "Audio",
+        "mop": 9990,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "SA-D40M2 All in One 4.1ch Home Theatre System with 100W Power Output",
+        "slug": "sa-d40m2-all-in-one-41ch-home-theatre-system-with-100w-power-output",
+        "bpid": "SOAAUAUD9PQW2M",
+        "isMaster": true,
+        "brand": "SOA",
+        "category": "Audio",
+        "mop": 9990,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Transit Set of 2 Luggage Trolley Bag",
@@ -2165,12 +2324,12 @@
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
-        "mop": 9899,
+        "mop": 9898,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Digital Air Fryer Oven 12L | 1800W | 360° Rapid Heat Circulation",
@@ -2184,7 +2343,35 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Live 770NC",
+        "slug": "live-770nc",
+        "bpid": "JBLWIWIRE8BXZS",
+        "isMaster": true,
+        "brand": "JBL",
+        "category": "Wireless audio",
+        "mop": 9299,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Aisle Trunk Set of 2 Luggage Trolley Bag",
+        "slug": "aisle-trunk-set-of-2-luggage-trolley-bag",
+        "bpid": "MOKLULUGEP6HQ3",
+        "isMaster": true,
+        "brand": "Mokobara",
+        "category": "Luggage",
+        "mop": 9298,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Magic Keyboard (USB–C)",
@@ -2198,7 +2385,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "140W USB-C Power Adapter",
@@ -2212,21 +2399,63 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Aisle Trunk Set of 2 Luggage Trolley Bag",
-        "slug": "aisle-trunk-set-of-2-luggage-trolley-bag",
-        "bpid": "MOKLULUGEP6HQ3",
+        "name": "Willen II 38W Portable Bluetooth Speaker",
+        "slug": "marshall-willen-ii",
+        "bpid": "MARAUAUDKX2SWG",
         "isMaster": true,
-        "brand": "Mokobara",
-        "category": "Luggage",
+        "brand": "Marshall",
+        "category": "Audio",
         "mop": 8999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Airpod 3",
+        "slug": "airpod-3",
+        "bpid": "APPWIWIRQ5AZ9O",
+        "isMaster": true,
+        "brand": "Apple",
+        "category": "Wireless audio",
+        "mop": 8900,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Inspire 3 Health & Fitness Tracker",
+        "slug": "inspire-3-health-and-fitness-tracker",
+        "bpid": "FITWEFIT74LF7U",
+        "isMaster": true,
+        "brand": "FIT",
+        "category": "WEFIT",
+        "mop": 8499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Minor IV Wireless In-Ear Earbuds",
+        "slug": "minor-iv-wireless-in-ear-earbuds",
+        "bpid": "MARWIWIR9A2AG8",
+        "isMaster": true,
+        "brand": "Marshall",
+        "category": "Wireless audio",
+        "mop": 8499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "96W USB-C Power Adapter",
@@ -2240,21 +2469,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "The Teriyaki Backpack",
-        "slug": "the-teriyaki-backpack",
-        "bpid": "MOKLULUG23A2BC",
-        "isMaster": true,
-        "brand": "Mokobara",
-        "category": "Luggage",
-        "mop": 7999,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "CMF BY Nothing Headphone Pro",
@@ -2268,7 +2483,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Ear (a) Wireless Earbuds",
@@ -2282,7 +2497,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "The Teriyaki Backpack",
+        "slug": "the-teriyaki-backpack",
+        "bpid": "MOKLULUG23A2BC",
+        "isMaster": true,
+        "brand": "Mokobara",
+        "category": "Luggage",
+        "mop": 7798,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Pencil (USB-C)",
@@ -2296,7 +2525,49 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Rover Large Hard Luggage 110L (28 Inch, 75cm)",
+        "slug": "rover-large-hard-luggage-110l-28-inch-75cm",
+        "bpid": "ASSLULUGQYSSRE",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 7399,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Cyclo Vac -24 kPa High Suction Vacuum Cleaner",
+        "slug": "cyclo-vac-24-kpa-high-suction-vacuum-cleaner",
+        "bpid": "EURHOAPPKL6O61",
+        "isMaster": true,
+        "brand": "EUR",
+        "category": "Home appliance",
+        "mop": 7199,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Wet & Dry Armor Vacuum Cleaner",
+        "slug": "wet-and-dry-armor-vacuum-cleaner",
+        "bpid": "EURHOAPPTPRZ26",
+        "isMaster": true,
+        "brand": "EUR",
+        "category": "Home appliance",
+        "mop": 7100,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "The Dodge Backpack",
@@ -2305,12 +2576,54 @@
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
-        "mop": 6999,
+        "mop": 7098,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "VCORE 25 Inch 6th Gen Junior Tennis Racquet | 240g | 100 sq. in.",
+        "slug": "vcore-25-inch-6th-gen-junior-tennis-racquet-or-240g-or-100-sq-in",
+        "bpid": "YXXSPTRXE5DMIK",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPTRX",
+        "mop": 6499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Odyssey Large Hard Luggage 110L (28 Inch, 75cm)",
+        "slug": "odyssey-large-hard-luggage-110l-28-inch-75cm",
+        "bpid": "ASSLULUGLVU8KF",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 6399,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Oblique Large Hard Luggage 105L (28 Inch, 75cm)",
+        "slug": "oblique-large-hard-luggage-105l-28-inch-75cm",
+        "bpid": "ASSLULUGM8V5LP",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 6399,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Buds 4 TWS Earbuds",
@@ -2324,7 +2637,35 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Belle Tote",
+        "slug": "the-belle-tote-bag-for-women-or-premium-vegan-leather-office-handbag",
+        "bpid": "MOKLULUG8P74WW",
+        "isMaster": true,
+        "brand": "Mokobara",
+        "category": "Luggage",
+        "mop": 6098,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Sunflower Tote",
+        "slug": "women-the-sunflower-work-tote-bag",
+        "bpid": "MOKLULUGGE03GP",
+        "isMaster": true,
+        "brand": "Mokobara",
+        "category": "Luggage",
+        "mop": 6098,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Transit Check-in Luggage Trolley Bag - 64cm (65L)",
@@ -2333,12 +2674,12 @@
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
-        "mop": 5899,
+        "mop": 6098,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Transit Cabin Overnighter Luggage Trolley Bag - 45cm(44L)",
@@ -2347,12 +2688,12 @@
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
-        "mop": 5899,
+        "mop": 6098,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "The Transit Cabin Pro - 40L",
@@ -2361,12 +2702,82 @@
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
+        "mop": 6098,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Nomad Pro 140W GaN Charger",
+        "slug": "nomad-pro-140w-gan-charger",
+        "bpid": "STUACACCQZQK4S",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 6000,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "ACCENTUM Open True Wireless Earbuds",
+        "slug": "accentum-open-true-wireless-earbuds",
+        "bpid": "SENWIWIR9BCKZR",
+        "isMaster": true,
+        "brand": "SEN",
+        "category": "Wireless audio",
+        "mop": 5990,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "HD 350BT Wireless Headphones",
+        "slug": "hd-350bt-wireless-headphones",
+        "bpid": "SENWIWIRVT4NHI",
+        "isMaster": true,
+        "brand": "SEN",
+        "category": "Wireless audio",
+        "mop": 5990,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Oblique Pro Cabin Hard Luggage 54L (20 Inch)",
+        "slug": "oblique-pro-cabin-hard-luggage-54l-20-inch",
+        "bpid": "ASSLULUGZOW1QE",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
         "mop": 5899,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Rover Pro Cabin Hard Luggage 50L (20 Inch, 55cm)",
+        "slug": "rover-pro-cabin-hard-luggage-50l-20-inch-55cm",
+        "bpid": "ASSLULUGXUVTVS",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 5899,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Aisle Trunk Check-in Luggage Trolley Bag- 65cm (70L)",
@@ -2375,26 +2786,40 @@
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
-        "mop": 5799,
+        "mop": 5899,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "E Coffee Machine",
-        "slug": "e-coffee-machine",
-        "bpid": "NESHOAPPEXQPJS",
+        "name": "Astrid Tote",
+        "slug": "the-astrid-tote-bag-for-women-or-premium-vegan-leather-office-handbag",
+        "bpid": "MOKLULUGJKYIK5",
         "isMaster": true,
-        "brand": "Nestle",
-        "category": "Home appliance",
-        "mop": 5699,
+        "brand": "Mokobara",
+        "category": "Luggage",
+        "mop": 5698,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "The Easy Going Tote",
+        "slug": "the-easy-going-tote",
+        "bpid": "MOKLULUG29V30W",
+        "isMaster": true,
+        "brand": "Mokobara",
+        "category": "Luggage",
+        "mop": 5698,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "35W Dual USB-C Port Power Adapter",
@@ -2408,35 +2833,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Buds 2 Plus",
-        "slug": "buds-2-plus-1",
-        "bpid": "MOTWIWIRI2UDJX",
-        "isMaster": true,
-        "brand": "Motorola",
-        "category": "Wireless audio",
-        "mop": 5399,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Home Rapid Air Fryer (4.2 ltr, 1400 W)",
-        "slug": "air-fryer-for-home-42-liter-with-rapidair-technology-black-with-additional-1-yr-warranty-by-philips-uses-up-to-90percent-less-fat",
-        "bpid": "PHIHOAPPPUG4M6",
-        "isMaster": true,
-        "brand": "Philips",
-        "category": "Home appliance",
-        "mop": 5299,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "The Transit Backpack - 30L",
@@ -2445,12 +2842,138 @@
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
+        "mop": 5499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Odyssey Pro Cabin Hard Luggage 50L (20 Inch)",
+        "slug": "odyssey-pro-cabin-hard-luggage-50l-20-inch",
+        "bpid": "ASSLULUGYW4MNA",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 5399,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Rover Cabin Hard Luggage 45L (20 Inch, 55cm)",
+        "slug": "rover-cabin-hard-luggage-45l-20-inch-55cm",
+        "bpid": "ASSLULUGES661M",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 5399,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Oblique Medium Hard Luggage 70L (24 Inch, 65cm)",
+        "slug": "oblique-medium-hard-luggage-70l-24-inch-65cm",
+        "bpid": "ASSLULUGYZW0OL",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 5399,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Dawn Tote",
+        "slug": "the-dawn-tote-bag-for-women-or-premium-vegan-leather-office",
+        "bpid": "MOKLULUGCLROG2",
+        "isMaster": true,
+        "brand": "Mokobara",
+        "category": "Luggage",
+        "mop": 5198,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Tune 770NC",
+        "slug": "tune-770nc",
+        "bpid": "JBLWIWIRF21P5J",
+        "isMaster": true,
+        "brand": "JBL",
+        "category": "Wireless audio",
+        "mop": 4999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "The Autopilot Backpack - 35L",
+        "slug": "the-autopilot-backpack-35l",
+        "bpid": "MOKLULUGS4D99L",
+        "isMaster": true,
+        "brand": "Mokobara",
+        "category": "Luggage",
+        "mop": 4998,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Odyssey Medium Hard Luggage 80L (24 Inch, 65cm)",
+        "slug": "odyssey-medium-hard-luggage-80l-24-inch-65cm",
+        "bpid": "ASSLULUG9LBEW0",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
         "mop": 4899,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Stark Pro Overnighter Luggage Trolley Bag 42L (17 Inch, 42cm)",
+        "slug": "stark-pro-overnighter-luggage-trolley-bag-42l-17-inch-42cm",
+        "bpid": "ASSLULUG9DRGTP",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 4899,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Smash Heat Tennis Racquet | 290g | 100 sq. in. | G3 (4 3/8\") | Strung",
+        "slug": "smash-heat-tennis-racquet-or-290g-or-100-sq-in-or-g3-4-38-or-strung",
+        "bpid": "YXXSPTRXGORJ1R",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPTRX",
+        "mop": 4879,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Home Air Fryer (4.2 ltr, 1500 W)",
@@ -2464,7 +2987,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Omni Pro Qi2.2 Certified 25W MagSafe Powerbank 10000mAh with Apple Watch Charger",
+        "slug": "omni-pro-qi22-certified-25w-magsafe-powerbank-10000mah-with-apple-watch-charger",
+        "bpid": "STUACACC8X42VP",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 4800,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "The Aisle Trunk - Cabin 40 L",
@@ -2473,26 +3010,68 @@
         "isMaster": true,
         "brand": "Mokobara",
         "category": "Luggage",
-        "mop": 4799,
+        "mop": 4698,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "The Autopilot Backpack - 35L",
-        "slug": "the-autopilot-backpack-35l",
-        "bpid": "MOKLULUGS4D99L",
+        "name": "WF-C510 Truly Wireless Headphones",
+        "slug": "wf-c510-truly-wireless-headphones",
+        "bpid": "SOAWIWIRNJK9XF",
         "isMaster": true,
-        "brand": "Mokobara",
-        "category": "Luggage",
-        "mop": 4799,
+        "brand": "SOA",
+        "category": "Wireless audio",
+        "mop": 4500,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Remix Modish Sneaker",
+        "slug": "remix-modish-sneaker-2",
+        "bpid": "NEEFWMFXBD632V",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 4499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Remix Vintage Sneaker For Men",
+        "slug": "remix-vintage-sneaker-for-men",
+        "bpid": "NEEFWMFXPWZ8S3",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 4499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Oblique Cabin Hard Luggage 45L (20 Inch, 55cm)",
+        "slug": "oblique-cabin-hard-luggage-45l-20-inch-55cm",
+        "bpid": "ASSLULUGBFV5DQ",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 4399,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Regenta Espresso Coffee Maker 5-Bar with Steamer",
@@ -2506,21 +3085,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "Platinum Digital Air Fryer (5 ltr, 1450 W)",
-        "slug": "platinum-digital-air-fryer-5-ltr-1450-w",
-        "bpid": "WONHOAPP5C1AHI",
-        "isMaster": true,
-        "brand": "Wonderchef",
-        "category": "Home appliance",
-        "mop": 4299,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "CMF BY NOTHING Buds Pro 2",
@@ -2534,7 +3099,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Mode USB-C wired earphones",
@@ -2543,54 +3108,82 @@
         "isMaster": true,
         "brand": "Marshall",
         "category": "Mobile accessory",
-        "mop": 4049,
+        "mop": 4199,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "The Easy Going Tote",
-        "slug": "the-easy-going-tote",
-        "bpid": "MOKLULUG29V30W",
+        "name": "NANOFLARE 1000 Play Badminton Racquet",
+        "slug": "nanoflare-1000-play-badminton-racquet",
+        "bpid": "YXXSPRQXMDE9IG",
         "isMaster": true,
-        "brand": "Mokobara",
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 4053,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Odyssey Cabin Hard Luggage 45L (20 Inch, 55cm)",
+        "slug": "odyssey-cabin-hard-luggage-45l-20-inch-55cm",
+        "bpid": "ASSLULUG6E4W0L",
+        "isMaster": true,
+        "brand": "ASS",
         "category": "Luggage",
         "mop": 3999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Nord Buds 4 Pro TWS",
-        "slug": "nord-buds-4-pro-tws",
-        "bpid": "ONEWIWIRZN89IT",
+        "name": "Galaxy 20000mAh Power Bank, Wired Battery Pack",
+        "slug": "galaxy-20000mah-power-bank-wired-battery-pack",
+        "bpid": "SAMACACCM2F3P8",
         "isMaster": true,
-        "brand": "OnePlus",
-        "category": "Wireless audio",
-        "mop": 3899,
+        "brand": "Samsung",
+        "category": "Accessory",
+        "mop": 3999,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Wireless Ultra Portable Bluetooth Speaker (GO4)",
-        "slug": "go-4-wireless-ultra-portable-bluetooth-speaker",
-        "bpid": "JBLAUAUDWHFY5Z",
+        "name": "ARCSABER 11 Play Badminton Racquet",
+        "slug": "arcsaber-11-play-badminton-racquet",
+        "bpid": "YXXSPRQX7OAHMT",
         "isMaster": true,
-        "brand": "JBL",
-        "category": "Audio",
-        "mop": 3899,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 3913,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "ASTROX 99 Play Badminton Racquet | 4U G5",
+        "slug": "astrox-99-play-badminton-racquet-or-4u-g5",
+        "bpid": "YXXSPRQXE91MHC",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 3913,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Nutrifry Digital Air Fryer (4.5 ltr, 1200 W)",
@@ -2604,7 +3197,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "CMF by Nothing 100 W Power GaN 5 A 3 Port Mobile Charger with Detachable Cable",
@@ -2618,7 +3211,63 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Astrox 88 Play Badminton Racquet",
+        "slug": "astrox-88-play-badminton-racquet",
+        "bpid": "YXXSPRQXC6UNBN",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 3843,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "ARCSABER 7 Play Badminton Racquet",
+        "slug": "arcsaber-7-play-badminton-racquet",
+        "bpid": "YXXSPRQXQKVA2K",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 3773,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Astrox 77 Play Badminton Racquet",
+        "slug": "astrox-77-play-badminton-racquet",
+        "bpid": "YXXSPRQX54TMV6",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 3773,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Odin 10000mAh Qi2 MagSafe Powerbank with 15W Wireless Charging",
+        "slug": "odin-10000mah-qi2-magsafe-powerbank-with-15w-wireless-charging",
+        "bpid": "STUACACCEUY3DW",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 3600,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "30W USB-C Power Adapter",
@@ -2632,7 +3281,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "RapidBreeze Vigor Women Slip-On Shoes",
+        "slug": "rapidbreeze-vigor-women-slip-on-shoes",
+        "bpid": "NEEFWWFXCK0X6Y",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWWFX",
+        "mop": 3599,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "45W Type C Fast Charger",
@@ -2646,21 +3309,133 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Nord Buds 4 TWS",
-        "slug": "nord-buds-4-tws",
-        "bpid": "ONEWIWIR6O6N7M",
+        "name": "Nomad II Smallest 100W GaN Charger",
+        "slug": "nomad-ii-smallest-100w-gan-charger",
+        "bpid": "STUACACCB8QP4G",
         "isMaster": true,
-        "brand": "OnePlus",
-        "category": "Wireless audio",
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 3500,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Men's Leather Formal Derby Shoes",
+        "slug": "mens-leather-formal-derby-shoes",
+        "bpid": "CLXFWMFX00Q75C",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 3499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Men's Textured Formal Derby Shoes",
+        "slug": "mens-textured-formal-derby-shoes",
+        "bpid": "CLXFWMFXF065Y8",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 3499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Galaxy 10000mAh Power Bank, Wireless Battery Pack",
+        "slug": "galaxy-10000mah-power-bank-wireless-battery-pack",
+        "bpid": "SAMACACCXLOGT9",
+        "isMaster": true,
+        "brand": "Samsung",
+        "category": "Accessory",
+        "mop": 3399,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Men's Solid Brown Lace-Up Sneakers Shoes",
+        "slug": "mens-solid-brown-lace-up-sneakers-shoes",
+        "bpid": "CLXFWMFX0UN3GN",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 3299,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Kairo Laptop Backpack 23L (15.6 Inch)",
+        "slug": "kairo-laptop-backpack-23l-156-inch",
+        "bpid": "ASSLULUG88MDVS",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 3299,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Wireless Ultra Portable Bluetooth Speaker (GO4)",
+        "slug": "go-4-wireless-ultra-portable-bluetooth-speaker",
+        "bpid": "JBLAUAUDWHFY5Z",
+        "isMaster": true,
+        "brand": "JBL",
+        "category": "Audio",
+        "mop": 3299,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Empire 75W GaN Multiport Fast Charger with 4 Type-C & 1 USB-A",
+        "slug": "empire-75w-gan-multiport-fast-charger-with-4-type-c-and-1-usb-a",
+        "bpid": "STUACACCVXYYFH",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 3200,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Super Clean Handheld Vacuum Cleaner | 800 W | Powerful Suction",
+        "slug": "super-clean-handheld-vacuum-cleaner-or-800-w-or-powerful-suction",
+        "bpid": "EURHOAPPHGK626",
+        "isMaster": true,
+        "brand": "EUR",
+        "category": "Home appliance",
         "mop": 3199,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Buds 2 Plus",
@@ -2674,7 +3449,35 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Compact 700 Watts Powerful Suction & Blower Vacuum Cleaner",
+        "slug": "compact-700-watts-powerful-suction-and-blower-vacuum-cleaner",
+        "bpid": "EURHOAPPP6QMMC",
+        "isMaster": true,
+        "brand": "EUR",
+        "category": "Home appliance",
+        "mop": 3099,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "2 in 1 Hand-held Vacuum Cleaner 13,500 Pa Powerful Suction",
+        "slug": "2-in-1-hand-held-vacuum-cleaner-13500-pa-powerful-suction",
+        "bpid": "EURHOAPPU7TVA8",
+        "isMaster": true,
+        "brand": "EUR",
+        "category": "Home appliance",
+        "mop": 2999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Skin Lift Device - Facial Massager",
@@ -2688,21 +3491,35 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Buds 2",
-        "slug": "buds-2",
-        "bpid": "MOTWIWIRTAR4DB",
+        "name": "Rover Laptop Backpack 24L (15.6 Inch)",
+        "slug": "rover-laptop-backpack-24l-156-inch",
+        "bpid": "ASSLULUG3ME63I",
         "isMaster": true,
-        "brand": "Motorola",
-        "category": "Wireless audio",
+        "brand": "ASS",
+        "category": "Luggage",
         "mop": 2899,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Odyssey Backpack 25L (15.6 Inch)",
+        "slug": "odyssey-backpack-25l-156-inch",
+        "bpid": "ASSLULUG5Z05EN",
+        "isMaster": true,
+        "brand": "ASS",
+        "category": "Luggage",
+        "mop": 2899,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Classic Hot Air Fryer 4L 1300 W",
@@ -2716,21 +3533,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
-      },
-      {
-        "name": "CMF BY NOTHING Buds Pro",
-        "slug": "cmf-by-nothing-buds-pro",
-        "bpid": "NOTWIWIRN4D7OB",
-        "isMaster": true,
-        "brand": "Nothing",
-        "category": "Wireless audio",
-        "mop": 2899,
-        "prodPaymentMode": "UPFRONT",
-        "cardlessEmi": null,
-        "creditCardEmi": null,
-        "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "CMF by Nothing 65 W GaN 3 A Multi-pin Wall Charger for Mobile",
@@ -2744,7 +3547,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "240W USB-C Charge Cable (2m)",
@@ -2757,8 +3560,8 @@
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
-        "cardEmiTenures": 2,
-        "cardEmiTypes": "NCEMI"
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Nord Buds 3",
@@ -2772,7 +3575,63 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Begin Walk Unisex Soothe Slip-On Shoes",
+        "slug": "begin-walk-unisex-soothe-slip-on-shoes",
+        "bpid": "NEEFWUNITDLWKY",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWUNI",
+        "mop": 2599,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Textured Derby Sneakers For Men",
+        "slug": "textured-derby-sneakers-for-men",
+        "bpid": "NEEFWMFXUPCDR9",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 2599,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Crossover Brogues for Men",
+        "slug": "crossover-brogues-for-men",
+        "bpid": "NEEFWMFX8D4LLW",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 2599,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Atom 12,000 Pa Powerful Suction Power, 2-in-1",
+        "slug": "atom-12000-pa-powerful-suction-power-2-in-1",
+        "bpid": "EURHOAPPGU4V09",
+        "isMaster": true,
+        "brand": "EUR",
+        "category": "Home appliance",
+        "mop": 2599,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "CMF By Nothing Buds 2",
@@ -2786,7 +3645,7 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Born To Shine 2-in-1 Styling Blow Brush",
@@ -2800,21 +3659,147 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Portable Bluetooth Speaker (Go Essential)",
-        "slug": "go-essential-with-rich-bass-wireless-ultra-portable-bluetooth-speaker",
-        "bpid": "JBLAUAUDRGW6ZY",
+        "name": "Nanoray Light 18I Badminton Racquet",
+        "slug": "nanoray-light-18i-badminton-racquet",
+        "bpid": "YXXSPRQXMKJHSL",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 2520,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "VOLTRIC LITE 47I Badminton Racquet",
+        "slug": "voltric-lite-47i-badminton-racquet",
+        "bpid": "YXXSPRQX1QBTNR",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 2520,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "VOLTRIC LITE 40I Badminton Racquet",
+        "slug": "voltric-lite-40i-badminton-racquet",
+        "bpid": "YXXSPRQXSQX0RY",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 2520,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Voltric Lite 35I Badminton Racquet",
+        "slug": "voltric-lite-35i-badminton-racquet",
+        "bpid": "YXXSPRQX8W27W5",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 2520,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Astrox Lite 37I Badminton Racquet",
+        "slug": "astrox-lite-37i-badminton-racquet",
+        "bpid": "YXXSPRQXFCN3K8",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 2520,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Quantum 100M2",
+        "slug": "quantum-100m2",
+        "bpid": "JBLAUAUDEENCYX",
         "isMaster": true,
         "brand": "JBL",
         "category": "Audio",
+        "mop": 2499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Begin walk Trek Women",
+        "slug": "begin-walk-trek-women",
+        "bpid": "NEEFWWFXYQ54HY",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWWFX",
+        "mop": 2499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Begin Walk Flow Sneaker For Women",
+        "slug": "begin-walk-flow-sneaker-for-women",
+        "bpid": "NEEFWWFXVSBEGP",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWWFX",
+        "mop": 2499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Flexy Brogues for Men",
+        "slug": "flexy-brogues-for-men",
+        "bpid": "NEEFWMFXUS10I3",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 2499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "The Urban Knits Sneaker For Men",
+        "slug": "the-urban-knits-sneaker-for-men",
+        "bpid": "NEEFWMFX1607NI",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
         "mop": 2399,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "C Series 45W Type C Fast Charger",
@@ -2828,10 +3813,10 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Electric Dermaplaning Device",
+        "name": "Electric Dermaplaning Device ",
         "slug": "electric-dermaplaning-device",
         "bpid": "PROPEPER2M9UHC",
         "isMaster": true,
@@ -2842,21 +3827,105 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "The Moko Mini",
-        "slug": "the-moko-mini",
-        "bpid": "MOKLULUGPYQG0Q",
+        "name": "Unisex Begin Walk Soothe Textured Lace-Up Sneakers",
+        "slug": "unisex-begin-walk-soothe-textured-lace-up-sneakers",
+        "bpid": "NEEFWUNI4YVSPK",
         "isMaster": true,
-        "brand": "Mokobara",
-        "category": "Luggage",
-        "mop": 2199,
+        "brand": "NEE",
+        "category": "FWUNI",
+        "mop": 2299,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Unisex Woven Design Slip-On Begin Walk Breeze Sneakers",
+        "slug": "unisex-woven-design-slip-on-begin-walk-breeze-sneakers",
+        "bpid": "NEEFWUNIB4FC4H",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWUNI",
+        "mop": 2299,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "The Retro Collectible Sneakers for Women",
+        "slug": "the-retro-collectible-sneakers-for-women",
+        "bpid": "NEEFWWFXFK4360",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWWFX",
+        "mop": 2299,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Knit Trainer Slip On Sneaker For Women",
+        "slug": "knit-trainer-slip-on-sneaker-for-women",
+        "bpid": "NEEFWWFXDR488Z",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWWFX",
+        "mop": 2299,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Round-Toe Brogues with Lace Fastening",
+        "slug": "round-toe-brogues-with-lace-fastening",
+        "bpid": "CLXFWMFXMCSG22",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 2267,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Genuine Leather Lace-Up Brogues",
+        "slug": "genuine-leather-lace-up-brogues",
+        "bpid": "CLXFWMFXMJ9NHM",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 2265,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Men's Textured Leathers Sneakers Shoes",
+        "slug": "mens-textured-leathers-sneakers-shoes",
+        "bpid": "CLXFWMFX1ELCTZ",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 2249,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "3-in-1 LED Face Mask",
@@ -2869,8 +3938,22 @@
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
-        "cardEmiTenures": 2,
-        "cardEmiTypes": "NCEMI"
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Lucid Plus 15W, 10000mAh Magnetic Wireless Powerbank",
+        "slug": "lucid-plus-15w-10000mah-magnetic-wireless-powerbank",
+        "bpid": "STUACACCO1M2BN",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 2100,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "CMF by Nothing Buds 2a",
@@ -2884,7 +3967,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "The Moko Mini",
+        "slug": "the-moko-mini",
+        "bpid": "MOKLULUGPYQG0Q",
+        "isMaster": true,
+        "brand": "Mokobara",
+        "category": "Luggage",
+        "mop": 2098,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "LED Hair Growth Therapy Comb",
@@ -2897,8 +3994,78 @@
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
-        "cardEmiTenures": 2,
-        "cardEmiTypes": "NCEMI"
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Nanoflare Speed 7 Badminton Racquet",
+        "slug": "nanoflare-speed-7-badminton-racquet",
+        "bpid": "YXXSPRQXNA471D",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 2023,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Maverick Mini 20,000mAh Powerbank with 20W Built-in Lightning & Type-C Cables",
+        "slug": "maverick-mini-20000mah-powerbank-with-20w-built-in-lightning-and-type-c-cables",
+        "bpid": "STUACACCQVYUMC",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 2000,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Knit Gliders Sneakers for Men",
+        "slug": "knit-gliders-sneakers-for-men",
+        "bpid": "NEEFWMFX1X7W88",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Urban Casuals for Men",
+        "slug": "urban-casuals-for-men",
+        "bpid": "NEEFWMFXM9AMVH",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Portable Bluetooth Speaker (Go Essential)",
+        "slug": "go-essential-with-rich-bass-wireless-ultra-portable-bluetooth-speaker",
+        "bpid": "JBLAUAUDRGW6ZY",
+        "isMaster": true,
+        "brand": "JBL",
+        "category": "Audio",
+        "mop": 1999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "All-In-1 All Rounder Women’s Trimmer & Epilator",
@@ -2911,8 +4078,36 @@
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
-        "cardEmiTenures": 2,
-        "cardEmiTypes": "NCEMI"
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Astrox Attack 9 Ultra Strong Japan Made Graphite Strung Badminton Racquet with Full Cover",
+        "slug": "astrox-attack-9-ultra-strong-japan-made-graphite-strung-badminton-racquet-with-full-cover",
+        "bpid": "YXXSPRQXZE9YAW",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPRQX",
+        "mop": 1953,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "White Sneakers Shoes for Men's",
+        "slug": "white-sneakers-shoes-for-mens",
+        "bpid": "CLXFWMFXTROGRC",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 1949,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Nord Buds 3r",
@@ -2926,7 +4121,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "100W Adapto 100 GaN Fast Charging Triple Port Adaptor with Type C Cable",
+        "slug": "100w-adapto-100-gan-fast-charging-triple-port-adaptor-with-type-c-cable",
+        "bpid": "PORACACCJR8NN2",
+        "isMaster": true,
+        "brand": "POR",
+        "category": "Accessory",
+        "mop": 1929,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "20W USB-C Power Adapter",
@@ -2939,8 +4148,50 @@
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
-        "cardEmiTenures": 2,
-        "cardEmiTypes": "NCEMI"
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Men's White Striped Sneakers - Casual Shoes",
+        "slug": "mens-white-striped-sneakers-casual-shoes",
+        "bpid": "CLXFWMFXK289OE",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 1849,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Men's Red & White Sneakers Casual Shoes",
+        "slug": "mens-red-and-white-sneakers-casual-shoes",
+        "bpid": "CLXFWMFXKV84PI",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 1849,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Numen 65W Multi Port 2 Type-C & 1 USB A AVS Gan Fast Charger",
+        "slug": "numen-65w-multi-port-2-type-c-and-1-usb-a-avs-gan-fast-charger",
+        "bpid": "STUACACCJ9C7SK",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 1800,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "EarPods (USB-C)",
@@ -2953,8 +4204,148 @@
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
-        "cardEmiTenures": 2,
-        "cardEmiTypes": "NCEMI"
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Dapper Loafers For Men",
+        "slug": "dapper-loafers-for-men",
+        "bpid": "NEEFWMFXFOIA9V",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1799,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Relive Knit Boat Loafer For Men",
+        "slug": "relive-knit-boat-loafer-for-men",
+        "bpid": "NEEFWMFXMFIAS4",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1799,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Numen 65C Smallest 65W AVS GaN Charger",
+        "slug": "numen-65c-smallest-65w-avs-gan-charger",
+        "bpid": "STUACACCWJ2BWY",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 1799,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Men's Lace-Ups Sneakers Shoes",
+        "slug": "mens-lace-ups-sneakers-shoes",
+        "bpid": "CLXFWMFXSHPP3D",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 1729,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Blue Sneakers Shoes for Men's",
+        "slug": "blue-sneakers-shoes-for-mens",
+        "bpid": "CLXFWMFXKBKAIT",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 1729,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Stylish Men's Sneakers Shoes",
+        "slug": "stylish-mens-sneakers-shoes",
+        "bpid": "CLXFWMFX6MQ80A",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 1729,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Men's White & Blue Sneakers Casual Shoes",
+        "slug": "mens-white-and-blue-sneakers-casual-shoes",
+        "bpid": "CLXFWMFXF2IDYK",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 1729,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women Purple Heels Sandals",
+        "slug": "women-purple-heels-sandals",
+        "bpid": "CLXFWWFX7O8H6G",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1709,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Fashionable 1 inch Heels Sandals for Women",
+        "slug": "fashionable-1-inch-heels-sandals-for-women",
+        "bpid": "CLXFWWFX2VB26Z",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1709,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women Trendy Urban Heels Sandals",
+        "slug": "women-trendy-urban-heels-sandals",
+        "bpid": "CLXFWWFXTBHOL9",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1709,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "60W USB-C Charge Cable (1m)",
@@ -2967,22 +4358,50 @@
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
-        "cardEmiTenures": 2,
-        "cardEmiTypes": "NCEMI"
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Magsafe 10000 mAh Power Bank",
-        "slug": "magsafe-10000-mah-power-bank",
-        "bpid": "AMBACACCCESMGC",
+        "name": "Induction Cooktop 1800W",
+        "slug": "induction-cooktop-1800w",
+        "bpid": "LLXHOAPP86RCZF",
         "isMaster": true,
-        "brand": "Ambrane",
-        "category": "Accessory",
-        "mop": 1649,
+        "brand": "LLX",
+        "category": "Home appliance",
+        "mop": 1699,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Numen 45 Smallest 45W AVS GaN Charger with 100W 5A Type-C to Type-C cable",
+        "slug": "numen-45-smallest-45w-avs-gan-charger-with-100w-5a-type-c-to-type-c-cable",
+        "bpid": "STUACACC6GI2SG",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 1699,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "All-Purpose Loafers For Men",
+        "slug": "all-purpose-loafers-for-men",
+        "bpid": "NEEFWMFXP0JL4P",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1699,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Wireless Magsafe 10000 mAh Power Bank",
@@ -2996,7 +4415,259 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Magsafe 10000 mAh Power Bank",
+        "slug": "magsafe-10000-mah-power-bank",
+        "bpid": "AMBACACCCESMGC",
+        "isMaster": true,
+        "brand": "Ambrane",
+        "category": "Accessory",
+        "mop": 1649,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women Silver Casusal Heels Sandals",
+        "slug": "women-silver-casusal-heels-sandals",
+        "bpid": "CLXFWWFXJ43H1H",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1639,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Men's Colourblocked Casual Sneakers Shoes",
+        "slug": "mens-colourblocked-casual-sneakers-shoes",
+        "bpid": "CLXFWMFXZHYYRN",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 1629,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Men's White-Blue Sneakers Shoes",
+        "slug": "mens-white-blue-sneakers-shoes",
+        "bpid": "CLXFWMFXXJWMIZ",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWMFX",
+        "mop": 1629,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women Black Block Comfortable Heel Sandals",
+        "slug": "women-black-block-comfortable-heel-sandals",
+        "bpid": "CLXFWWFX63YRFG",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1629,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Roam+ 20000mAh Compact Powerbank with 20W Type C Output",
+        "slug": "roam-20000mah-compact-powerbank-with-20w-type-c-output",
+        "bpid": "STUACACC1KMJUB",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 1600,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women Kitten Heels Sandals",
+        "slug": "women-kitten-heels-sandals",
+        "bpid": "CLXFWWFXFR1K77",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1574,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women Block Heels",
+        "slug": "women-block-heels",
+        "bpid": "CLXFWWFX0XR33D",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1549,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Electronics 10000mAh 22.5W Fast Charging Power Bank",
+        "slug": "electronics-10000mah-225w-fast-charging-power-bank",
+        "bpid": "LLXACACCCWF5TJ",
+        "isMaster": true,
+        "brand": "LLX",
+        "category": "Accessory",
+        "mop": 1499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Sole Max Slip-Ons",
+        "slug": "sole-max-slip-ons",
+        "bpid": "NEEFWMFXXRPHF2",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Purewhoosh Breeze Sandals For Men",
+        "slug": "purewhoosh-breeze-sandals-for-men",
+        "bpid": "NEEFWMFXJRU6RF",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Dhashing Walker Casual Shoes For Men",
+        "slug": "dhashing-walker-casual-shoes-for-men",
+        "bpid": "NEEFWMFXTUYQI2",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Purewhoosh Flow Sandals for Men",
+        "slug": "purewhoosh-flow-sandals-for-men",
+        "bpid": "NEEFWMFXG6T3NG",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1499,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women Fashionable Block Heels Sandals",
+        "slug": "women-fashionable-block-heels-sandals",
+        "bpid": "CLXFWWFX7OAQP9",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1469,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women Fashion Heels Sandals",
+        "slug": "women-fashion-heels-sandals",
+        "bpid": "CLXFWWFX4UCZWO",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1469,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women's Heels Sandals",
+        "slug": "womens-heels-sandals",
+        "bpid": "CLXFWWFXIZH5OY",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1460,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women Ankle Strap Pumps Pointed Toe",
+        "slug": "women-ankle-strap-pumps-pointed-toe",
+        "bpid": "CLXFWWFX927LJ6",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1416,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Numen 45 Pro Dual Type-C GaN Charger with 45W PD PPS Fast Charging",
+        "slug": "numen-45-pro-dual-type-c-gan-charger-with-45w-pd-pps-fast-charging",
+        "bpid": "STUACACCTC0PNL",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 1400,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Swift Brew Coffee Machine",
@@ -3010,7 +4681,63 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women Textured Ballerinas Sandals",
+        "slug": "women-textured-ballerinas-sandals",
+        "bpid": "CLXFWWFXEZ7C6Y",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1392,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Women Open Stylish Back Wedge Mules",
+        "slug": "women-open-stylish-back-wedge-mules",
+        "bpid": "CLXFWWFXDY3IP5",
+        "isMaster": true,
+        "brand": "CLX",
+        "category": "FWWFX",
+        "mop": 1209,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Roam 10000mAh Compact Powerbank with 20W Type C Output",
+        "slug": "roam-10000mah-compact-powerbank-with-20w-type-c-output",
+        "bpid": "STUACACCQ9DAQI",
+        "isMaster": true,
+        "brand": "STU",
+        "category": "Accessory",
+        "mop": 1200,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Pulse Stride Sneaker For Men",
+        "slug": "pulse-stride-sneaker-for-men",
+        "bpid": "NEEFWMFX65BVAX",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1199,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "CMF by Nothing 33W Type-C Power Fast Charger Adapter",
@@ -3024,7 +4751,105 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Mavis 350 Nylon Shuttlecock (Blue Cap)",
+        "slug": "mavis-350-nylon-shuttlecock-blue-cap",
+        "bpid": "YXXSPSAXXC49QU",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPSAX",
+        "mop": 1179,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Mavis 350 Green Cap Nylon Shuttlecock (Green Cap)",
+        "slug": "mavis-350-green-cap-nylon-shuttlecock-green-cap",
+        "bpid": "YXXSPSAXCHMKY8",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPSAX",
+        "mop": 1179,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Tread Basic Sneaker For Men",
+        "slug": "tread-basic-sneaker-for-men",
+        "bpid": "NEEFWMFXF076Q9",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1099,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "The Everyday Basic Sneakers For Men",
+        "slug": "the-everyday-basic-sneakers-for-men",
+        "bpid": "NEEFWMFXGSHSHF",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 1099,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Original 25W USB Type-C ",
+        "slug": "original-25w-usb-type-c",
+        "bpid": "SAMACACC3S05QB",
+        "isMaster": true,
+        "brand": "Samsung",
+        "category": "Accessory",
+        "mop": 1099,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Mavis 350 Nylon Shuttlecock (Red Cap)",
+        "slug": "mavis-350-nylon-shuttlecock-red-cap",
+        "bpid": "YXXSPSAX5A9COU",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPSAX",
+        "mop": 1089,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Court Flex Sneakers For Men",
+        "slug": "court-flex-sneakers-for-men",
+        "bpid": "NEEFWMFXPDIXXC",
+        "isMaster": true,
+        "brand": "NEE",
+        "category": "FWMFX",
+        "mop": 999,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "Bliss Callus Remover",
@@ -3037,8 +4862,22 @@
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
-        "cardEmiTenures": 2,
-        "cardEmiTypes": "NCEMI"
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
+      },
+      {
+        "name": "Mavis 500 Super Nylon Shuttlecock",
+        "slug": "mavis-500-super-nylon-shuttlecock",
+        "bpid": "YXXSPSAXMIN9LK",
+        "isMaster": true,
+        "brand": "YXX",
+        "category": "SPSAX",
+        "mop": 959,
+        "prodPaymentMode": "UPFRONT",
+        "cardlessEmi": null,
+        "creditCardEmi": null,
+        "cardEmiTenures": 6,
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
         "name": "5-in-1 MultiPort Adapter with Universal AC Socket",
@@ -3052,21 +4891,21 @@
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       },
       {
-        "name": "Original 25W USB Type-C",
-        "slug": "original-25w-usb-type-c",
-        "bpid": "SAMACACC3S05QB",
+        "name": "Mavis 200i Nylon Badminton Shuttlecocks",
+        "slug": "mavis-200i-nylon-badminton-shuttlecocks",
+        "bpid": "YXXSPSAXVAGW07",
         "isMaster": true,
-        "brand": "Samsung",
-        "category": "Accessory",
-        "mop": 599,
+        "brand": "YXX",
+        "category": "SPSAX",
+        "mop": 600,
         "prodPaymentMode": "UPFRONT",
         "cardlessEmi": null,
         "creditCardEmi": null,
         "cardEmiTenures": 6,
-        "cardEmiTypes": "NCEMI/LCEMI"
+        "cardEmiTypes": "NCEMI/EMI"
       }
     ]
   }

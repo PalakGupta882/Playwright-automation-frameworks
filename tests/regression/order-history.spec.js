@@ -14,10 +14,18 @@
 //           Cards are <button>s, not links: a[href*="order"] matches 0.
 //
 //   detail  /orders/my-orders/<uuid>?orderStatus=...
-//           status, product, "Order Id:<id>", Track Order, Shipping To,
+//           status, product, "Order Id:<id>", Shipping To,
 //           Payment Information (Payment Plan, Payment Type, Total Amount),
 //           Device Information, and an Order History timeline of
 //           "<status> <date>" rows.
+//
+//           Track Order was listed here originally. Re-measured 10 Aug 2026 on a
+//           PENDING order, it is absent — the controls are "Contact Support" and
+//           "Continue", and /tracking/i matches 0. That is consistent with an
+//           unpaid order having nothing to track, so it is recorded rather than
+//           asserted: a Pending order is the only kind this account can offer
+//           today, and pinning either presence or absence would encode a state
+//           that is not the same for every order.
 //
 // Consequences for what is asserted:
 //
@@ -135,10 +143,20 @@ test.describe('Order history', () => {
 
   // NEGATIVE — an order id that does not exist must not render an order.
   //
-  // Chosen over "what if the user has no orders": this account has ten, and
-  // there is no way to empty it that is not destructive. A fabricated id asks
-  // the same question — does the page invent content when there is none — and
-  // touches nothing.
+  // Chosen over "what if the user has no orders": emptying the account is not
+  // possible without being destructive. A fabricated id asks the same question
+  // — does the page invent content when there is none — and touches nothing.
+  //
+  // The count this account carries is not stable and nothing here should assume
+  // one. It read ten when these assertions were written; on 10 Aug 2026 it read
+  // ONE (Order Id <order-D>, Pending, dated 14 Jul 2026). Every test above
+  // derives the count at run time and skips meaningfully at zero, which is why
+  // the drop changed nothing — but do not reintroduce a hardcoded expectation.
+  //
+  // Unexplained, and worth raising rather than encoding: the run of 10 Aug 2026
+  // minted master_order_id <order-A> and <order-B>, and neither
+  // appears in this list, while the older Pending order does. So "pending is
+  // hidden" is not the explanation.
   test('an unknown order id does not render order details', async ({ page }) => {
     test.setTimeout(120000);
 
@@ -152,10 +170,38 @@ test.describe('Order history', () => {
     const body = (await page.locator('body').innerText()).replace(/\s+/g, ' ');
     expect(body.length, 'the page rendered nothing at all').toBeGreaterThan(50);
 
-    // A real order always carries an id and a total. A fabricated one must show
-    // neither — an error, an empty state or a redirect are all acceptable.
-    const inventedOrder =
-      /Order\s*Id\s*:?\s*[A-Z0-9]{6,}/i.test(body) && /total amount/i.test(body);
-    expect(inventedOrder, 'a non-existent order id rendered a complete order').toBe(false);
+    // A real order always carries an id VALUE and a total VALUE. A fabricated
+    // one must show neither — an error, an empty state or a redirect are all
+    // acceptable.
+    //
+    // THE LABELS ARE NOT THE VALUES, corrected 16 Sep 2026. This used to match
+    // /Order\s*Id\s*:?\s*[A-Z0-9]{6,}/ against whitespace-collapsed body text,
+    // and on a bad id the page renders the order-detail scaffold with every
+    // field EMPTY:
+    //
+    //   "... Order Id: Shipping To Contact Support Payment Information ..."
+    //
+    // so the pattern matched the next LABEL — "Shipping" — as though it were an
+    // order id, and the test reported "a non-existent order id rendered a
+    // complete order". It had not. The API is correct: /api/customer-order/
+    // order-details/<fake> returns 401 then 404, and no order data reaches the
+    // page. Requiring a digit rules the labels out, since every real order id
+    // on this site carries one and no label does.
+    //
+    // WHAT IS ACTUALLY WRONG HERE, and is still worth raising: for an unknown
+    // order the page renders the full scaffold — the "Order Confirmed ->
+    // Shipped -> Out for Delivery -> Delivered" tracker, "Order Id:",
+    // "Total Amount", "Payment Plan" — all blank, rather than a not-found
+    // state. A shopper following a stale link sees what reads as a real order
+    // page. That is a rendering bug, not a data leak, and it is deliberately
+    // NOT what this assertion fails on, because the two would need different
+    // fixes.
+    const idValue = /Order\s*Id\s*:?\s*(?=[A-Z0-9-]*\d)[A-Z0-9-]{6,}/i;
+    const totalValue = /total\s*amount\s*:?\s*₹?\s*[\d,]+/i;
+    const inventedOrder = idValue.test(body) && totalValue.test(body);
+    expect(
+      inventedOrder,
+      'a non-existent order id rendered real order data (an id with digits AND a total figure)'
+    ).toBe(false);
   });
 });
