@@ -37,6 +37,7 @@ const { assertFreshSession } = require('../utils/session');
 const { writesAllowed, writeSkipReason } = require('../utils/writes');
 const { watchCreateOrder, readCreateOrder, createOrderFailure } = require('../utils/createOrder');
 const { openCart, dismissExchangeDialog } = require('../utils/cartNav');
+const { orderContinueButton } = require('../utils/orderContinue');
 const { ProductPage } = require('../pages/productPage');
 const {
   parsePricingBreakdown,
@@ -218,31 +219,9 @@ function diffComponents(before, after) {
     }));
 }
 
-// Scoped to the checkout summary, and refuses to guess.
-//
-// The requirement is explicit that this must not click a recommended product, a
-// navigation element or a duplicate CTA. Rather than picking .first() and hoping,
-// this asserts there is exactly one visible Continue-shaped control and fails
-// loudly if the page offers several — on a page that mints a real order, an
-// ambiguous click is not something to resolve by ordering.
-async function checkoutContinueButton(page) {
-  const candidates = page
-    .getByRole('button', { name: /^(continue|proceed to payment|proceed)$/i })
-    .filter({ visible: true });
-
-  const count = await candidates.count();
-  if (count === 0) {
-    throw new Error('Review Order shows no Continue control, so the flow cannot proceed.');
-  }
-  if (count > 1) {
-    const labels = await candidates.allInnerTexts();
-    throw new Error(
-      `Review Order shows ${count} visible Continue-shaped buttons (${labels.join(' | ')}). ` +
-        'Refusing to guess which one mints the order — scope the locator before running this.'
-    );
-  }
-  return candidates.first();
-}
+// The order-minting Continue refuses to guess: exactly one visible
+// Continue-shaped control, or it throws. Shared — see utils/orderContinue.js.
+const checkoutContinueButton = (page) => orderContinueButton(page);
 
 test.describe('Device Protection pricing consistency through checkout', () => {
   // ---- Steps 1-4: Cart -> Review Order, no writes ----------------------

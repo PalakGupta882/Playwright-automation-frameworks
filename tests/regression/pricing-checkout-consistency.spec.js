@@ -33,6 +33,7 @@ const { BASE_URL, URLS, TIMEOUTS } = require('../data/constants');
 const { assertFreshSession } = require('../utils/session');
 const { writesAllowed, writeSkipReason } = require('../utils/writes');
 const { watchCreateOrder, readCreateOrder, createOrderFailure } = require('../utils/createOrder');
+const { orderContinueButton } = require('../utils/orderContinue');
 const { openCart, dismissExchangeDialog } = require('../utils/cartNav');
 const { ProductsListPage } = require('../pages/productsListPage');
 const { parsePdpHeader, parseOrderSummary, toRupees } = require('../utils/priceText');
@@ -696,11 +697,12 @@ test.describe('Pricing consistency through checkout', () => {
       // Watched, because the site answers a refusal on this request and nowhere
       // else — see tests/utils/createOrder.js. Without it a 400 reads as a 90s
       // navigation timeout and says nothing about why.
+      //
+      // Exactly one Continue or no click at all — utils/orderContinue.js. Resolved
+      // before the watcher is armed, so a refusal never leaves one dangling.
+      const proceed = await orderContinueButton(page);
       const created = watchCreateOrder(page);
-      await page
-        .getByRole('button', { name: /^continue$/i })
-        .first()
-        .click({ timeout: TIMEOUTS.action });
+      await proceed.click({ timeout: TIMEOUTS.action });
       const verdict = await readCreateOrder(created);
       console.log(
         `create-order: ${verdict.sent ? `${verdict.status} — ${verdict.message}` : 'never sent'}`
