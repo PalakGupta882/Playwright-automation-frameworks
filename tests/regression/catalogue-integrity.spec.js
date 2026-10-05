@@ -299,7 +299,7 @@ test.describe('Catalogue integrity', () => {
   //   listing row   vas: ["12 mo Device Protection", "Free Wireless Charger"]
   //   GET /api/apps/product-vas/:slug/:bpid   the records the PDP renders
   //
-  // 30 of 217 rows carry one. A stale copy here advertises a free charger on
+  // 31 of 336 rows carry one (5 Oct 2026; 30 of 217 on 2 Sep). A stale copy here advertises a free charger on
   // the tile that the product page then does not offer, which is the kind of
   // difference a shopper notices and nothing else in the suite looks at —
   // pricing-consistency reads the VAS API for the saving arithmetic, never for

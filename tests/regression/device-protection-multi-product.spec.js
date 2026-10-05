@@ -32,6 +32,7 @@ const { test, expect } = require('../fixtures/pageFixtures');
 const { BASE_URL, URLS, TIMEOUTS } = require('../data/constants');
 const { assertFreshSession } = require('../utils/session');
 const { openCart, dismissExchangeDialog } = require('../utils/cartNav');
+const { productVasPath, vasNamesFrom } = require('../data/emiApi');
 const {
   parseAddOn,
   parsePdpHeader,
@@ -79,7 +80,14 @@ async function readProductPricing(page, { slug, bpid }) {
 
   const body = await page.locator('body').innerText();
   const header = parsePdpHeader(body);
-  const addOn = parseAddOn(body);
+
+  // Names from the VAS record, not the literal fallback list in priceText.js.
+  // Without them a third relabel would make parseAddOn return null and this
+  // would report "no Device Protection" on a product that has it — the exact
+  // failure CLAUDE.md's add-on section records. Public endpoint, no auth.
+  const vasRes = await page.request.get(productVasPath(slug, bpid), { failOnStatusCode: false });
+  const vasNames = vasRes.ok() ? vasNamesFrom(await vasRes.json()) : [];
+  const addOn = parseAddOn(body, vasNames);
 
   return {
     slug,

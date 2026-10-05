@@ -271,7 +271,7 @@ Measured formulas, all exact — do not re-derive them:
 |---|---|
 | headline price / MRP / % off | `upfront.price` / `upfront.cut_price` / `upfront.off_on_amount` |
 | "Pay in Full" · "Buy Upfront" | `upfront.price` |
-| "Credit Card EMI ₹X/mo" · "Monthly Subscription" · "Subscription from" | `cc.emi_amount` |
+| "Credit Card EMI ₹X/mo" · "Monthly Subscription" · "Subscription from" | `cc.emi_amount` **when `cc` is populated**; when `cc` is all zeroes, the longest-tenure `emi.emi_option[].installment_amount` — see the `minEmi` note below |
 | "Cardless EMI ₹X/mo + ₹Y Now" | `nbfc.emi_amount` + `nbfc.downpay` |
 | "₹X x N mo" ladder rows | `emi.emi_option[]` — `installment_amount` × `tenure` |
 | "Total Discount" · "You'll save up to" | `(MRP − cc.total_amount) + Σ(add-on list − add-on paid)` |
@@ -453,8 +453,8 @@ Do not report a zeroed `cc` alongside a non-zero tile as a pricing mismatch. It
 was chased as one on 16 Sep 2026 and the answer was step 4 of the diagnostic
 order — which field the UI is displaying — not arithmetic.
 
-`vas[]` is a **second copy** of a list that lives in the VAS record — 30 of 217
-rows carry one. A stale copy advertises a free charger on the tile that the
+`vas[]` is a **second copy** of a list that lives in the VAS record — 31 of 336
+rows carry one (5 Oct 2026; 30 of 217 on 2 Sep). A stale copy advertises a free charger on the tile that the
 product page then does not offer. `catalogue-integrity.spec.js` compares all
 four, and checks a sample of rows claiming *no* add-ons as well: a listing that
 under-reports is the direction that costs the shopper a benefit they were
@@ -769,14 +769,20 @@ carrying the text `Cart` and a `ShoppingCartOutlinedIcon`. `getByRole('button',
   moves — not even the quantity. A spec that adds "the cheapest product" every
   run silently stops testing anything on its second run. Pick a product the cart
   does not already hold.
-- **The PDP shows "Add to Cart" whether or not the item is in the cart.** It
-  flips to "Go to Cart" only transiently, in the same session, right after a
-  click. It is not a reliable "is this in my basket" signal.
-- **Never locate the buy CTA by name.** `getByRole('button', {name:'Add to
-  Cart'}).first()` reaches the recommended-products carousel further down the
-  PDP, and on 14 Aug 2026 it **added a ₹1,24,999 phone to the live cart** instead
-  of a ₹1,200 powerbank. Anchor on `Buy Now` and take the button before it —
-  carousel tiles have no Buy Now.
+- **The PDP shows its cart control whether or not the item is in the cart.**
+  Since the 16 Sep redesign that is the icon-only `aria-label="Add to cart"`
+  (see the buy-row section above); before it, a text "Add to Cart" that flipped
+  to "Go to Cart" only transiently after a click. Neither is a reliable "is this
+  in my basket" signal — read `GET /api/cart?payment_type=UPFRONT`
+  (`readBasketIdentities` in `tests/utils/catalogue.js`).
+- **Never locate the buy CTA by name alone.** On 14 Aug 2026
+  `getByRole('button', {name:'Add to Cart'}).first()` reached the
+  recommended-products carousel further down the PDP and **added a ₹1,24,999
+  phone to the live cart** instead of a ₹1,200 powerbank. The name has since
+  changed to `Add to cart` (lower-case c), which makes the old title-case
+  locator match nothing; the rule stands either way. Anchor on `Buy Now` and
+  take the cart control before it — `clickAddToCart()` in `tests/utils/buyRow.js`.
+  Carousel tiles have no Buy Now.
 - **Confirm an add by its request, not its button.** `POST /api/cart` carries the
   site's own verdict; a label can flip for reasons unrelated to your click, and
   an early click is silently inert because the button renders before its handler

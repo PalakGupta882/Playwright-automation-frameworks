@@ -300,9 +300,16 @@ function parsePlanBox(bodyText) {
 
 // The names to try when a caller has no VAS response to hand. A fallback, not a
 // catalogue: it covers protection under both labels it has shipped under, and it
-// cannot know about a freebie added tomorrow. Results built from it are marked
-// `namesFrom: 'fallback'` so a caller can say the row set may be incomplete
-// rather than report a total as though it were complete.
+// cannot know about a freebie added tomorrow — or a third protection label.
+// Results built from it are marked `namesFrom: 'fallback'` so a caller can say
+// the row set may be incomplete rather than report a total as though it were
+// complete.
+//
+// CALLERS SHOULD PASS NAMES. This list is the "literal name" pattern CLAUDE.md
+// forbids, kept only so a caller with no VAS response degrades visibly instead
+// of crashing. As of 5 Oct 2026 every spec passes names from
+// GET /api/apps/product-vas (pricing-consistency, device-protection-multi-
+// product); only scripts/discover-device-protection still relies on it.
 const FALLBACK_ADDON_NAMES = ['BytePe Secure', '12 mo Device Protection'];
 
 // Which row is the protection plan. Name-based because the page has nothing
