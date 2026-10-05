@@ -22,7 +22,7 @@
 // because losing a tenure or silently moving No Cost EMI to Standard EMI is a
 // regression.
 //
-// Baseline: tests/data/cardless-emi.json (186 products, one row each).
+// Baseline: tests/data/cardless-emi.json (one row per product; 335 on 5 Oct 2026).
 // Regenerate with:
 //   npx playwright test scripts/discover-cardless-emi.spec.js --project=chromium
 // and diff it — never regenerate to make this file pass.
@@ -45,9 +45,10 @@ const KNOWN_EMI_TYPES = ['EMI', 'LCEMI', 'NCEMI'];
 
 const ALL = [...baseline.products.offered, ...baseline.products.notOffered];
 
-// One product per distinct plan shape rather than all 186: the six shapes below
+// One product per distinct plan shape rather than every product: the shapes
 // cover every tenure count, every EMI-type combination and both payment modes
-// in the catalogue, for 12 API calls instead of 372 against a production origin
+// in the catalogue — two on 5 Oct 2026 (6 tenures · NCEMI/EMI, BOTH and
+// UPFRONT) — for a handful of API calls instead of hundreds against an origin
 // that already rate-limits this suite. Derived from the baseline, so
 // regenerating it re-derives the sample instead of leaving a hand-picked list
 // pointing at delisted products.

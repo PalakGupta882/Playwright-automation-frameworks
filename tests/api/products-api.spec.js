@@ -9,29 +9,23 @@ const { test, expect } = require('@playwright/test');
 const { getApiContext, safeJson } = require('./apiHelper');
 const { ENDPOINTS, ENVELOPE } = require('../data/apiEndpoints');
 const { getWithRetry } = require('../utils/apiRetry');
-// products.json is { count, products: [{ name, url }] } — not a bare array.
-const { products } = require('../data/products.json');
+const { fetchListingRows } = require('../utils/catalogue');
 
-// products.json stores hrefs, not ids. Both halves drift on their own — a
-// rename moves the slug and the listing links whichever variant is currently
-// featured — so this parses rather than hardcodes, and the drift shows up as a
-// 404 with an actionable message rather than as a mystery.
-function slugAndBpidFrom(entry) {
-  const match = /\/pd\/([^/?]+)\/([^/?]+)/.exec(entry.url || '');
-  if (!match) throw new Error(`products.json entry has no /pd/ URL: ${JSON.stringify(entry)}`);
-  return { slug: match[1], bpid: match[2], name: entry.name };
-}
-
-const SAMPLE = slugAndBpidFrom(products[0]);
+// The sample is the first row of the LIVE listing, resolved in beforeAll — not
+// tests/data/products.json, a scrape whose slugs and bpids drift on their own.
+// Read only inside test bodies, so it can be filled at run time.
+const SAMPLE = {};
 const DRIFT_HINT =
-  `If this is a 404, the catalogue has almost certainly drifted — slugs follow product ` +
-  `names and the listing links whichever variant is featured. Re-run: npm run discover`;
+  'The sample came from the live listing a moment ago, so a 404 here is NOT fixture ' +
+  'drift — the listing is linking a product the product API cannot serve.';
 
 test.describe('Products API', () => {
   let api;
 
   test.beforeAll(async () => {
     api = await getApiContext();
+    const [first] = await fetchListingRows(api);
+    Object.assign(SAMPLE, { slug: first.slug, bpid: first.variant.bpid, name: first.name });
   });
 
   test.afterAll(async () => {
@@ -133,11 +127,32 @@ test.describe('Products API', () => {
     // ₹1,99,999 would be a scheduled false failure.
     expect(body.data.upfront.price).toBeGreaterThan(0);
     expect(body.data.upfront.cut_price).toBeGreaterThanOrEqual(body.data.upfront.price);
+  });
 
-    // nbfc is subscription pricing, not an availability switch — emi_amount 0
-    // means "not pre-priced", NOT "cardless EMI unavailable" (CLAUDE.md). So
-    // this asserts the key exists, and says nothing about the amount.
-    expect(body.data).toHaveProperty('nbfc');
+  // nbfc is SUBSCRIPTION pricing, so it is asserted on a subscription product.
+  //
+  // Measured 5 Oct 2026: present on 5/5 BOTH products, and the key is ABSENT —
+  // not null, not 0 — on 10/10 UPFRONT ones. This assertion used to run on
+  // products.json[0], which happened to be iPhone 15 (BOTH), so "every pricing
+  // response carries nbfc" was only ever checked where it holds. Absence on
+  // upfront is deliberately NOT asserted: the upfront figure is harmless either
+  // way (CLAUDE.md), and pinning its absence would fail on a harmless change.
+  //
+  // Presence only, never the amount — emi_amount 0 means "not pre-priced", NOT
+  // "cardless EMI unavailable".
+  test('correctness: a subscription product\'s pricing carries the nbfc block', async () => {
+    const rows = await fetchListingRows(api);
+    const sub = rows.find((r) => r.prodPaymentMode === 'BOTH');
+    expect(sub, 'no BOTH-mode product in the live listing to check nbfc against').toBeTruthy();
+
+    const pdp = await getWithRetry(api, ENDPOINTS.productBySlug(sub.slug, sub.variant.bpid));
+    expect(pdp.status(), `${sub.slug}/${sub.variant.bpid}. ${DRIFT_HINT}`).toBe(200);
+    const { data } = await safeJson(pdp);
+
+    const res = await getWithRetry(api, ENDPOINTS.variantPricing(sub.slug, data.variant.id));
+    expect(res.status()).toBe(200);
+    const body = await safeJson(res);
+    expect(body.data, `${sub.slug} is sold on subscription but its pricing has no nbfc block`).toHaveProperty('nbfc');
   });
 
   // ---- Behavior (chained) ----------------------------------------------
@@ -147,7 +162,7 @@ test.describe('Products API', () => {
     expect(pdp.status(), DRIFT_HINT).toBe(200);
     const { data } = await safeJson(pdp);
 
-    // The bpid in products.json is whatever the listing linked and is not
+    // The bpid in the listing is whatever it currently links and is not
     // necessarily the master. The price a shopper sees on landing is the
     // master's, so resolve it rather than assuming the linked one.
     const master = data.variant.isMaster

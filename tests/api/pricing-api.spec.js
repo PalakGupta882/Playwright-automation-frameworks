@@ -34,21 +34,25 @@ const { test, expect } = require('@playwright/test');
 const { getApiContext, safeJson } = require('./apiHelper');
 const { ENDPOINTS } = require('../data/apiEndpoints');
 const { getWithRetry } = require('../utils/apiRetry');
-const { products } = require('../data/products.json');
+const { fetchListingRows } = require('../utils/catalogue');
 
 // Spread across the catalogue rather than the first N, which are all one brand.
-// Derived from products.json so this follows `npm run discover` instead of
-// pinning slugs that drift on their own.
+// Drawn from the LIVE listing, not tests/data/products.json — a scrape whose
+// slugs and bpids drift on their own. The listing is not known when Playwright
+// collects tests, so the describes are numbered and each fills its product in
+// beforeAll; one listing read per worker, shared.
 const SAMPLE_SIZE = 4;
-const step = Math.max(1, Math.floor(products.length / SAMPLE_SIZE));
-const FIXTURES = products
-  .filter((_, i) => i % step === 0)
-  .slice(0, SAMPLE_SIZE)
-  .map((entry) => {
-    const m = /\/pd\/([^/?]+)\/([^/?]+)/.exec(entry.url || '');
-    return m ? { name: entry.name, slug: m[1], bpid: m[2] } : null;
-  })
-  .filter(Boolean);
+let fixturesPromise = null;
+function liveFixtures(api) {
+  fixturesPromise ??= fetchListingRows(api).then((rows) => {
+    const step = Math.max(1, Math.floor(rows.length / SAMPLE_SIZE));
+    return rows
+      .filter((_, i) => i % step === 0)
+      .slice(0, SAMPLE_SIZE)
+      .map((r) => ({ name: r.name, slug: r.slug, bpid: r.variant.bpid }));
+  });
+  return fixturesPromise;
+}
 
 // Money here is genuinely fractional — a percentage coupon leaves paise, and 37
 // of 40 sampled products carry one. Comparing with toBe would fail on float
@@ -151,10 +155,11 @@ test.describe('Pricing API — best price is genuinely the best', () => {
     await api.dispose();
   });
 
-  test('there are fixtures to check', () => {
-    // Non-vacuous guard: every test below loops the same list, and an empty
-    // list would make all of them pass while asserting nothing.
-    expect(FIXTURES.length, 'products.json yielded no usable /pd/ URLs').toBeGreaterThan(1);
+  test('there are fixtures to check', async () => {
+    // Non-vacuous guard: every describe below reads one slot of this list, and
+    // a short list would leave a slot empty and its tests asserting nothing.
+    const fixtures = await liveFixtures(api);
+    expect(fixtures.length, 'the live listing yielded too few products to sample').toBe(SAMPLE_SIZE);
   });
 
   // best_price IS INTENTIONALLY DISABLED — the offer behind it has ended.
@@ -178,8 +183,14 @@ test.describe('Pricing API — best price is genuinely the best', () => {
   //   regression/pricing-checkout-consistency.spec.js   (PDP -> cart -> review)
   //   regression/device-protection-consistency.spec.js  (review -> payment)
 
-  for (const fixture of FIXTURES) {
-    test.describe(fixture.name, () => {
+  for (let slot = 0; slot < SAMPLE_SIZE; slot++) {
+    const fixture = {};
+    test.describe(`sample product #${slot + 1}`, () => {
+      test.beforeAll(async () => {
+        Object.assign(fixture, (await liveFixtures(api))[slot]);
+        console.log(`sample product #${slot + 1}: ${fixture.name} (${fixture.slug}/${fixture.bpid})`);
+      });
+
       // ---- best_upfront ------------------------------------------------
 
       test('the chosen upfront price beats every branch it was compared against', async () => {

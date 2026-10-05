@@ -101,8 +101,14 @@ expected and must never be asserted in a test.
 **`nbfc` is subscription pricing, not an availability switch.** `data.nbfc` in the
 pricing API is the pre-computed cardless figure for the *subscription* plan.
 `nbfc.emi_amount === 0` means "not pre-priced" — it does **not** mean cardless EMI
-is unavailable. On upfront products the amount is settled at eligibility time and
-is 0 here regardless.
+is unavailable. On upfront products the amount is settled at eligibility time —
+and, measured 5 Oct 2026, the `nbfc` key is **absent** from upfront pricing
+altogether (10/10 sampled; present on 5/5 `BOTH`). Assert `nbfc` only on a
+`BOTH` product, and never assert its absence on upfront.
+
+**Low Cost EMI is now Standard EMI — CONFIRMED EXPECTED (5 Oct 2026).** Every
+product's ladder reads `3mo/6mo NCEMI` then `9/12/18/24mo EMI`; the long
+tenures were `LCEMI` before. Not a regression — do not re-report it.
 
 **Which layer to test:**
 
