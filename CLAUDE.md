@@ -34,7 +34,8 @@ Refresh it with `npm run auth`, which needs `BYTEPE_MOBILE` set in the environme
 
 Specs behind a login must call `assertFreshSession()` from `tests/utils/session.js` in `test.beforeAll` — it fails fast with the real reason instead of timing out on a button that only renders for a logged-in user. Keep it inert-safe: it deliberately returns early when `auth.json` is missing or has zero cookies, because CI writes an empty session.
 
-CI (`.github/workflows/playwright.yml`) writes an empty `auth.json` and runs only the public specs: `static-pages`, `data-driven-products`, `product-search`, `product-pricing`, `cardless-emi`, `best-price-banner`, plus `api/products-api` and `api/pricing-api`. Adding a login-gated spec to that list will break the pipeline.
+CI (`.github/workflows/playwright.yml`) writes an empty `auth.json` and runs only the public specs: `static-pages`, `data-driven-products`, `product-search`, `product-pricing`, `cardless-emi`, `best-price-banner`, `variant-pricing-sanity`, `size-variants`,
+plus `api/products-api` and `api/pricing-api`. Adding a login-gated spec to that list will break the pipeline.
 
 The two API specs qualify because they build their request context with no `storageState` and assert catalogue and pricing configuration, which is identical for every shopper. `api/auth-api` and `api/cart-api` are **not** in the list: their anonymous 401 cases would pass, but most of each file gates on a real session and would report as skips, which reads as coverage that is not there.
 
@@ -461,7 +462,8 @@ cart accepts the line at ₹0 is unproven — proving it costs a live cart line.
 price, an in-stock variant priced at zero, and a buy row whose cart icon and Buy
 Now disagree. Capped at ~40 requests. It went green on its first run because the
 product had been priced by then, so its **failure path has not been seen against
-the live defect**. It is public but not yet in the CI list.
+the live defect**. It is in the CI list (as is `size-variants`) — if a size is
+ever listed unpriced again, the daily run goes red, which is the point.
 
 ### The listing row carries a whole price block, and a copy of the add-on list
 

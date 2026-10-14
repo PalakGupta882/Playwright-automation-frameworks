@@ -40,6 +40,8 @@ jobs:
             regression/product-pricing.spec.js \
             regression/cardless-emi.spec.js \
             regression/best-price-banner.spec.js \
+            regression/variant-pricing-sanity.spec.js \
+            regression/size-variants.spec.js \
             api/products-api.spec.js \
             api/pricing-api.spec.js \
             --project=chromium
