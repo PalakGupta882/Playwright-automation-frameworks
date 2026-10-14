@@ -5,6 +5,10 @@ Traceability for the 53 E2E cases in
 
 **32 of 53 automated, 21 not automatable from this repo.**
 
+Of the 32, six (VID-42/43/44/45/46/51) describe video-player behaviour and
+currently **skip**: the web PDP mounts no player, and that is confirmed
+expected as of 20 Aug 2026 rather than a defect. See the section below.
+
 ## Run it
 
 ```
@@ -25,15 +29,47 @@ npx playwright test scripts/discover-video-products.spec.js --project=chromium #
 | `BYTEPE_TEST_PRODUCT_ID_ALT` | VID-21 | Second product, for repointing. |
 | `BYTEPE_GCS_BUCKET` | VID-26 | Defaults to `bytepestorage`. |
 
-## Current blocker
+## The player on web — CONFIRMED EXPECTED, not a blocker
 
-As of the last catalog scan, **0 of 173 products had a live video**
-(`tests/data/video-products.json`). The `product.videos` field is present and
-returns `[]`, so the API contract is deployed — there is simply no content yet.
+**Status 20 Aug 2026: the web PDP mounting no player is intended behaviour.**
+It was previously recorded here as the feature's blocker and six tests were
+written to fail until it was "fixed". Product has confirmed there is nothing
+to fix on web. Do not re-report it.
 
-Until a video is published, VID-24/25/26 and VID-42–46/51 skip rather than pass.
-That is deliberate: a green run against an empty gallery would assert nothing.
-Re-run the discovery script once content exists.
+Content is live, and it has grown a lot. Measured 2 Sep 2026 by reading
+`product.videos[]` off every product the live listing serves: **94 of 217
+products have a video**.
+
+`tests/data/video-products.json` was regenerated on 5 Oct 2026 from the live
+listing: **100 of 336 products have a video**. It previously held the 11 Aug
+scrape (35 of 186), because the discovery script read `products.json`; it now
+reads the listing API directly. Products that are stock 0 and delisted drop out
+even though their video is still served (`vivo-v70-5g`, `galaxy-s25-fe`,
+`iphone-16` on that date) — that is the listing, not the video feature.
+Re-run `scripts/discover-video-products.spec.js` before any video work.
+The API side passes in full: VID-24, VID-25 and VID-26 are green.
+
+What the web PDP does, measured on four video-enabled products:
+
+| Product | API | Gallery slots | Thumbnails rendered | Empty slot | `<video>` |
+|---|---|---|---|---|---|
+| phone-4b | 6 img + 1 video | 7 | 0,1,2,4,5,6 | 3 | 0 |
+| edge-70-pro | 10 img + 1 video | 11 | 0,1,2,3,4,6–10 | 5 | 0 |
+| kilburn-iii | 8 img + 1 video | 9 | 0,1,2,3,5,6,7,8 | 4 | 0 |
+| galaxy-watch-ultra2 | 6 img + 1 video | 7 | 0,1,2,4,5,6 | 3 | 0 |
+
+Slots always equal images + 1: the gallery accounts for the video and renders
+nothing into it. `manifest.mpd` is present in the serialised payload, so the
+client receives the URL and does not mount a player.
+
+**How this is now tested.** `video-pdp-rendering.spec.js` carries one contract
+test that asserts exactly this state — the API serves a video and the PDP
+mounts no player. It is non-vacuous: it first proves the product really has a
+video, so it cannot pass just because there was nothing to play.
+
+VID-42/43/44/45/46/51 all describe player behaviour, so they **skip** with that
+reason rather than failing. If a player ever ships on web, the contract test
+fails first and points at the file — un-skip the six and they are ready.
 
 ## Coverage
 
@@ -81,28 +117,28 @@ video to `deactive` and re-reading the PDP, which needs admin access. What this
 asserts instead is the standing invariant: nothing the PDP surfaces carries an
 inactive marker. Full verification belongs with the admin credentials.
 
-### Automated — PDP rendering (`tests/regression/video-pdp-rendering.spec.js`)
+### PDP rendering (`tests/regression/video-pdp-rendering.spec.js`)
 
-| TC | Scenario |
-|---|---|
-| VID-42 | Plays inline, native controls, `playsinline`, currentTime advances |
-| VID-43 | Poster attribute set and the poster URL actually resolves (200) |
-| VID-44 | Thumbnail bar stays aligned — **known bug, asserted as correct** |
-| VID-45 | No audible autoplay on scroll into view |
-| VID-46 | Buffers on a throttled connection without a broken media tile |
-| VID-51 | `preload` is `none`/`metadata`; core PDP content still renders promptly |
+| TC | Scenario | Status |
+|---|---|---|
+| — | API serves a video, web PDP mounts no player | **runs** — the standing contract |
+| VID-42 | Plays inline, native controls, `playsinline`, currentTime advances | skipped — no player on web |
+| VID-43 | Poster attribute set and the poster URL resolves (200) | skipped — no player on web |
+| VID-44 | Thumbnail bar stays aligned | skipped — no player on web |
+| VID-45 | No audible autoplay on scroll into view | skipped — no player on web |
+| VID-46 | Buffers on a throttled connection without a broken tile | skipped — no player on web |
+| VID-51 | `preload` is `none`/`metadata`; core PDP content still prompt | skipped — no player on web |
 
-All gated on a video-enabled product. Selectors in
-`tests/pages/productVideoPage.js` were written against the feature spec and
-standard HTML5 media markup — **not confirmed against a rendered player**,
-because none existed. Verify them when the first video goes live; every test
-above routes through that one file.
+Selectors in `tests/pages/productVideoPage.js` were written against the feature
+spec and standard HTML5 media markup and have **never been confirmed against a
+rendered player**, because none exists on web. Verify them if a player ships;
+every skipped test above routes through that one file.
 
 ### Not automatable from this repo
 
 | TC | Scenario | Why |
 |---|---|---|
-| VID-27 | Upload valid video via Add Video modal | 360 Panel app — URL and admin login not configured here |
+| VID-27 | Upload valid video via Add Video modal | 360 Panel app — **URL known (`360.bytepe.com`)**; admin login not configured here |
 | VID-28 | Unsupported format rejected | 360 Panel + real file fixtures |
 | VID-29 | Oversized file rejected | 360 Panel + a large fixture |
 | VID-30 | Corrupt file handled gracefully | 360 Panel + a corrupt fixture |
@@ -126,15 +162,29 @@ above routes through that one file.
 
 ### Known bugs
 
-VID-35, VID-38 and VID-44 are open bugs in the sheet. Where automated (VID-44,
-and VID-17 as the API-level twin of VID-38), they assert the **correct**
-behavior and will fail until fixed, rather than encoding the bug as expected.
+VID-35 and VID-38 remain open bugs in the sheet. Where automated (VID-17 as the
+API-level twin of VID-38), they assert the **correct** behaviour and will fail
+until fixed, rather than encoding the bug as expected.
+
+VID-44 was previously listed here. It is part of the no-player-on-web state
+that is now confirmed expected, so it skips with the rest rather than failing.
 
 ## Unblocking the rest
 
-1. **360 Panel** (15 cases) — needs the panel URL, an admin login that can be
-   saved as a second storage state, and video fixtures (valid MP4, oversized,
-   corrupt, portrait, landscape).
+1. **360 Panel** (15 cases) — the panel is at **`360.bytepe.com`**, confirmed
+   21 Aug 2026 from its VAS editor at `360.bytepe.com/vas`. Left nav carries
+   Product Catalog, Pricing Config, Customer, Retailer, Team, Orders, VAS,
+   Collection, Coupons, Partners, Unicorn. **Which nav entry owns video
+   management is still unconfirmed** — do not assume one.
+
+   Still needed: an admin login saved as a **second storage state under its own
+   filename** — never `auth.json`, which holds the storefront token — and video
+   fixtures (valid MP4, oversized, corrupt, portrait, landscape).
+
+   **These are writes against a real admin panel.** Anything that uploads,
+   edits or deletes belongs behind `BYTEPE_ALLOW_WRITES=1`, and a production
+   host should be an **error rather than a skip**. That pattern is already
+   written: `productionGuard()` in `tests/data/subHomeFeature.js`.
 2. **Mobile browsers** (VID-49) — add `webkit` and mobile-Chrome projects to
    `playwright.config.js`; no new credentials needed.
 3. **SLA cases** (VID-35, VID-50) — get a threshold from dev/PM, then they

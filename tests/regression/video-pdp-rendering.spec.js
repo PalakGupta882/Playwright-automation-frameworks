@@ -3,10 +3,23 @@
 // VID-42..VID-46 and VID-51 — how the video actually renders and behaves on a
 // public product page.
 //
-// Every test here needs a product with a live video. None existed when this was
-// written, so they skip with a pointer to the discovery script rather than
-// passing against an empty gallery — a green run on a product with no video
-// would be worse than no test at all.
+// STATUS, 20 Aug 2026: the web PDP mounting no player is CONFIRMED EXPECTED.
+//
+// This file used to fail all six cases on purpose, reasoning that "a skip would
+// say we could not check, when what we know is it is broken". That was sound
+// while the behaviour was believed to be a defect. It is not one: product
+// confirmed the web PDP is not expected to mount a player, so six red tests
+// every run were reporting intended behaviour as a failure.
+//
+// What this file does now:
+//   - one test asserts the CURRENT expected contract (the API serves a video,
+//     the PDP mounts no player) so a player appearing is noticed rather than
+//     silently changing the feature underneath us
+//   - VID-42..46 and VID-51 describe player behaviour that cannot exist without
+//     a player, so they skip with that reason instead of failing
+//
+// If a player does ship on web, the contract test fails first and points here:
+// un-skip the six and they are ready to run.
 
 const { test, expect } = require('../fixtures/pageFixtures');
 const { ProductVideoPage } = require('../pages/productVideoPage');
@@ -19,15 +32,60 @@ const NO_VIDEO_REASON =
   'No product in tests/data/video-products.json has a live video. ' +
   'Re-run: npx playwright test scripts/discover-video-products.spec.js --project=chromium';
 
+// The contract lives in its own describe on purpose: the beforeEach in the
+// suite below skips every test when no player is mounted, which is exactly
+// the state this one needs to assert. Sharing that hook would skip it too.
+test.describe('PDP video contract', () => {
+  // The standing contract, and the only test here that runs today.
+  //
+  // Non-vacuous by construction: it first proves the API really does serve a
+  // video for this product, so "no player" cannot pass merely because there was
+  // no video to play.
+  test('expected: the API serves a video and the web PDP mounts no player', async ({ page }) => {
+    test.setTimeout(90000);
+
+    const contractMedia = new ProductVideoPage(page);
+    await contractMedia.gotoProduct(videoProduct.slug, videoProduct.bpid);
+
+    expect(
+      (videoProduct.videos || []).length,
+      `${videoProduct.slug} has no video in video-products.json, so this proves nothing. ` +
+        'Re-run scripts/discover-video-products.spec.js'
+    ).toBeGreaterThan(0);
+
+    expect(
+      await contractMedia.hasVideo(),
+      'The web PDP mounted a video player. That is a CHANGE from the confirmed-expected ' +
+        'state of 20 Aug 2026, not a site failure: re-enable VID-42..46 and VID-51 in this ' +
+        'file and update docs/video-feature-coverage.md.'
+    ).toBe(false);
+  });
+});
+
 test.describe('PDP video rendering', () => {
   test.skip(!videoProduct, NO_VIDEO_REASON);
 
   /** @type {ProductVideoPage} */
   let media;
 
+
   test.beforeEach(async ({ page }) => {
     media = new ProductVideoPage(page);
     await media.gotoProduct(videoProduct.slug, videoProduct.bpid);
+
+    // The web PDP mounts no player, and that is confirmed expected (see header).
+    // Every case below drives a player, so there is nothing to drive. Skipping
+    // with the real reason, rather than failing, is what stops the suite
+    // reporting intended behaviour as a defect.
+    //
+    // This skips on a CONFIRMED state, not an unknown one: the contract test
+    // above already asserted the API serves a video and the PDP mounts none.
+    test.skip(
+      !(await media.hasVideo()),
+      `Web PDP mounts no video player for ${videoProduct.slug} - confirmed expected ` +
+        '20 Aug 2026. These cases describe player behaviour and resume automatically ' +
+        'if a player ships.'
+    );
   });
 
   // VID-42 — plays inline, controls work.

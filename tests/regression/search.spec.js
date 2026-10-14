@@ -157,20 +157,69 @@ test.describe('Search', () => {
     await expect(page.locator('a[href*="/pd/"]').first()).toBeVisible({ timeout: 15000 });
   });
 
-  // Pins the contract the tests above depend on: search never leaves the page.
-  // If a results page is ever added this fails, which is the signal to revisit
-  // every "there is no results page" note in this file.
-  test('there is no search results page', async ({ page, productsListPage }) => {
-    test.setTimeout(90000);
+  // A SEARCH RESULTS PAGE NOW EXISTS — rewritten 16 Sep 2026.
+  //
+  // This test used to assert the opposite ("there is no search results page"),
+  // and its own note said that failing was "the signal to revisit every 'there
+  // is no results page' note in this file". That signal fired: pressing Enter
+  // now navigates to
+  //
+  //   /all-products?q=iphone
+  //
+  // which renders `Results for "iphone"` above a filtered grid, with Sort and
+  // Filter controls. So the obsolete expectation is replaced by the real
+  // contract rather than left to fail.
+  //
+  // The RESULTS live on /all-products, not on /search — that route is still a
+  // 404, which is why the check below keeps it. Losing that distinction would
+  // let a future redirect pass unnoticed.
+  test('pressing Enter opens a filtered results page', async ({ page, productsListPage }) => {
+    test.setTimeout(120000);
 
     await productsListPage.goto();
-    const before = page.url();
-
     await productsListPage.search('iphone');
     await productsListPage.searchBox.press('Enter');
     await page.waitForTimeout(4000);
 
-    expect(page.url(), 'pressing Enter navigated — search may now have a results page').toBe(before);
+    expect(page.url(), 'pressing Enter did not open a results page').toMatch(/[?&]q=iphone\b/);
+
+    await expect(
+      page.getByText(/results for/i).first(),
+      'the results page does not say what it searched for'
+    ).toBeVisible({ timeout: 15000 });
+
+    // THE CONTROL. A term that matches must return products, so the empty
+    // assertion below means "nothing matched" and not "the grid never
+    // rendered".
+    const matched = await page.locator('a[href*="/pd/"]').count();
+    expect(matched, 'a term that matches the catalogue returned no products').toBeGreaterThan(0);
+  });
+
+  // The other half of the pair: the grid actually filters. Without this, the
+  // test above passes on a results page that ignores `q` and lists everything.
+  test('a term that matches nothing returns no products', async ({ page }) => {
+    test.setTimeout(120000);
+
+    const nonsense = 'zzzqqqxnothing';
+    await page.goto(`${BASE_URL}/all-products?q=${nonsense}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(5000);
+
+    // Non-vacuous: the page rendered and knows what it searched for, so a zero
+    // count below is a real answer rather than a page that failed to load.
+    await expect(
+      page.getByText(new RegExp(`results for\\s*"?${nonsense}`, 'i')).first(),
+      'the results page did not render for an unmatched term'
+    ).toBeVisible({ timeout: 15000 });
+
+    await expect(
+      page.locator('a[href*="/pd/"]'),
+      'an unmatched term still listed products — the grid is ignoring the query'
+    ).toHaveCount(0);
+  });
+
+  // /search is NOT the results route and must not quietly become one.
+  test('/search is not a route', async ({ page }) => {
+    test.setTimeout(90000);
 
     // Retry past a 429. Under a full-suite run this returned 429 rather than
     // 404, and the test read that as "a results page now exists" — a rate limit
@@ -183,6 +232,6 @@ test.describe('Search', () => {
       await page.waitForTimeout(2000 * attempt);
     }
 
-    expect(status, '/search now resolves — search may now have a results page').toBe(404);
+    expect(status, '/search now resolves — results are meant to live on /all-products?q=').toBe(404);
   });
 });

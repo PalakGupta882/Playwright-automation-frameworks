@@ -95,7 +95,13 @@ test.describe('EMI tenure ladder', () => {
     await page.goto(`${BASE_URL}/pd/${product.slug}/${product.bpid}`, { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('Escape').catch(() => {});
 
-    await expect(page.getByText(/choose your plan/i).first()).toBeVisible({ timeout: TIMEOUTS.nav });
+    // "Choose your plan" stopped rendering on 16 Sep 2026 — see the note on
+    // emiStorePage.planBoxHeading. "Pay in Full" is the plan-box anchor now:
+    // CLAUDE.md records it on every product regardless of payment mode, and it
+    // was present on 4 of 4 sampled across UPFRONT and BOTH.
+    await expect(
+      page.getByText(/pay in full/i).filter({ visible: true }).first()
+    ).toBeVisible({ timeout: TIMEOUTS.nav });
     await expect(page.getByText(/^Credit Card EMI$/i).first()).toBeVisible({ timeout: TIMEOUTS.nav });
 
     // A plan name with no price is not an offer. Matching /mo specifically so
@@ -107,10 +113,31 @@ test.describe('EMI tenure ladder', () => {
   //
   //   installment_amount x tenure === upfront price - discount + interest
   //
-  // Verified exact on 6 of 6 tenures for the reference product. Note this is
-  // NOT (price + interest) / tenure, which was the assumed formula: that omits
-  // the discount term and matches 0 of 6. Getting this wrong in the lenient
-  // direction would produce a test that passes on any numbers at all.
+  // Note this is NOT (price + interest) / tenure, which was the assumed
+  // formula: that omits the discount term and matches 0 of 6. Getting this
+  // wrong in the lenient direction would produce a test that passes on any
+  // numbers at all.
+  //
+  // TOLERANCE: +/-1 rupee PER INSTALMENT. Corrected 21 Aug 2026 — this used to
+  // assert exact equality, and that was wrong.
+  //
+  // Each instalment is rounded to the rupee, so N instalments can legitimately
+  // drift up to N rupees from the exact total. CLAUDE.md has always documented
+  // the formula with this tolerance; only the assertion disagreed, and it was
+  // failing 4 products x 23 rungs on nothing but rounding. Measured:
+  //
+  //   Macbook Pro M5        18mo  +8   -> 0.44/instalment
+  //   Galaxy Z Fold8 Ultra  12mo  +5   -> 0.42/instalment
+  //   Galaxy Z Fold8 5G     18mo  +7   -> 0.39/instalment
+  //   Pixel 11 Pro Fold     24mo  -11  -> 0.46/instalment
+  //
+  // Worst case across all 23 was 0.46 of a rupee per instalment — i.e. every
+  // one was inside the tolerance, and the message still claimed a shopper was
+  // "being charged something other than the advertised price".
+  //
+  // The tolerance scales with tenure rather than being a flat rupee cap,
+  // because that is how the error accumulates. Do NOT widen it to a flat
+  // percentage: a real mispricing on a long tenure would disappear inside one.
   for (const product of PRODUCTS) {
     test(`${product.name}: every EMI tenure adds up`, async ({ request }) => {
       test.setTimeout(90000);
@@ -122,23 +149,41 @@ test.describe('EMI tenure ladder', () => {
       expect(options.length, `${product.name} lost its EMI ladder`).toBeGreaterThan(0);
       expect(price, `${product.name} has no upfront price to reconcile against`).toBeGreaterThan(0);
 
-      const mismatches = options
-        .map(o => ({
-          tenure: o.tenure,
-          charged: o.installment_amount * o.tenure,
-          expected: price - o.discount + o.interest,
-        }))
-        .filter(r => r.charged !== r.expected)
-        .map(r => `${r.tenure}mo: instalments total ${r.charged}, price-discount+interest is ${r.expected}`);
+      const rungs = options.map(o => {
+        const charged = o.installment_amount * o.tenure;
+        const expected = price - o.discount + o.interest;
+        return { tenure: o.tenure, charged, expected, delta: charged - expected };
+      });
+
+      // Beyond +/-1 per instalment the difference is larger than rounding can
+      // account for, and the shopper really is paying something other than the
+      // advertised price plus interest.
+      const mismatches = rungs
+        .filter(r => Math.abs(r.delta) > r.tenure)
+        .map(
+          r =>
+            `${r.tenure}mo: instalments total ${r.charged}, price-discount+interest is ` +
+            `${r.expected} (off by ${r.delta}, tolerance +/-${r.tenure})`
+        );
 
       expect(
         mismatches,
-        `${product.name} quotes instalments that do not reconcile with its price. ` +
-          'A shopper on one of these tenures is being charged something other than ' +
-          'the advertised price plus interest.'
+        `${product.name} quotes instalments that do not reconcile with its price, ` +
+          'by more than per-instalment rounding can explain. A shopper on one of these ' +
+          'tenures is being charged something other than the advertised price plus interest.'
       ).toEqual([]);
 
-      console.log(`${product.name}: ${options.length} tenures reconcile (₹${price} base)`);
+      // Report the rounding that IS present, so a drift that grows towards the
+      // tolerance is visible in the log before it starts failing.
+      const worst = rungs.reduce(
+        (a, b) => (Math.abs(b.delta) / b.tenure > Math.abs(a.delta) / a.tenure ? b : a),
+        rungs[0]
+      );
+      console.log(
+        `${product.name}: ${options.length} tenures reconcile (₹${price} base) — ` +
+          `largest rounding ${worst.delta} over ${worst.tenure}mo ` +
+          `(${(Math.abs(worst.delta) / worst.tenure).toFixed(2)}/instalment)`
+      );
     });
   }
 

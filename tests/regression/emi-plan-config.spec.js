@@ -22,7 +22,7 @@
 // because losing a tenure or silently moving No Cost EMI to Standard EMI is a
 // regression.
 //
-// Baseline: tests/data/cardless-emi.json (186 products, one row each).
+// Baseline: tests/data/cardless-emi.json (one row per product; 335 on 5 Oct 2026).
 // Regenerate with:
 //   npx playwright test scripts/discover-cardless-emi.spec.js --project=chromium
 // and diff it — never regenerate to make this file pass.
@@ -45,9 +45,10 @@ const KNOWN_EMI_TYPES = ['EMI', 'LCEMI', 'NCEMI'];
 
 const ALL = [...baseline.products.offered, ...baseline.products.notOffered];
 
-// One product per distinct plan shape rather than all 186: the six shapes below
+// One product per distinct plan shape rather than every product: the shapes
 // cover every tenure count, every EMI-type combination and both payment modes
-// in the catalogue, for 12 API calls instead of 372 against a production origin
+// in the catalogue — two on 5 Oct 2026 (6 tenures · NCEMI/EMI, BOTH and
+// UPFRONT) — for a handful of API calls instead of hundreds against an origin
 // that already rate-limits this suite. Derived from the baseline, so
 // regenerating it re-derives the sample instead of leaving a hand-picked list
 // pointing at delisted products.
@@ -181,12 +182,37 @@ test.describe('EMI plan configuration', () => {
       expect(offer.tenureMonths, `${product.name} cardless tenure collapsed to 0`).toBeGreaterThan(0);
       expect(offer.monthly, `${product.name} cardless instalment collapsed to 0`).toBeGreaterThan(0);
 
+      // ROUNDING IS EXPECTED, AND THE TOLERANCE IS ±₹1 PER INSTALMENT.
+      //
+      // This used to assert exact equality and was wrong by construction. The
+      // instalment is a whole rupee, so the amount actually collected is the
+      // rounded instalment times the tenure, and it cannot land on the financed
+      // total except by luck. Swept across the live catalogue on 18 Aug 2026:
+      //
+      //   cardless plans pre-priced          31
+      //   reconciling to the exact rupee      2
+      //   drift observed                    -12 .. +11, every one within tenure
+      //
+      // Both directions occur, so the tolerance is symmetric — the API rounds,
+      // it does not floor. Measured examples:
+      //
+      //   Galaxy Z Fold7   8128 x 24 +  8125  = 203197  vs 203204   (-7)
+      //   Macbook Pro M5  11651 x 24 + 11646  = 291270  vs 291260  (+10)
+      //
+      // 29 of 31 products failed the old assertion; the 2 that passed were the
+      // coincidence, not the rule. What is still worth catching is a plan that
+      // misses by more than rounding can explain, which is what this asserts.
+      const collected = offer.monthly * offer.tenureMonths + offer.downpayment;
+      const financed = offer.total + offer.interest;
+
       expect(
-        offer.monthly * offer.tenureMonths + offer.downpayment,
+        Math.abs(collected - financed),
         `${product.name} cardless plan does not reconcile: ` +
           `${offer.monthly} x ${offer.tenureMonths} + ${offer.downpayment} downpayment ` +
-          `should equal ${offer.total} financed + ${offer.interest} interest`
-      ).toBe(offer.total + offer.interest);
+          `= ${collected}, but ${offer.total} financed + ${offer.interest} interest ` +
+          `= ${financed} — a gap of ${collected - financed} over ${offer.tenureMonths} ` +
+          'instalments, which rounding cannot account for'
+      ).toBeLessThanOrEqual(offer.tenureMonths);
     });
   }
 });

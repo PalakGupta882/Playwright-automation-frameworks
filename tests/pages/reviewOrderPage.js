@@ -1,4 +1,5 @@
 const { MESSAGES, TIMEOUTS } = require('../data/constants');
+const { orderContinueButton } = require('../utils/orderContinue');
 
 class ReviewOrderPage {
   constructor(page) {
@@ -36,8 +37,13 @@ class ReviewOrderPage {
       .catch(() => false);
   }
 
+  // MINTS A REAL ORDER. Not `this.continueButton`: its string name is a
+  // case-insensitive substring match, so it also matches "Continue Shopping".
+  // orderContinueButton() clicks only when exactly one visible Continue-shaped
+  // control exists, and throws with the labels it found otherwise.
   async clickContinue() {
-    await this.continueButton.click({ timeout: 10000 });
+    const proceed = await orderContinueButton(this.page);
+    await proceed.click({ timeout: 10000 });
   }
 }
 
