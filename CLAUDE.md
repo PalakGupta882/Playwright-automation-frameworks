@@ -394,6 +394,35 @@ Availability is transient. The spec finds unavailable variants from the live API
 rather than hardcoding those two bpids, and **skips with a reason** when the
 whole catalogue is in stock. That skip is not a pass.
 
+### Stock: API said in stock, PDP said Sold Out — OPEN OBSERVATION (5 Oct 2026)
+
+**Investigation only. Not a confirmed defect, and deliberately NOT worked around
+in test code yet.** `data-driven-products` reports it through its mismatch
+branch ("the PDP API says in stock but the page shows …"); leave that red rather
+than raising the stock threshold, until the cause is known.
+
+| Field | Occurrence 1 |
+|---|---|
+| BPID / SKU | `APPSAMOBM8GMTK` / `IPHONE-18-PRO-MAX-BURGUNDY-256GB` (iPhone 18 Pro Max, master variant, id `ac67185c-cd18-458d-b1a2-f5a0c879c329`) |
+| Timestamp | CI run 37315196556 (commit `2076b5b`), PDP loads at 13:15:25Z, 13:15:56Z, 13:16:26Z — all three attempts |
+| API stock + available | "in stock" by `variantInStock()` at pick time and on the re-check — **exact `stock` number not captured** |
+| PDP displayed state | `Sold Out` on every attempt |
+| Page API response | **not captured** — the page's own `by-slug` call was not recorded in CI |
+
+Context measured the same day, all on this one variant: stock 8 in the
+morning; `stock 0, available false` by midday (CI on `28ca153` then failed the
+other way — picked in-stock, page Sold Out, stock really had moved); in stock
+again during the 13:15Z run; `stock 0, available false` everywhere minutes
+later (direct API ×4 incl. cache-busted, the page's own call, the buy row).
+Its 15 sibling variants held 856–1000 each throughout. Candidate causes, none
+proven: stock oscillating around 0 (cart/order reservations), or the
+server-rendered PDP lagging the API.
+
+**If it happens again, capture all five fields above** — the two marked "not
+captured" are what would separate the causes: the API's exact
+`variant.stock` / `variant.available` and the page's own `by-slug` response,
+both at the moment the buy row reads `Sold Out`.
+
 ### The listing row carries a whole price block, and a copy of the add-on list
 
 Both appeared on `GET /product-service/apps/products?page=N&limit=M` and were
