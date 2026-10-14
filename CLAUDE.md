@@ -423,6 +423,46 @@ captured" are what would separate the causes: the API's exact
 `variant.stock` / `variant.available` and the page's own `by-slug` response,
 both at the moment the buy row reads `Sold Out`.
 
+### Size variants, and an in-stock variant priced at ₹0 — RESOLVED same day (14 Oct 2026)
+
+**New verticals, live between 5 and 14 Oct 2026:** Footwear (56 — Neeman's,
+Clog London), Furniture (15 sofas/recliners, Apka Interior; attributes
+Structure/Cushioning/Fabric, no siblings), Kids (one stroller). The Home tab
+strip grew from 8 to 12: **Sale, Footwear, Kids, Sports** are new.
+
+**Footwear models each SIZE as its own variant** — own bpid, SKU
+(`…-BROWN-UK-5`) and stock, under `siblingVariants` with a `Size` attribute.
+Stock runs 0–2 per size, and the listing links the master even when the master
+is sold out. The PDP shows one MUI chip per size (`UK 3` … `UK 8`).
+
+**Observation, awaiting a product ruling — never assert it:** sold-out and
+in-stock size chips are visually identical. A shopper learns a size is gone only
+after choosing it. `size-variants.spec.js` records it as an annotation.
+
+**Defect measured the morning of 14 Oct 2026, priced by that afternoon** (every
+size then read `upfront.price` ₹2,374, MRP ₹3,799). Kept because the shape —
+listed, in stock in one size, unpriced — is easy to reproduce with per-size
+variants:
+
+| | |
+|---|---|
+| Product | `women-trendy-urban-casual-boots` (Clog London) |
+| Listing row | the only one of 377 with **no `price` block** |
+| Master UK 3 `CLXFWWFXOA64L7` | stock 0 → PDP `Sold Out`, cart icon disabled — correct |
+| UK 5 `CLXFWWFX0WOLIG` | stock 1, available; `variant-pricing` **200 with `upfront.price 0`** and every ladder rung 0 |
+| PDP for UK 5 | `₹0`, `EMI From ₹0/mo`, **Buy Now disabled, cart icon enabled** |
+
+This is **not** the confirmed-expected ₹0 below. That one is a *failed* pricing
+call, cleared because cart re-prices server-side. Here the call succeeds and ₹0
+is the configured price, so cart has nothing correct to fall back on. Whether
+cart accepts the line at ₹0 is unproven — proving it costs a live cart line.
+
+`regression/variant-pricing-sanity.spec.js` guards it: a listing row with no
+price, an in-stock variant priced at zero, and a buy row whose cart icon and Buy
+Now disagree. Capped at ~40 requests. It went green on its first run because the
+product had been priced by then, so its **failure path has not been seen against
+the live defect**. It is public but not yet in the CI list.
+
 ### The listing row carries a whole price block, and a copy of the add-on list
 
 Both appeared on `GET /product-service/apps/products?page=N&limit=M` and were
@@ -446,6 +486,10 @@ anything yet:
 rows carry a tag, and **none is `Pre-booking`** — the tags are now `New Launch`
 (priority 2, same `#FF5722` badge) and `sale price live`. Treat the 241/8 figures
 in this file as history. Read the count from `data.count`, never from here.
+
+**Re-measured 14 Oct 2026: 377 products**, 352 `UPFRONT` / 25 `BOTH`. Only
+`New Launch` remains as a tag (12 rows); `rating` is now a key on every row but
+null on most. Three new verticals — see the size-variant section below.
 
 `variant.tags[]` carried exactly one tag, `Pre-booking`, on 16 Sep — see the
 pre-booking section below, which `regression/prebooking.spec.js` does cover.

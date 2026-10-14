@@ -80,6 +80,36 @@ function buyNowControl(page) {
   return page.getByRole('button', { name: 'Buy Now', exact: true });
 }
 
+// The enabled state of this product's own buy controls, read in one DOM pass.
+// Same structural anchor as clickAddToCart(): the cart control taken is the
+// last one BEFORE Buy Now, so a carousel tile further down can never answer for
+// the product. Each field is true/false, or null when the control is absent.
+// "Disabled" covers both the attribute and aria-disabled, because MUI sets the
+// attribute on a <button> but only aria-disabled on a non-button root.
+async function buyRowState(page) {
+  return page.evaluate((label) => {
+    const buttons = [...document.querySelectorAll('button')];
+    const enabled = (b) => !(b.disabled || b.getAttribute('aria-disabled') === 'true');
+    const isCart = (b) => (b.getAttribute('aria-label') || '').trim().toLowerCase() === label.toLowerCase();
+    const named = (re) => buttons.findIndex((b) => re.test((b.innerText || '').trim()));
+
+    const buyNow = named(/^buy now$/i);
+    const soldOut = named(/^sold out$/i);
+    // Sold Out substitutes for Buy Now, so it is the anchor when Buy Now is gone.
+    const anchor = buyNow >= 0 ? buyNow : soldOut;
+    const cart = buttons
+      .map((b, i) => (isCart(b) ? i : -1))
+      .filter((i) => i >= 0 && (anchor < 0 || i < anchor))
+      .pop();
+
+    return {
+      buyNow: buyNow >= 0 ? enabled(buttons[buyNow]) : null,
+      soldOut: soldOut >= 0 ? enabled(buttons[soldOut]) : null,
+      cart: cart === undefined ? null : enabled(buttons[cart]),
+    };
+  }, ADD_TO_CART_LABEL);
+}
+
 // True when this listing row can actually be added to a cart from its PDP.
 // Takes a row from GET /product-service/apps/products.
 function rowOffersAddToCart(row) {
@@ -94,5 +124,6 @@ module.exports = {
   clickAddToCart,
   addToCartControl,
   buyNowControl,
+  buyRowState,
   rowOffersAddToCart,
 };
